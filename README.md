@@ -1,0 +1,2 @@
+# Clothiq
+Laundrix is a smart laundry service mobile application that allows users to schedule pickups, select laundry services, track orders in real time, manage payments, receive notifications, and manage profiles and addresses through a modern and user-friendly interface.
