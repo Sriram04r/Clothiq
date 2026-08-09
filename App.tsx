@@ -32,20 +32,22 @@ import SavedAddressesScreen from './screens/SavedAddresses';
 import AddNewAddressScreen from './screens/AddNewAddress';
 import NotificationsScreen from './screens/Notifications';
 
+import { AuthProvider, AuthContext } from './context/AuthContext';
+import { useContext } from 'react';
+
 const Stack = createNativeStackNavigator();
 
-export default function App() {
+function RootNavigator() {
+  const { user, initializing } = useContext(AuthContext);
+
+  if (initializing) {
+    return null; // Don't render until auth state is loaded
+  }
+
   return (
-    <SafeAreaProvider>
-      <NavigationContainer>
-        <StatusBar style="dark" />
-        <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Splash" component={SplashScreen} />
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Signup" component={SignupScreen} />
-          <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
-          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-          <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {user ? (
+        <>
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Services" component={ServicesScreen} />
           <Stack.Screen name="ServiceDetails" component={ServiceDetailsScreen} />
@@ -66,8 +68,30 @@ export default function App() {
           <Stack.Screen name="SavedAddresses" component={SavedAddressesScreen} />
           <Stack.Screen name="AddNewAddress" component={AddNewAddressScreen} />
           <Stack.Screen name="Notifications" component={NotificationsScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
+        </>
+      ) : (
+        <>
+          <Stack.Screen name="Splash" component={SplashScreen} />
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Signup" component={SignupScreen} />
+          <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+          <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+        </>
+      )}
+    </Stack.Navigator>
+  );
+}
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <AuthProvider>
+        <NavigationContainer>
+          <StatusBar style="dark" />
+          <RootNavigator />
+        </NavigationContainer>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

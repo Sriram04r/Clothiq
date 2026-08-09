@@ -1,4 +1,5 @@
 import { registerRootComponent } from 'expo';
+import '@react-native-firebase/app';
 
 import App from './App';
 

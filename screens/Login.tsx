@@ -22,81 +22,81 @@ export default function LoginScreen({ navigation }: any) {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
-          <Text style={styles.title}>Welcome Back!</Text>
-          <Text style={styles.subtitle}>Login to continue</Text>
-        </View>
-
-        <View style={styles.tabsContainer}>
-          <TouchableOpacity style={[styles.tab, styles.tabActive]}>
-            <Text style={styles.tabTextActive}>Login</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate('Signup')}>
-            <Text style={styles.tabText}>Sign Up</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.formContainer}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Mobile Number</Text>
-            <TextInput 
-              style={styles.input} 
-              placeholder="+91 9666394628"
-              keyboardType="phone-pad"
-              defaultValue="+91 9666394628"
-            />
+            <Text style={styles.title}>Welcome Back!</Text>
+            <Text style={styles.subtitle}>Login to continue</Text>
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Password</Text>
-            <View style={styles.passwordWrapper}>
-              <TextInput 
-                style={styles.passwordInput} 
-                placeholder="*************"
-                secureTextEntry={!isPasswordVisible}
-                defaultValue="password123"
+          <View style={styles.tabsContainer}>
+            <TouchableOpacity style={[styles.tab, styles.tabActive]}>
+              <Text style={styles.tabTextActive}>Login</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate('Signup')}>
+              <Text style={styles.tabText}>Sign Up</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.formContainer}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your mail"
+                keyboardType="phone-pad"
+                defaultValue="+91 9666394628"
               />
-              <TouchableOpacity 
-                style={styles.eyeIcon} 
-                onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-              >
-                {isPasswordVisible ? 
-                  <EyeOff size={20} color="#8e8e93" /> : 
-                  <Eye size={20} color="#8e8e93" />
-                }
-              </TouchableOpacity>
             </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Password</Text>
+              <View style={styles.passwordWrapper}>
+                <TextInput
+                  style={styles.passwordInput}
+                  placeholder="*************"
+                  secureTextEntry={!isPasswordVisible}
+                  defaultValue="password123"
+                />
+                <TouchableOpacity
+                  style={styles.eyeIcon}
+                  onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                >
+                  {isPasswordVisible ?
+                    <EyeOff size={20} color="#8e8e93" /> :
+                    <Eye size={20} color="#8e8e93" />
+                  }
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <TouchableOpacity style={styles.forgotPassword} onPress={() => navigation.navigate('ForgotPassword')}>
+              <Text style={styles.linkText}>Forgot Password</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.loginButton}
+              onPress={() => navigation.navigate('Home')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.loginButtonText}>Login</Text>
+            </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.forgotPassword} onPress={() => navigation.navigate('ForgotPassword')}>
-            <Text style={styles.linkText}>Forgot Password</Text>
-          </TouchableOpacity>
+          <View style={styles.dividerContainer}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or connect with</Text>
+            <View style={styles.dividerLine} />
+          </View>
 
-          <TouchableOpacity 
-            style={styles.loginButton} 
-            onPress={() => navigation.navigate('Home')}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.loginButtonText}>Login</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.dividerContainer}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>or connect with</Text>
-          <View style={styles.dividerLine} />
-        </View>
-
-        <View style={styles.socialContainer}>
-          <TouchableOpacity style={styles.socialButton}>
-            <GoogleIcon />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton}>
-            <FontAwesome5 name="facebook" size={24} color="#4267B2" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton}>
-            <FontAwesome5 name="apple" size={24} color="#000000" />
-          </TouchableOpacity>
-        </View>
+          <View style={styles.socialContainer}>
+            <TouchableOpacity style={styles.socialButton}>
+              <GoogleIcon />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialButton}>
+              <FontAwesome5 name="facebook" size={24} color="#4267B2" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialButton}>
+              <FontAwesome5 name="apple" size={24} color="#000000" />
+            </TouchableOpacity>
+          </View>
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Don't have an account? </Text>
