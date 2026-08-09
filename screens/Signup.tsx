@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, TextInput } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
+import { getAuth, createUserWithEmailAndPassword, signOut } from '@react-native-firebase/auth';
+import { getFirestore, doc, setDoc } from '@react-native-firebase/firestore';
 
 export default function SignupScreen({ navigation }: any) {
   const [fullName, setFullName] = useState('');
@@ -12,6 +14,50 @@ export default function SignupScreen({ navigation }: any) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSignup = async () => {
+    if (!fullName || !email || !phone || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+    if (!agreed) {
+      Alert.alert('Error', 'Please agree to the Terms & Conditions');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // 1. Create the user in Firebase Auth
+      const auth = getAuth();
+      const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+      const user = userCredential.user;
+
+      // 2. Save their extra details to Firestore
+      const db = getFirestore();
+      await setDoc(doc(db, 'users', user.uid), {
+        fullName,
+        email: email.trim(),
+        phone,
+        createdAt: new Date().toISOString(),
+      });
+      
+      // 3. Immediately sign out so they have to manually log in!
+      await signOut(auth);
+
+      Alert.alert('Success', 'Account created! Please log in.', [
+        { text: 'OK', onPress: () => navigation.navigate('Login') }
+      ]);
+    } catch (error: any) {
+      Alert.alert('Signup Error', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -105,9 +151,14 @@ export default function SignupScreen({ navigation }: any) {
 
         <TouchableOpacity 
           style={styles.createBtn}
-          onPress={() => navigation.navigate('OTPVerification', { fromSignup: true })}
+          onPress={handleSignup}
+          disabled={loading}
         >
-          <Text style={styles.createText}>Create Account</Text>
+          {loading ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <Text style={styles.createText}>Create Account</Text>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity 

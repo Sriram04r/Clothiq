@@ -38,7 +38,7 @@ import { useContext } from 'react';
 const Stack = createNativeStackNavigator();
 
 function RootNavigator() {
-  const { user, initializing } = useContext(AuthContext);
+  const { user, initializing, wasLoggedIn } = useContext(AuthContext);
 
   if (initializing) {
     return null; // Don't render until auth state is loaded
@@ -71,7 +71,7 @@ function RootNavigator() {
         </>
       ) : (
         <>
-          <Stack.Screen name="Splash" component={SplashScreen} />
+          {!wasLoggedIn && <Stack.Screen name="Splash" component={SplashScreen} />}
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Signup" component={SignupScreen} />
           <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />

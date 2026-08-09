@@ -1,10 +1,78 @@
-import React, { useState, useRef } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, TextInput, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, TextInput, Image, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Smartphone, ShieldCheck } from 'lucide-react-native';
+import { ChevronLeft } from 'lucide-react-native';
+import { getAuth, EmailAuthProvider } from '@react-native-firebase/auth';
+import { getFirestore, doc, setDoc } from '@react-native-firebase/firestore';
 
-export default function OTPVerificationScreen({ navigation }: any) {
-  const [otp, setOtp] = useState(['9', '6', '3', '1', '5', '2']); // Default populated as per Figma
+export default function OTPVerificationScreen({ route, navigation }: any) {
+  const [otp, setOtp] = useState(['', '', '', '', '', '']); // Empty by default
+  const [loading, setLoading] = useState(false);
+  const [confirm, setConfirm] = useState<any>(null);
+
+  // Read params passed from Signup
+  const { fullName, email, phone, password } = route.params || {};
+
+  useEffect(() => {
+    if (phone) {
+      sendOTP(phone);
+    }
+  }, [phone]);
+
+  const sendOTP = async (phoneNumber: string) => {
+    try {
+      const auth = getAuth();
+      const confirmation = await auth.signInWithPhoneNumber(phoneNumber);
+      setConfirm(confirmation);
+    } catch (error: any) {
+      Alert.alert('Error sending OTP', error.message);
+    }
+  };
+
+  const handleVerify = async () => {
+    const otpCode = otp.join('');
+    if (otpCode.length < 6) {
+      Alert.alert('Error', 'Please enter a valid 6-digit OTP');
+      return;
+    }
+    if (!confirm) {
+      Alert.alert('Error', 'Please wait for the OTP to be sent.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // 1. Verify the OTP (This logs the user in via Phone)
+      const userCredential = await confirm.confirm(otpCode);
+      const user = userCredential?.user;
+
+      if (user && email && password) {
+        // 2. Link Email & Password to the phone account
+        const auth = getAuth();
+        const credential = EmailAuthProvider.credential(email, password);
+        await user.linkWithCredential(credential);
+
+        // 3. Save extra details to Firestore
+        const db = getFirestore();
+        await setDoc(doc(db, 'users', user.uid), {
+          fullName,
+          email,
+          phone,
+          createdAt: new Date().toISOString(),
+        });
+
+        // 4. Sign out and go to Login page
+        await auth.signOut();
+        Alert.alert('Success', 'Account created successfully! Please login.', [
+          { text: 'OK', onPress: () => navigation.replace('Login') }
+        ]);
+      }
+    } catch (error: any) {
+      Alert.alert('Verification Failed', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -15,7 +83,7 @@ export default function OTPVerificationScreen({ navigation }: any) {
         <View style={styles.headerTitleContainer}>
           <Text style={styles.headerTitle}>Verify Your Number</Text>
           <Text style={styles.headerSubtitle}>Enter the 6-digit code sent to</Text>
-          <Text style={styles.phoneNumber}>+919666394628</Text>
+          <Text style={styles.phoneNumber}>{phone || '+919666394628'}</Text>
         </View>
       </View>
 
@@ -52,9 +120,14 @@ export default function OTPVerificationScreen({ navigation }: any) {
       <View style={styles.bottomContainer}>
         <TouchableOpacity 
           style={styles.verifyBtn}
-          onPress={() => navigation.navigate('ResetPassword')}
+          onPress={handleVerify}
+          disabled={loading}
         >
-          <Text style={styles.verifyText}>Verify OTP</Text>
+          {loading ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <Text style={styles.verifyText}>Verify OTP</Text>
+          )}
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.changeMobileBtn}

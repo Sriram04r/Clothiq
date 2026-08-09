@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Eye, EyeOff } from 'lucide-react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
+import { getAuth, signInWithEmailAndPassword } from '@react-native-firebase/auth';
 
 const GoogleIcon = () => (
   <Svg width="24" height="24" viewBox="0 0 24 24">
@@ -16,6 +17,26 @@ const GoogleIcon = () => (
 
 export default function LoginScreen({ navigation }: any) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please enter both email and password');
+      return;
+    }
+    setLoading(true);
+    try {
+      const auth = getAuth();
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+      // Navigation is handled automatically by AuthContext
+    } catch (error: any) {
+      Alert.alert('Login Failed', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -40,9 +61,11 @@ export default function LoginScreen({ navigation }: any) {
               <Text style={styles.label}>Email</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Enter your mail"
-                keyboardType="phone-pad"
-                defaultValue="+91 9666394628"
+                placeholder="Enter your email"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
               />
             </View>
 
@@ -53,7 +76,8 @@ export default function LoginScreen({ navigation }: any) {
                   style={styles.passwordInput}
                   placeholder="*************"
                   secureTextEntry={!isPasswordVisible}
-                  defaultValue="password123"
+                  value={password}
+                  onChangeText={setPassword}
                 />
                 <TouchableOpacity
                   style={styles.eyeIcon}
@@ -73,10 +97,15 @@ export default function LoginScreen({ navigation }: any) {
 
             <TouchableOpacity
               style={styles.loginButton}
-              onPress={() => navigation.navigate('Home')}
+              onPress={handleLogin}
               activeOpacity={0.8}
+              disabled={loading}
             >
-              <Text style={styles.loginButtonText}>Login</Text>
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.loginButtonText}>Login</Text>
+              )}
             </TouchableOpacity>
           </View>
 

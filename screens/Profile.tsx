@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, ChevronRight, User, Package, MapPin, CreditCard, Tag, HelpCircle, Settings, Home, ClipboardList, Bell, LayoutGrid } from 'lucide-react-native';
+import { getAuth, signOut } from '@react-native-firebase/auth';
 
 const menuItems = [
   { id: '1', title: 'My Orders', icon: Package, screen: 'OrderHistory' },
@@ -13,6 +14,16 @@ const menuItems = [
 ];
 
 export default function ProfileScreen({ navigation }: any) {
+  const handleLogout = async () => {
+    try {
+      const auth = getAuth();
+      await signOut(auth);
+      // Navigation happens automatically via AuthContext
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -65,7 +76,7 @@ export default function ProfileScreen({ navigation }: any) {
           })}
         </View>
 
-        <TouchableOpacity style={styles.logoutBtn} onPress={() => navigation.navigate('Login')}>
+        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
 
