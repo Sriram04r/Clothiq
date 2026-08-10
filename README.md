@@ -8,3 +8,4 @@ Clothiq is a smart laundry service mobile application that allows users to sched
 * Delivery (Fast/Free)
 * Recommendations about fabric usage
   much more.
+stay tuned 
