@@ -1,14 +1,73 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, ChevronDown, User } from 'lucide-react-native';
+import { getAuth } from '@react-native-firebase/auth';
+import { getFirestore, doc, getDoc, setDoc } from '@react-native-firebase/firestore';
 
 export default function EditProfileScreen({ navigation }: any) {
-  const [fullName, setFullName] = useState('Sriram Kola');
-  const [email, setEmail] = useState('sriramkola153@gmail.com');
-  const [phone, setPhone] = useState('+919666394628');
-  const [dob, setDob] = useState('04 April 2005');
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [dob, setDob] = useState('');
   const [gender, setGender] = useState('Male');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (user) {
+        setFullName(user.displayName || '');
+        setEmail(user.email || '');
+        setPhone(user.phoneNumber || '');
+
+        try {
+          const db = getFirestore();
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists) {
+            const data = userDoc.data();
+            setFullName(data?.fullName || user.displayName || '');
+            setPhone(data?.phone || user.phoneNumber || '');
+            setDob(data?.dob || '');
+            setGender(data?.gender || 'Male');
+          }
+        } catch (error) {
+          console.error('Error fetching user doc:', error);
+        }
+      }
+      setLoading(false);
+    };
+    fetchUserData();
+  }, []);
+
+  const handleSave = async () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) return;
+
+    setSaving(true);
+    try {
+      const db = getFirestore();
+      await setDoc(doc(db, 'users', user.uid), {
+        fullName,
+        email,
+        phone,
+        dob,
+        gender
+      }, { merge: true });
+      
+      Alert.alert('Success', 'Profile updated successfully!', [
+        { text: 'OK', onPress: () => navigation.goBack() }
+      ]);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      Alert.alert('Error', 'Failed to update profile. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -88,9 +147,14 @@ export default function EditProfileScreen({ navigation }: any) {
       <View style={styles.bottomContainer}>
         <TouchableOpacity 
           style={styles.saveBtn}
-          onPress={() => navigation.goBack()}
+          onPress={handleSave}
+          disabled={saving}
         >
-          <Text style={styles.saveBtnText}>Save Changes</Text>
+          {saving ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <Text style={styles.saveBtnText}>Save Changes</Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>

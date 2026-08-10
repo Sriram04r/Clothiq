@@ -4,7 +4,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Eye, EyeOff } from 'lucide-react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
-import { getAuth, signInWithEmailAndPassword } from '@react-native-firebase/auth';
+import { getAuth, signInWithEmailAndPassword, signInWithCredential, GoogleAuthProvider } from '@react-native-firebase/auth';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+
+GoogleSignin.configure({
+  webClientId: '930212381030-t1tg6a36ciu6n5220polmkaug00n3tug.apps.googleusercontent.com',
+});
 
 const GoogleIcon = () => (
   <Svg width="24" height="24" viewBox="0 0 24 24">
@@ -35,6 +40,27 @@ export default function LoginScreen({ navigation }: any) {
       Alert.alert('Login Failed', error.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      const signInResult = await GoogleSignin.signIn();
+      
+      let idToken = signInResult.data?.idToken || (signInResult as any).idToken;
+      
+      if (!idToken) {
+        throw new Error('No ID token found');
+      }
+
+      const googleCredential = GoogleAuthProvider.credential(idToken);
+      const auth = getAuth();
+      await signInWithCredential(auth, googleCredential);
+      
+    } catch (error: any) {
+      console.log('Google Sign-In Error:', error);
+      Alert.alert('Google Sign-In Failed', 'Please check your Web Client ID configuration.');
     }
   };
 
@@ -116,7 +142,7 @@ export default function LoginScreen({ navigation }: any) {
           </View>
 
           <View style={styles.socialContainer}>
-            <TouchableOpacity style={styles.socialButton}>
+            <TouchableOpacity style={styles.socialButton} onPress={handleGoogleLogin}>
               <GoogleIcon />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialButton}>

@@ -49,9 +49,7 @@ export default function SignupScreen({ navigation }: any) {
       // 3. Immediately sign out so they have to manually log in!
       await signOut(auth);
 
-      Alert.alert('Success', 'Account created! Please log in.', [
-        { text: 'OK', onPress: () => navigation.navigate('Login') }
-      ]);
+      Alert.alert('Success', 'Account created! Please log in.');
     } catch (error: any) {
       Alert.alert('Signup Error', error.message);
     } finally {

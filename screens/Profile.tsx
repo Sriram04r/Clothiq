@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, ChevronRight, User, Package, MapPin, CreditCard, Tag, HelpCircle, Settings, Home, ClipboardList, Bell, LayoutGrid } from 'lucide-react-native';
 import { getAuth, signOut } from '@react-native-firebase/auth';
+import { getFirestore, doc, getDoc } from '@react-native-firebase/firestore';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 const menuItems = [
   { id: '1', title: 'My Orders', icon: Package, screen: 'OrderHistory' },
@@ -14,10 +16,53 @@ const menuItems = [
 ];
 
 export default function ProfileScreen({ navigation }: any) {
+  const [userData, setUserData] = useState({
+    name: 'Loading...',
+    phone: '',
+    email: 'Loading...'
+  });
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (user) {
+        // 1. Default to Google Sign-In profile info if it exists
+        let name = user.displayName || 'App User';
+        let email = user.email || '';
+        let phone = user.phoneNumber || 'Add your phone number';
+
+        try {
+          // 2. Check if they have a Firestore document from Email Signup
+          const db = getFirestore();
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists) {
+            const data = userDoc.data();
+            name = data?.fullName || name;
+            phone = data?.phone || phone;
+          }
+        } catch (error) {
+          console.error('Error fetching user doc:', error);
+        }
+
+        setUserData({ name, email, phone });
+      }
+    };
+    fetchUserData();
+  }, []);
+
   const handleLogout = async () => {
     try {
       const auth = getAuth();
       await signOut(auth);
+      
+      // Also sign out of Google so the account picker shows up next time!
+      try {
+        await GoogleSignin.signOut();
+      } catch (e) {
+        // Ignore if they didn't sign in with Google
+      }
+
       // Navigation happens automatically via AuthContext
     } catch (error) {
       console.error('Logout error:', error);
@@ -45,9 +90,9 @@ export default function ProfileScreen({ navigation }: any) {
             </View>
           </View>
           <View style={styles.profileInfo}>
-            <Text style={styles.name}>Sriram kola</Text>
-            <Text style={styles.phone}>9666394628</Text>
-            <Text style={styles.email}>sriramkola153@gmail.com</Text>
+            <Text style={styles.name}>{userData.name}</Text>
+            <Text style={styles.phone}>{userData.phone}</Text>
+            <Text style={styles.email}>{userData.email}</Text>
           </View>
           <TouchableOpacity style={styles.editBtn} onPress={() => navigation.navigate('EditProfile')}>
             <Text style={styles.editText}>Edit</Text>
