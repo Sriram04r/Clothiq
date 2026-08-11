@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, Image } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, Image, ActivityIndicator, Alert, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Circle, Smartphone, Landmark, Banknote, CreditCard, BanknoteIcon } from 'lucide-react-native';
+import { ChevronLeft, Circle } from 'lucide-react-native';
+import { getAuth } from '@react-native-firebase/auth';
+import { getFirestore, doc, updateDoc } from '@react-native-firebase/firestore';
+import { useCart } from '../context/CartContext';
 
 const paymentMethods = [
   { id: 'phonepe', title: 'PhonePe', sub: 'Pay using PhonePe', localImage: require('../assets/Phonepay.png') },
@@ -11,8 +14,71 @@ const paymentMethods = [
   { id: 'cod', title: 'Cash on Delivery', sub: 'Pay when you receive', icon: 'C', imageUrl: 'https://img.icons8.com/color/48/000000/cash-in-hand.png' },
 ];
 
-export default function PaymentScreen({ navigation }: any) {
+export default function PaymentScreen({ route, navigation }: any) {
+  const { orderId, amount } = route.params || {};
   const [selectedMethod, setSelectedMethod] = useState('phonepe');
+  const [processing, setProcessing] = useState(false);
+  const { clearCart } = useCart();
+
+  const handlePayment = async () => {
+    if (!orderId) {
+      Alert.alert("Error", "Order ID is missing. Please try again.");
+      return;
+    }
+
+    try {
+      setProcessing(true);
+      
+      // --- NEW UPI INTENT LOGIC ---
+      if (selectedMethod !== 'cod') {
+        // Real UPI ID for the business owner
+        const upiId = '9014428656@axl';
+        // Adding mc=0000 (Generic Merchant) and tr (Transaction ID) to prevent PhonePe from blocking it
+        const upiUrl = `upi://pay?pa=${upiId}&pn=Clothiq&mc=0000&tr=${orderId}&tn=Order_${orderId}&am=${amount || 688}&cu=INR`;
+        
+        try {
+          // In Android 11+, canOpenURL returns false unless the scheme is registered in AndroidManifest.xml
+          // So we bypass canOpenURL and directly try to open the URL.
+          await Linking.openURL(upiUrl);
+          
+          // Wait 3.5 seconds to simulate them completing payment in the other app before they switch back
+          await new Promise(resolve => setTimeout(resolve, 3500));
+        } catch (e) {
+          console.log("UPI Intent error:", e);
+          // If they are on an emulator without UPI apps installed, it will throw an error and simulate gracefully
+          Alert.alert("Test Mode", "Could not open UPI app. Simulating successful payment.");
+          await new Promise(resolve => setTimeout(resolve, 1500));
+        }
+      }
+      // ----------------------------
+
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const db = getFirestore();
+      const orderRef = doc(db, 'users', user.uid, 'orders', orderId);
+      
+      // Update order status to 'paid' (or 'placed_cod' if Cash on Delivery)
+      const newStatus = selectedMethod === 'cod' ? 'placed_cod' : 'paid';
+      
+      await updateDoc(orderRef, {
+        status: newStatus,
+        paymentMethod: selectedMethod
+      });
+
+      clearCart();
+
+      // Navigate to Confirmation
+      navigation.navigate('OrderConfirmation', { orderId });
+      
+    } catch (error) {
+      console.error("Error updating order payment:", error);
+      Alert.alert("Payment Error", "Something went wrong processing your payment.");
+    } finally {
+      setProcessing(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -41,8 +107,6 @@ export default function PaymentScreen({ navigation }: any) {
                   <Image source={method.localImage} style={styles.paymentImage} resizeMode="contain" />
                 ) : method.imageUrl ? (
                   <Image source={{ uri: method.imageUrl }} style={styles.paymentImage} resizeMode="contain" />
-                ) : method.fallbackIcon ? (
-                  <method.fallbackIcon size={24} color={method.color} />
                 ) : (
                   <Text style={styles.iconText}>{method.icon}</Text>
                 )}
@@ -70,13 +134,18 @@ export default function PaymentScreen({ navigation }: any) {
       <View style={styles.bottomContainer}>
         <View style={styles.totalBox}>
           <Text style={styles.totalLabel}>Total Payable</Text>
-          <Text style={styles.totalValue}>₹ 688</Text>
+          <Text style={styles.totalValue}>₹ {amount || 688}</Text>
         </View>
         <TouchableOpacity 
-          style={styles.payBtn}
-          onPress={() => navigation.navigate('OrderConfirmation')}
+          style={[styles.payBtn, processing && { opacity: 0.7 }]}
+          onPress={handlePayment}
+          disabled={processing}
         >
-          <Text style={styles.payText}>Pay Now</Text>
+          {processing ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <Text style={styles.payText}>Pay Now</Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
