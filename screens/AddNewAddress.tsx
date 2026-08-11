@@ -1,17 +1,70 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, TextInput } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Circle, CircleDot } from 'lucide-react-native';
+import { getAuth } from '@react-native-firebase/auth';
+import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc, doc } from '@react-native-firebase/firestore';
 
 export default function AddNewAddressScreen({ navigation }: any) {
   const [addressType, setAddressType] = useState('Home');
-  const [fullName, setFullName] = useState('Sriram Kola');
-  const [phone, setPhone] = useState('+919666394628');
-  const [houseNo, setHouseNo] = useState('4-81 , Old Court');
-  const [area, setArea] = useState('Sri krishna Devaraya Nagar');
-  const [city, setCity] = useState('Kothapeta');
-  const [pinCode, setPinCode] = useState('500001');
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [houseNo, setHouseNo] = useState('');
+  const [area, setArea] = useState('');
+  const [city, setCity] = useState('');
+  const [pinCode, setPinCode] = useState('');
   const [isDefault, setIsDefault] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!fullName || !phone || !houseNo || !area || !city || !pinCode) {
+      Alert.alert('Error', 'Please fill all the fields');
+      return;
+    }
+
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) return;
+
+    setSaving(true);
+    try {
+      const db = getFirestore();
+      const addressesRef = collection(db, 'users', user.uid, 'addresses');
+
+      // If this is set as default, remove default from all others
+      if (isDefault) {
+        const q = query(addressesRef, where('isDefault', '==', true));
+        const querySnapshot = await getDocs(q);
+        const updatePromises = querySnapshot.docs.map(addressDoc => 
+          updateDoc(doc(db, 'users', user.uid, 'addresses', addressDoc.id), {
+            isDefault: false
+          })
+        );
+        await Promise.all(updatePromises);
+      }
+
+      await addDoc(addressesRef, {
+        type: addressType,
+        fullName,
+        phone,
+        houseNo,
+        area,
+        city,
+        pinCode,
+        isDefault,
+        createdAt: serverTimestamp(),
+      });
+
+      Alert.alert('Success', 'Address added successfully!', [
+        { text: 'OK', onPress: () => navigation.goBack() }
+      ]);
+    } catch (error) {
+      console.error('Error adding address:', error);
+      Alert.alert('Error', 'Failed to add address');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -96,9 +149,14 @@ export default function AddNewAddressScreen({ navigation }: any) {
       <View style={styles.bottomContainer}>
         <TouchableOpacity 
           style={styles.saveBtn}
-          onPress={() => navigation.goBack()}
+          onPress={handleSave}
+          disabled={saving}
         >
-          <Text style={styles.saveBtnText}>Save Address</Text>
+          {saving ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <Text style={styles.saveBtnText}>Save Address</Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>

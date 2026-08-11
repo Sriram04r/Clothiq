@@ -1,47 +1,60 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, CircleDot, Building2, Home } from 'lucide-react-native';
-
-const savedAddresses = [
-  {
-    id: '1',
-    type: 'Home',
-    isDefault: true,
-    address1: 'Sri KrishnaDevaraya Nagar',
-    address2: 'Kothapeta-533223',
-    icon: 'home-default'
-  },
-  {
-    id: '2',
-    type: 'Office',
-    isDefault: false,
-    address1: 'Tech park, 4th Floor',
-    address2: 'Hyderabad-500001',
-    icon: 'office'
-  },
-  {
-    id: '3',
-    type: 'Parents Home',
-    isDefault: false,
-    address1: 'Lane 6, MVP Colony,',
-    address2: 'Vishakapatnam-533017',
-    icon: 'home'
-  }
-];
+import { ChevronLeft, CircleDot, Building2, Home, MapPin } from 'lucide-react-native';
+import { getAuth } from '@react-native-firebase/auth';
+import { getFirestore, collection, onSnapshot, query, orderBy } from '@react-native-firebase/firestore';
 
 export default function SavedAddressesScreen({ navigation }: any) {
-  
-  const renderIcon = (type: string) => {
-    switch (type) {
-      case 'home-default':
-        return <CircleDot size={24} color="#111" strokeWidth={2.5} />;
+  const [addresses, setAddresses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    const db = getFirestore();
+    const addressesRef = collection(db, 'users', user.uid, 'addresses');
+    const q = query(addressesRef, orderBy('createdAt', 'desc'));
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const fetchedAddresses = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      // Sort so default is always first
+      fetchedAddresses.sort((a: any, b: any) => {
+        if (a.isDefault) return -1;
+        if (b.isDefault) return 1;
+        return 0;
+      });
+
+      setAddresses(fetchedAddresses);
+      setLoading(false);
+    }, (error) => {
+      console.error('Error fetching addresses:', error);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const renderIcon = (type: string, isDefault: boolean) => {
+    if (isDefault) return <CircleDot size={24} color="#1C158A" strokeWidth={2.5} />;
+    
+    switch (type?.toLowerCase()) {
+      case 'work':
       case 'office':
         return <Building2 size={24} color="#2DD4BF" />;
       case 'home':
         return <Home size={24} color="#10B981" />;
       default:
-        return <Home size={24} color="#666" />;
+        return <MapPin size={24} color="#666" />;
     }
   };
 
@@ -59,25 +72,31 @@ export default function SavedAddressesScreen({ navigation }: any) {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
         <View style={styles.listContainer}>
-          {savedAddresses.map((addr, index) => (
-            <View key={addr.id} style={styles.addressCard}>
-              <View style={styles.cardLeft}>
-                <View style={styles.iconContainer}>
-                  {renderIcon(addr.icon)}
+          {loading ? (
+            <ActivityIndicator size="large" color="#1C158A" style={{ marginTop: 40 }} />
+          ) : addresses.length === 0 ? (
+            <Text style={{ textAlign: 'center', marginTop: 40, color: '#666' }}>No saved addresses yet.</Text>
+          ) : (
+            addresses.map((addr, index) => (
+              <View key={addr.id} style={styles.addressCard}>
+                <View style={styles.cardLeft}>
+                  <View style={styles.iconContainer}>
+                    {renderIcon(addr.type, addr.isDefault)}
+                  </View>
+                  <View>
+                    <Text style={styles.addressType}>
+                      {addr.type} {addr.isDefault && <Text style={styles.defaultText}>(Default)</Text>}
+                    </Text>
+                    <Text style={styles.addressText}>{addr.houseNo}, {addr.area}</Text>
+                    <Text style={styles.addressText}>{addr.city}-{addr.pinCode}</Text>
+                  </View>
                 </View>
-                <View>
-                  <Text style={styles.addressType}>
-                    {addr.type} {addr.isDefault && <Text style={styles.defaultText}>(Default)</Text>}
-                  </Text>
-                  <Text style={styles.addressText}>{addr.address1}</Text>
-                  <Text style={styles.addressText}>{addr.address2}</Text>
-                </View>
+                <TouchableOpacity style={styles.editBtn} onPress={() => navigation.navigate('AddNewAddress')}>
+                  <Text style={styles.editText}>Edit</Text>
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity style={styles.editBtn} onPress={() => navigation.navigate('AddNewAddress')}>
-                <Text style={styles.editText}>Edit</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
+            ))
+          )}
         </View>
 
       </ScrollView>
