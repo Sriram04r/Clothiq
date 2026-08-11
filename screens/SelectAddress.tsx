@@ -1,31 +1,56 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Plus, Circle, CheckCircle2 } from 'lucide-react-native';
-
-const addresses = [
-  {
-    id: 'home',
-    title: 'Home',
-    line1: 'Sri KrishnaDevaraya Nagar',
-    line2: 'Kothapeta-533223',
-  },
-  {
-    id: 'office',
-    title: 'Office',
-    line1: 'Tech park, 4th floor',
-    line2: 'Hyderabad-500001',
-  },
-  {
-    id: 'parents',
-    title: 'Parents Home',
-    line1: 'Lane 6, MVP Colony',
-    line2: 'Vishakapatnam-530017',
-  },
-];
+import { getAuth } from '@react-native-firebase/auth';
+import { getFirestore, collection, onSnapshot, query, orderBy } from '@react-native-firebase/firestore';
 
 export default function SelectAddressScreen({ navigation }: any) {
-  const [selectedId, setSelectedId] = useState('home');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [addresses, setAddresses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    const db = getFirestore();
+    const addressesRef = collection(db, 'users', user.uid, 'addresses');
+    const q = query(addressesRef, orderBy('createdAt', 'desc'));
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const fetchedAddresses = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      // Sort so default is always first
+      fetchedAddresses.sort((a: any, b: any) => {
+        if (a.isDefault) return -1;
+        if (b.isDefault) return 1;
+        return 0;
+      });
+
+      setAddresses(fetchedAddresses);
+      
+      // Auto-select the default address if we don't have one selected yet
+      if (fetchedAddresses.length > 0 && !selectedId) {
+        const defaultAddr = fetchedAddresses.find(a => a.isDefault) || fetchedAddresses[0];
+        setSelectedId(defaultAddr.id);
+      }
+      
+      setLoading(false);
+    }, (error) => {
+      console.error('Error fetching addresses:', error);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [selectedId]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -40,37 +65,45 @@ export default function SelectAddressScreen({ navigation }: any) {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {addresses.map((address) => {
-          const isSelected = selectedId === address.id;
-          return (
-            <TouchableOpacity 
-              key={address.id} 
-              style={[styles.addressCard, isSelected && styles.addressCardSelected]}
-              onPress={() => setSelectedId(address.id)}
-              activeOpacity={0.8}
-            >
-              <View style={styles.radioContainer}>
-                {isSelected ? (
-                  <CheckCircle2 size={24} color="#111" />
-                ) : (
-                  <Circle size={24} color="#666" />
-                )}
-              </View>
-              <View style={styles.addressDetails}>
-                <View style={styles.titleRow}>
-                  <Text style={styles.addressTitle}>{address.title}</Text>
-                  {isSelected && address.id === 'home' && (
-                    <TouchableOpacity onPress={() => navigation.navigate('AddNewAddress')}>
-                      <Text style={styles.editText}>Edit</Text>
-                    </TouchableOpacity>
+        {loading ? (
+          <ActivityIndicator size="large" color="#000080" style={{ marginTop: 40 }} />
+        ) : addresses.length === 0 ? (
+          <Text style={{ textAlign: 'center', marginTop: 40, color: '#666' }}>No saved addresses yet.</Text>
+        ) : (
+          addresses.map((address) => {
+            const isSelected = selectedId === address.id;
+            return (
+              <TouchableOpacity 
+                key={address.id} 
+                style={[styles.addressCard, isSelected && styles.addressCardSelected]}
+                onPress={() => setSelectedId(address.id)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.radioContainer}>
+                  {isSelected ? (
+                    <CheckCircle2 size={24} color="#111" />
+                  ) : (
+                    <Circle size={24} color="#666" />
                   )}
                 </View>
-                <Text style={styles.addressLine}>{address.line1}</Text>
-                <Text style={styles.addressLine}>{address.line2}</Text>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
+                <View style={styles.addressDetails}>
+                  <View style={styles.titleRow}>
+                    <Text style={styles.addressTitle}>
+                      {address.type} {address.isDefault && <Text style={{fontSize: 12, color: '#666', fontWeight: '400'}}>(Default)</Text>}
+                    </Text>
+                    {isSelected && (
+                      <TouchableOpacity onPress={() => navigation.navigate('AddNewAddress')}>
+                        <Text style={styles.editText}>Edit</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  <Text style={styles.addressLine}>{address.houseNo}, {address.area}</Text>
+                  <Text style={styles.addressLine}>{address.city}-{address.pinCode}</Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })
+        )}
 
         <TouchableOpacity style={styles.addAddressBtn} onPress={() => navigation.navigate('AddNewAddress')}>
           <Plus size={20} color="#2945FF" />
@@ -80,8 +113,9 @@ export default function SelectAddressScreen({ navigation }: any) {
 
       <View style={styles.bottomContainer}>
         <TouchableOpacity 
-          style={styles.continueBtn}
-          onPress={() => navigation.navigate('PickupDelivery')}
+          style={[styles.continueBtn, !selectedId && { opacity: 0.5 }]}
+          onPress={() => selectedId && navigation.navigate('PickupDelivery', { selectedAddressId: selectedId })}
+          disabled={!selectedId}
         >
           <Text style={styles.continueText}>Continue</Text>
         </TouchableOpacity>
