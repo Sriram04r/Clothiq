@@ -1,9 +1,102 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Shirt, Truck, FastForward } from 'lucide-react-native';
+import { ChevronLeft, Shirt, Truck, FastForward, MapPin } from 'lucide-react-native';
+import { getAuth } from '@react-native-firebase/auth';
+import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp } from '@react-native-firebase/firestore';
 
-export default function OrderSummaryScreen({ navigation }: any) {
+export default function OrderSummaryScreen({ route, navigation }: any) {
+  const { selectedAddressId, pickupDate, pickupTime, deliveryOption } = route.params || {};
+
+  const [address, setAddress] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [savingOrder, setSavingOrder] = useState(false);
+
+  // Mock cart data (in a real app, this would come from a global store/context)
+  const cartSubtotal = 660; 
+  const totalItems = 5;
+  const couponDiscount = 30;
+  
+  // Calculate pricing
+  const deliveryFee = deliveryOption === 'express' ? 50 : 0;
+  const preTaxTotal = cartSubtotal + deliveryFee - couponDiscount;
+  const gst = Math.round(preTaxTotal * 0.05);
+  const finalTotal = preTaxTotal + gst;
+
+  useEffect(() => {
+    const fetchAddress = async () => {
+      if (!selectedAddressId) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const auth = getAuth();
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const db = getFirestore();
+        const docRef = doc(db, 'users', user.uid, 'addresses', selectedAddressId);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          setAddress({ id: docSnap.id, ...docSnap.data() });
+        }
+      } catch (error) {
+        console.error("Error fetching address:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchAddress();
+  }, [selectedAddressId]);
+
+  const handlePlaceOrder = async () => {
+    try {
+      setSavingOrder(true);
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const db = getFirestore();
+      
+      // Save order to Firestore
+      const orderData = {
+        userId: user.uid,
+        status: 'pending_payment',
+        shippingAddress: address,
+        pickupSchedule: {
+          date: pickupDate,
+          time: pickupTime,
+        },
+        deliveryOption,
+        pricing: {
+          subtotal: cartSubtotal,
+          deliveryFee,
+          discount: couponDiscount,
+          gst,
+          total: finalTotal
+        },
+        itemsCount: totalItems,
+        createdAt: serverTimestamp(),
+      };
+
+      const orderRef = await addDoc(collection(db, 'users', user.uid, 'orders'), orderData);
+      
+      // Navigate to Payment with the new Order ID
+      navigation.navigate('Payment', { orderId: orderRef.id, amount: finalTotal });
+      
+    } catch (error) {
+      console.error("Error saving order:", error);
+      Alert.alert("Error", "Could not process your order. Please try again.");
+    } finally {
+      setSavingOrder(false);
+    }
+  };
+
+  // Format the date for display (assuming pickupDate is an ISO string)
+  const displayDate = pickupDate ? new Date(pickupDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) : 'Unknown Date';
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -16,75 +109,100 @@ export default function OrderSummaryScreen({ navigation }: any) {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
-        {/* Billing Details Box */}
-        <View style={styles.billingBox}>
-          <View style={styles.billingRow}>
-            <Text style={styles.billingLabel}>Pickup & Delivery</Text>
-            <Text style={styles.billingValue}>₹ 40</Text>
-          </View>
-          <View style={styles.billingRow}>
-            <Text style={styles.billingLabel}>Coupon Discount <Text style={styles.couponText}>(FRESH20)</Text></Text>
-            <Text style={styles.discountValue}>- ₹ 30</Text>
-          </View>
-          <View style={styles.billingRow}>
-            <Text style={styles.billingLabel}>GST (5%)</Text>
-            <Text style={styles.billingValue}>₹ 18</Text>
-          </View>
+      {loading ? (
+        <ActivityIndicator size="large" color="#1C158A" style={{ marginTop: 40 }} />
+      ) : (
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          <View style={styles.divider} />
-          
-          <View style={styles.billingRow}>
-            <Text style={styles.totalLabel}>Total Amount</Text>
-            <Text style={styles.totalValue}>₹ 688</Text>
-          </View>
-        </View>
-
-        <Text style={styles.sectionTitle}>Your Order</Text>
-
-        {/* Order Details Box */}
-        <View style={styles.orderBox}>
-          
-          <View style={styles.orderRow}>
-            <View style={styles.iconBox}>
-              <Shirt size={20} color="#111" />
+          {/* Billing Details Box */}
+          <View style={styles.billingBox}>
+            <View style={styles.billingRow}>
+              <Text style={styles.billingLabel}>Cart Subtotal</Text>
+              <Text style={styles.billingValue}>₹ {cartSubtotal}</Text>
             </View>
-            <View style={styles.orderTextContainer}>
-              <Text style={styles.orderTitle}>5 Items</Text>
-              <Text style={styles.orderSubtitle}>Wash & Fold</Text>
+            <View style={styles.billingRow}>
+              <Text style={styles.billingLabel}>Pickup & Delivery</Text>
+              <Text style={styles.billingValue}>{deliveryFee === 0 ? 'FREE' : `₹ ${deliveryFee}`}</Text>
             </View>
-          </View>
-
-          <View style={styles.orderRow}>
-            <View style={styles.iconBox}>
-              <Truck size={20} color="#111" />
+            <View style={styles.billingRow}>
+              <Text style={styles.billingLabel}>Coupon Discount <Text style={styles.couponText}>(FRESH20)</Text></Text>
+              <Text style={styles.discountValue}>- ₹ {couponDiscount}</Text>
             </View>
-            <View style={styles.orderTextContainer}>
-              <Text style={styles.orderTitle}>Pickup</Text>
-              <Text style={styles.orderSubtitle}>15 May, 11 AM - 1 PM</Text>
+            <View style={styles.billingRow}>
+              <Text style={styles.billingLabel}>GST (5%)</Text>
+              <Text style={styles.billingValue}>₹ {gst}</Text>
+            </View>
+            
+            <View style={styles.divider} />
+            
+            <View style={styles.billingRow}>
+              <Text style={styles.totalLabel}>Total Amount</Text>
+              <Text style={styles.totalValue}>₹ {finalTotal}</Text>
             </View>
           </View>
 
-          <View style={[styles.orderRow, { borderBottomWidth: 0, paddingBottom: 0 }]}>
-            <View style={styles.iconBox}>
-              <FastForward size={20} color="#111" />
-            </View>
-            <View style={styles.orderTextContainer}>
-              <Text style={styles.orderTitle}>Delivery</Text>
-              <Text style={styles.orderSubtitle}>Standard (2 Days)</Text>
-            </View>
-          </View>
+          <Text style={styles.sectionTitle}>Your Order</Text>
 
-        </View>
-      </ScrollView>
+          {/* Order Details Box */}
+          <View style={styles.orderBox}>
+            
+            <View style={styles.orderRow}>
+              <View style={styles.iconBox}>
+                <Shirt size={20} color="#111" />
+              </View>
+              <View style={styles.orderTextContainer}>
+                <Text style={styles.orderTitle}>{totalItems} Items</Text>
+                <Text style={styles.orderSubtitle}>Wash & Fold</Text>
+              </View>
+            </View>
+
+            <View style={styles.orderRow}>
+              <View style={styles.iconBox}>
+                <Truck size={20} color="#111" />
+              </View>
+              <View style={styles.orderTextContainer}>
+                <Text style={styles.orderTitle}>Pickup</Text>
+                <Text style={styles.orderSubtitle}>{displayDate}, {pickupTime}</Text>
+              </View>
+            </View>
+
+            <View style={styles.orderRow}>
+              <View style={styles.iconBox}>
+                <FastForward size={20} color="#111" />
+              </View>
+              <View style={styles.orderTextContainer}>
+                <Text style={styles.orderTitle}>Delivery</Text>
+                <Text style={styles.orderSubtitle}>{deliveryOption === 'express' ? 'Express (24 Hours)' : 'Standard (2 Days)'}</Text>
+              </View>
+            </View>
+            
+            <View style={[styles.orderRow, { borderBottomWidth: 0, paddingBottom: 0 }]}>
+              <View style={styles.iconBox}>
+                <MapPin size={20} color="#111" />
+              </View>
+              <View style={styles.orderTextContainer}>
+                <Text style={styles.orderTitle}>Shipping To</Text>
+                <Text style={styles.orderSubtitle}>
+                  {address ? `${address.type}: ${address.houseNo}, ${address.area}` : 'Address not found'}
+                </Text>
+              </View>
+            </View>
+
+          </View>
+        </ScrollView>
+      )}
 
       <View style={styles.bottomContainer}>
         <TouchableOpacity 
-          style={styles.proceedBtn}
-          onPress={() => navigation.navigate('Payment')}
+          style={[styles.proceedBtn, savingOrder && { opacity: 0.7 }]}
+          onPress={handlePlaceOrder}
+          disabled={savingOrder || loading}
         >
-          <Text style={styles.proceedText}>Proceed to payment</Text>
+          {savingOrder ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <Text style={styles.proceedText}>Place Order (₹ {finalTotal})</Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
