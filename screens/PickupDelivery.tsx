@@ -1,14 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Circle, CheckCircle2 } from 'lucide-react-native';
-
-const dates = [
-  { id: '1', label: 'Today', subLabel: '14 May' },
-  { id: '2', label: 'Tomorrow', subLabel: '15 May' },
-  { id: '3', label: 'Friday', subLabel: '16 May' },
-  { id: '4', label: 'Saturday', subLabel: '17 May' },
-];
 
 const timeSlots = [
   '9 AM – 11 AM', '11 AM – 1 PM',
@@ -16,10 +9,41 @@ const timeSlots = [
   '5 PM – 7 PM'
 ];
 
-export default function PickupDeliveryScreen({ navigation }: any) {
-  const [selectedDate, setSelectedDate] = useState('2');
-  const [selectedTime, setSelectedTime] = useState('11 AM – 1 PM');
+export default function PickupDeliveryScreen({ route, navigation }: any) {
+  // Grab the address passed from the previous screen
+  const { selectedAddressId } = route.params || {};
+
+  // Dynamically generate the next 4 days for scheduling
+  const dates = useMemo(() => {
+    const today = new Date();
+    const options = [];
+    for (let i = 0; i < 4; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      
+      let label = '';
+      if (i === 0) label = 'Today';
+      else if (i === 1) label = 'Tomorrow';
+      else label = d.toLocaleDateString('en-US', { weekday: 'short' });
+      
+      const subLabel = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+      options.push({ id: d.toISOString(), label, subLabel });
+    }
+    return options;
+  }, []);
+
+  const [selectedDate, setSelectedDate] = useState(dates[0].id);
+  const [selectedTime, setSelectedTime] = useState(timeSlots[0]);
   const [deliveryOption, setDeliveryOption] = useState('standard');
+
+  const handleContinue = () => {
+    navigation.navigate('OrderSummary', {
+      selectedAddressId,
+      pickupDate: selectedDate,
+      pickupTime: selectedTime,
+      deliveryOption
+    });
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -110,7 +134,7 @@ export default function PickupDeliveryScreen({ navigation }: any) {
       <View style={styles.bottomContainer}>
         <TouchableOpacity 
           style={styles.continueBtn}
-          onPress={() => navigation.navigate('OrderSummary')}
+          onPress={handleContinue}
         >
           <Text style={styles.continueText}>Continue</Text>
         </TouchableOpacity>
