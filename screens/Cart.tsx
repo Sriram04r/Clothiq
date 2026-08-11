@@ -2,20 +2,11 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Trash2 } from 'lucide-react-native';
-
-const cartItems = [
-  { id: '1', name: 'Jeans', price: 60, qty: 2, icon: '👖', color: '#EEF2FF' },
-  { id: '2', name: 'Trousers', price: 40, qty: 2, icon: '🩳', color: '#F0FDF4' },
-  { id: '3', name: 'Shirt', price: 30, qty: 3, icon: '👕', color: '#F0F9FF' },
-  { id: '4', name: 'T-Shirt', price: 25, qty: 2, icon: '👕', color: '#ECFDF5' },
-  { id: '5', name: 'Towel', price: 60, qty: 4, icon: '🧻', color: '#F8FAFC' },
-  { id: '6', name: 'Blanket', price: 80, qty: 1, icon: '🛌', color: '#F7FEE7' },
-];
+import { useCart } from '../context/CartContext';
 
 export default function CartScreen({ navigation }: any) {
-  const subTotal = 660; // Hardcoded based on screenshot for prototype
-  const pickupDelivery = 40;
-  const total = 700;
+  const { items, subTotal, total, removeItem } = useCart();
+  const pickupDelivery = items.length > 0 ? 40 : 0;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -30,27 +21,33 @@ export default function CartScreen({ navigation }: any) {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {cartItems.map((item) => (
-          <View key={item.id} style={styles.itemCard}>
-            <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
-              <Text style={styles.emojiIcon}>{item.icon}</Text>
-            </View>
-            
-            <View style={styles.itemDetails}>
-              <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.itemSubDetail}>
-                ₹ {item.price}   <Text style={styles.qtyText}>Qty:{item.qty}</Text>
-              </Text>
-            </View>
-
-            <View style={styles.itemActions}>
-              <Text style={styles.itemTotal}>₹ {item.price * item.qty}</Text>
-              <TouchableOpacity style={styles.trashBtn}>
-                <Trash2 size={20} color="#FF3B30" />
-              </TouchableOpacity>
-            </View>
+        {items.length === 0 ? (
+          <View style={{ alignItems: 'center', marginTop: 40 }}>
+            <Text style={{ fontSize: 16, color: '#666' }}>Your cart is empty.</Text>
           </View>
-        ))}
+        ) : (
+          items.map((item) => (
+            <View key={item.id} style={styles.itemCard}>
+              <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
+                <Text style={styles.emojiIcon}>{item.icon}</Text>
+              </View>
+              
+              <View style={styles.itemDetails}>
+                <Text style={styles.itemName}>{item.name}</Text>
+                <Text style={styles.itemSubDetail}>
+                  ₹ {item.price}   <Text style={styles.qtyText}>Qty:{item.qty}</Text>
+                </Text>
+              </View>
+
+              <View style={styles.itemActions}>
+                <Text style={styles.itemTotal}>₹ {item.price * item.qty}</Text>
+                <TouchableOpacity style={styles.trashBtn} onPress={() => removeItem(item.id)}>
+                  <Trash2 size={20} color="#FF3B30" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))
+        )}
       </ScrollView>
 
       <View style={styles.summaryContainer}>
@@ -68,8 +65,9 @@ export default function CartScreen({ navigation }: any) {
         </View>
 
         <TouchableOpacity 
-          style={styles.proceedBtn}
-          onPress={() => navigation.navigate('SelectAddress')}
+          style={[styles.proceedBtn, items.length === 0 && { opacity: 0.5 }]}
+          onPress={() => items.length > 0 && navigation.navigate('SelectAddress')}
+          disabled={items.length === 0}
         >
           <Text style={styles.proceedText}>Proceed</Text>
         </TouchableOpacity>

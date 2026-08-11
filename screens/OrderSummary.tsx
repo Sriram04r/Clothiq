@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Shirt, Truck, FastForward, MapPin } from 'lucide-react-native';
 import { getAuth } from '@react-native-firebase/auth';
 import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp } from '@react-native-firebase/firestore';
+import { useCart } from '../context/CartContext';
 
 export default function OrderSummaryScreen({ route, navigation }: any) {
   const { selectedAddressId, pickupDate, pickupTime, deliveryOption } = route.params || {};
@@ -12,14 +13,15 @@ export default function OrderSummaryScreen({ route, navigation }: any) {
   const [loading, setLoading] = useState(true);
   const [savingOrder, setSavingOrder] = useState(false);
 
-  // Mock cart data (in a real app, this would come from a global store/context)
-  const cartSubtotal = 660; 
-  const totalItems = 5;
+  const { items, subTotal, clearCart } = useCart();
+  const totalItems = items.reduce((sum, item) => sum + item.qty, 0);
   const couponDiscount = 30;
   
   // Calculate pricing
-  const deliveryFee = deliveryOption === 'express' ? 50 : 0;
-  const preTaxTotal = cartSubtotal + deliveryFee - couponDiscount;
+  const baseDelivery = subTotal > 0 ? 40 : 0;
+  const expressFee = deliveryOption === 'express' ? 50 : 0;
+  const totalDeliveryFee = baseDelivery + expressFee;
+  const preTaxTotal = Math.max(0, subTotal + totalDeliveryFee - couponDiscount);
   const gst = Math.round(preTaxTotal * 0.05);
   const finalTotal = preTaxTotal + gst;
 
@@ -71,13 +73,14 @@ export default function OrderSummaryScreen({ route, navigation }: any) {
         },
         deliveryOption,
         pricing: {
-          subtotal: cartSubtotal,
-          deliveryFee,
+          subtotal: subTotal,
+          deliveryFee: totalDeliveryFee,
           discount: couponDiscount,
           gst,
           total: finalTotal
         },
         itemsCount: totalItems,
+        items: items,
         createdAt: serverTimestamp(),
       };
 
@@ -118,11 +121,11 @@ export default function OrderSummaryScreen({ route, navigation }: any) {
           <View style={styles.billingBox}>
             <View style={styles.billingRow}>
               <Text style={styles.billingLabel}>Cart Subtotal</Text>
-              <Text style={styles.billingValue}>₹ {cartSubtotal}</Text>
+              <Text style={styles.billingValue}>₹ {subTotal}</Text>
             </View>
             <View style={styles.billingRow}>
-              <Text style={styles.billingLabel}>Pickup & Delivery</Text>
-              <Text style={styles.billingValue}>{deliveryFee === 0 ? 'FREE' : `₹ ${deliveryFee}`}</Text>
+              <Text style={styles.billingLabel}>Pickup & Delivery {deliveryOption === 'express' && '(Express)'}</Text>
+              <Text style={styles.billingValue}>{totalDeliveryFee === 0 ? 'FREE' : `₹ ${totalDeliveryFee}`}</Text>
             </View>
             <View style={styles.billingRow}>
               <Text style={styles.billingLabel}>Coupon Discount <Text style={styles.couponText}>(FRESH20)</Text></Text>

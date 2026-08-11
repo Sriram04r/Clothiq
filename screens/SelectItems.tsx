@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Plus, Minus } from 'lucide-react-native';
+import { useCart } from '../context/CartContext';
 
 const itemsData = [
   { id: '1', name: 'Jeans', price: 60, icon: '👖', color: '#EEF2FF' },
@@ -13,25 +14,7 @@ const itemsData = [
 ];
 
 export default function SelectItemsScreen({ navigation }: any) {
-  const [quantities, setQuantities] = useState<Record<string, number>>({
-    '1': 2,
-    '2': 1,
-    '3': 1,
-    '4': 0,
-    '5': 1,
-    '6': 3,
-  });
-
-  const updateQuantity = (id: string, delta: number) => {
-    setQuantities(prev => ({
-      ...prev,
-      [id]: Math.max(0, (prev[id] || 0) + delta)
-    }));
-  };
-
-  const totalAmount = itemsData.reduce((sum, item) => {
-    return sum + (item.price * (quantities[item.id] || 0));
-  }, 0);
+  const { updateQuantityOrAdd, getItemQuantity, subTotal } = useCart();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -46,33 +29,36 @@ export default function SelectItemsScreen({ navigation }: any) {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {itemsData.map((item) => (
-          <View key={item.id} style={styles.itemCard}>
-            <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
-              <Text style={styles.emojiIcon}>{item.icon}</Text>
-            </View>
-            
-            <View style={styles.itemDetails}>
-              <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.itemPrice}>₹ {item.price}</Text>
-            </View>
+        {itemsData.map((item) => {
+          const qty = getItemQuantity(item.id);
+          return (
+            <View key={item.id} style={styles.itemCard}>
+              <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
+                <Text style={styles.emojiIcon}>{item.icon}</Text>
+              </View>
+              
+              <View style={styles.itemDetails}>
+                <Text style={styles.itemName}>{item.name}</Text>
+                <Text style={styles.itemPrice}>₹ {item.price}</Text>
+              </View>
 
-            <View style={styles.quantityContainer}>
-              <TouchableOpacity style={styles.quantityBtn} onPress={() => updateQuantity(item.id, -1)}>
-                <Minus size={16} color="#111" />
-              </TouchableOpacity>
-              <Text style={styles.quantityText}>{quantities[item.id] || 0}</Text>
-              <TouchableOpacity style={styles.quantityBtn} onPress={() => updateQuantity(item.id, 1)}>
-                <Plus size={16} color="#111" />
-              </TouchableOpacity>
+              <View style={styles.quantityContainer}>
+                <TouchableOpacity style={styles.quantityBtn} onPress={() => updateQuantityOrAdd(item, -1)}>
+                  <Minus size={16} color="#111" />
+                </TouchableOpacity>
+                <Text style={styles.quantityText}>{qty}</Text>
+                <TouchableOpacity style={styles.quantityBtn} onPress={() => updateQuantityOrAdd(item, 1)}>
+                  <Plus size={16} color="#111" />
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        ))}
+          );
+        })}
       </ScrollView>
 
       {/* Sticky Bottom Cart Bar */}
       <View style={styles.bottomBar}>
-        <Text style={styles.totalText}>Total: ₹{totalAmount}</Text>
+        <Text style={styles.totalText}>Total: ₹{subTotal}</Text>
         <TouchableOpacity 
           style={styles.viewCartBtn}
           onPress={() => navigation.navigate('Cart')}

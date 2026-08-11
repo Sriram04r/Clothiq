@@ -38,6 +38,7 @@ import AddNewAddressScreen from './screens/AddNewAddress';
 import NotificationsScreen from './screens/Notifications';
 
 import { AuthProvider, AuthContext } from './context/AuthContext';
+import { CartProvider } from './context/CartContext';
 import { useContext } from 'react';
 
 const Stack = createNativeStackNavigator();
@@ -92,10 +93,12 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <NavigationContainer>
-          <StatusBar style="dark" />
-          <RootNavigator />
-        </NavigationContainer>
+        <CartProvider>
+          <NavigationContainer>
+            <StatusBar style="dark" />
+            <RootNavigator />
+          </NavigationContainer>
+        </CartProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );
