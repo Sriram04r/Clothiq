@@ -1,9 +1,74 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Truck, MapPin, ReceiptText } from 'lucide-react-native';
+import { getAuth } from '@react-native-firebase/auth';
+import { getFirestore, doc, getDoc } from '@react-native-firebase/firestore';
 
-export default function OrderDetailsScreen({ navigation }: any) {
+export default function OrderDetailsScreen({ route, navigation }: any) {
+  const { orderId } = route.params || {};
+  const [order, setOrder] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchOrder = async () => {
+      if (!orderId) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const auth = getAuth();
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const db = getFirestore();
+        const docRef = doc(db, 'users', user.uid, 'orders', orderId);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          setOrder({ id: docSnap.id, ...docSnap.data() });
+        }
+      } catch (error) {
+        console.error("Error fetching order details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchOrder();
+  }, [orderId]);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+         <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <ChevronLeft size={24} color="#111" />
+          </TouchableOpacity>
+        </View>
+        <ActivityIndicator size="large" color="#1C158A" style={{ marginTop: 40 }} />
+      </SafeAreaView>
+    );
+  }
+
+  if (!order) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <ChevronLeft size={24} color="#111" />
+          </TouchableOpacity>
+        </View>
+        <Text style={{ textAlign: 'center', marginTop: 40, fontSize: 16 }}>Order not found.</Text>
+      </SafeAreaView>
+    );
+  }
+
+  const { pricing, shippingAddress, itemsCount, pickupSchedule, deliveryOption } = order;
+  const displayDate = pickupSchedule?.date 
+    ? new Date(pickupSchedule.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) 
+    : 'Unknown Date';
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -17,7 +82,7 @@ export default function OrderDetailsScreen({ navigation }: any) {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
-        <Text style={styles.orderIdText}>Order ID: FW123456</Text>
+        <Text style={styles.orderIdText}>Order ID: FW{orderId?.substring(0, 6).toUpperCase()}</Text>
         
         <Text style={styles.sectionTitle}>Order Items</Text>
         
@@ -29,11 +94,11 @@ export default function OrderDetailsScreen({ navigation }: any) {
                 <ReceiptText size={20} color="#111" />
               </View>
               <View>
-                <Text style={styles.itemTitle}>5 items</Text>
+                <Text style={styles.itemTitle}>{itemsCount || 0} items</Text>
                 <Text style={styles.itemSubtitle}>Wash & Fold</Text>
               </View>
             </View>
-            <Text style={styles.itemPrice}>₹688</Text>
+            <Text style={styles.itemPrice}>₹{pricing?.subtotal || 0}</Text>
           </View>
 
           <View style={styles.receiptItem}>
@@ -42,26 +107,26 @@ export default function OrderDetailsScreen({ navigation }: any) {
                 <Truck size={20} color="#111" />
               </View>
               <View>
-                <Text style={styles.itemTitle}>Pickup & Delivery</Text>
-                <Text style={styles.itemSubtitle}>17 May 2025, 10:15 AM</Text>
+                <Text style={styles.itemTitle}>Pickup & Delivery {deliveryOption === 'express' && '(Express)'}</Text>
+                <Text style={styles.itemSubtitle}>{displayDate}, {pickupSchedule?.time || ''}</Text>
               </View>
             </View>
-            <Text style={styles.itemPrice}>₹40</Text>
+            <Text style={styles.itemPrice}>₹{pricing?.deliveryFee || 0}</Text>
           </View>
 
           <View style={styles.receiptItemRow}>
             <Text style={styles.receiptRowLabel}>Coupon Discount (FRESH20)</Text>
-            <Text style={styles.receiptRowValueRed}>- ₹30</Text>
+            <Text style={styles.receiptRowValueRed}>- ₹{pricing?.discount || 0}</Text>
           </View>
 
           <View style={styles.receiptItemRow}>
             <Text style={styles.receiptRowLabel}>GST (5%)</Text>
-            <Text style={styles.receiptRowValue}>₹18</Text>
+            <Text style={styles.receiptRowValue}>₹{pricing?.gst || 0}</Text>
           </View>
 
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Total Amount</Text>
-            <Text style={styles.totalValue}>₹716</Text>
+            <Text style={styles.totalValue}>₹{pricing?.total || 0}</Text>
           </View>
           
         </View>
@@ -71,9 +136,9 @@ export default function OrderDetailsScreen({ navigation }: any) {
         <View style={styles.addressCard}>
           <MapPin size={24} color="#1C158A" style={styles.addressIcon} />
           <View>
-            <Text style={styles.addressTitle}>Home</Text>
-            <Text style={styles.addressText}>Sri KrishnaDevaraya Nagar</Text>
-            <Text style={styles.addressText}>Kothapeta-533223</Text>
+            <Text style={styles.addressTitle}>{shippingAddress?.type || 'Home'}</Text>
+            <Text style={styles.addressText}>{shippingAddress?.houseNo ? `${shippingAddress.houseNo}, ` : ''}{shippingAddress?.area || 'Address not found'}</Text>
+            <Text style={styles.addressText}>{shippingAddress?.pincode ? `Pincode: ${shippingAddress.pincode}` : ''}</Text>
           </View>
         </View>
 

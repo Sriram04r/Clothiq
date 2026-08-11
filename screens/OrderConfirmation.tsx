@@ -1,9 +1,69 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Check, Truck, Package, Banknote } from 'lucide-react-native';
+import { getAuth } from '@react-native-firebase/auth';
+import { getFirestore, doc, getDoc } from '@react-native-firebase/firestore';
 
-export default function OrderConfirmationScreen({ navigation }: any) {
+export default function OrderConfirmationScreen({ route, navigation }: any) {
+  const { orderId } = route.params || {};
+  const [order, setOrder] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchOrder = async () => {
+      if (!orderId) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const auth = getAuth();
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const db = getFirestore();
+        const docRef = doc(db, 'users', user.uid, 'orders', orderId);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          setOrder({ id: docSnap.id, ...docSnap.data() });
+        }
+      } catch (error) {
+        console.error("Error fetching order confirmation:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchOrder();
+  }, [orderId]);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#1C158A" />
+      </SafeAreaView>
+    );
+  }
+
+  // Derive display values from the order data
+  const displayOrderId = order ? `FW${order.id.substring(0, 6).toUpperCase()}` : 'FW123456';
+  const phoneNumber = order?.shippingAddress?.phone || 'Unknown';
+  
+  // Calculate pickup string
+  const pickupDateRaw = order?.pickupSchedule?.date;
+  const pickupDateStr = pickupDateRaw ? new Date(pickupDateRaw).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Unknown Date';
+  const pickupTimeStr = order?.pickupSchedule?.time || 'Unknown Time';
+
+  // Calculate delivery date (Standard = +2 days, Express = +1 day)
+  let deliveryDateStr = 'Unknown Date';
+  if (pickupDateRaw) {
+    const dDate = new Date(pickupDateRaw);
+    const daysToAdd = order?.deliveryOption === 'express' ? 1 : 2;
+    dDate.setDate(dDate.getDate() + daysToAdd);
+    deliveryDateStr = dDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -23,12 +83,12 @@ export default function OrderConfirmationScreen({ navigation }: any) {
         {/* Order ID Box */}
         <View style={styles.orderIdBox}>
           <Text style={styles.orderIdLabel}>Order ID</Text>
-          <Text style={styles.orderIdValue}>FW123456</Text>
+          <Text style={styles.orderIdValue}>{displayOrderId}</Text>
         </View>
 
         {/* Timeline Box */}
         <View style={styles.timelineBox}>
-          {/* Item 1 */}
+          {/* Pickup Item */}
           <View style={styles.timelineRow}>
             <View style={styles.timelineIconWrapper}>
               <View style={[styles.timelineIcon, { backgroundColor: '#FDF0F6', borderColor: '#FDF0F6' }]}>
@@ -38,11 +98,11 @@ export default function OrderConfirmationScreen({ navigation }: any) {
             </View>
             <View style={styles.timelineContent}>
               <Text style={styles.timelineTitle}>Pickup</Text>
-              <Text style={styles.timelineSub}>15 May 2026, 11 AM - 1 PM</Text>
+              <Text style={styles.timelineSub}>{pickupDateStr}, {pickupTimeStr}</Text>
             </View>
           </View>
 
-          {/* Item 2 */}
+          {/* Delivery Item */}
           <View style={styles.timelineRow}>
             <View style={styles.timelineIconWrapper}>
               <View style={[styles.timelineIcon, { backgroundColor: '#FDF0F6', borderColor: '#FDF0F6' }]}>
@@ -52,11 +112,11 @@ export default function OrderConfirmationScreen({ navigation }: any) {
             </View>
             <View style={styles.timelineContent}>
               <Text style={styles.timelineTitle}>Delivery</Text>
-              <Text style={styles.timelineSub}>17 May, 2026</Text>
+              <Text style={styles.timelineSub}>{deliveryDateStr}</Text>
             </View>
           </View>
 
-          {/* Item 3 */}
+          {/* Payment Item */}
           <View style={[styles.timelineRow, { paddingBottom: 0 }]}>
             <View style={styles.timelineIconWrapper}>
               <View style={[styles.timelineIcon, { backgroundColor: '#F0FDF4', borderColor: '#F0FDF4' }]}>
@@ -64,14 +124,14 @@ export default function OrderConfirmationScreen({ navigation }: any) {
               </View>
             </View>
             <View style={[styles.timelineContent, { paddingBottom: 0 }]}>
-              <Text style={styles.timelineTitle}>Delivery</Text>
-              <Text style={styles.timelineSub}>17 May, 2026</Text>
+              <Text style={styles.timelineTitle}>Payment</Text>
+              <Text style={styles.timelineSub}>{order?.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Paid Online'}</Text>
             </View>
           </View>
         </View>
 
         <Text style={styles.smsText}>We have sent the details to your mobile</Text>
-        <Text style={styles.phoneText}>9666394628</Text>
+        <Text style={styles.phoneText}>{phoneNumber}</Text>
 
       </ScrollView>
 

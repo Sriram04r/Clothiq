@@ -1,78 +1,111 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Gift, Shirt, XCircle } from 'lucide-react-native';
-
-const orders = [
-  {
-    id: 'FW123456',
-    date: '17 May 2025 - 12:10 PM',
-    status: 'Delivered',
-    price: '₹688',
-    iconType: 'gift',
-  },
-  {
-    id: 'FW123455',
-    date: '10 May 2025 - 11:30 PM',
-    status: 'In Progress',
-    price: '₹430',
-    iconType: 'shirt',
-  },
-  {
-    id: 'FW123454',
-    date: '05 May 2025 - 9:00 AM',
-    status: 'Delivered',
-    price: '₹199',
-    iconType: 'shirt', // Using shirt for both clothes orders
-  },
-  {
-    id: 'FW123453',
-    date: '25 May 2025 - 9:39 AM',
-    status: 'Cancelled',
-    price: '₹127',
-    iconType: 'cancel',
-  },
-];
+import { ChevronLeft, Gift, Shirt, XCircle, Truck, Package } from 'lucide-react-native';
+import { getAuth } from '@react-native-firebase/auth';
+import { getFirestore, collection, query, orderBy, onSnapshot } from '@react-native-firebase/firestore';
 
 export default function OrderHistoryScreen({ navigation }: any) {
   const [activeTab, setActiveTab] = useState('All');
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const renderIcon = (type: string) => {
-    switch(type) {
-      case 'gift':
-        return (
-          <View style={[styles.iconBox, { backgroundColor: '#EEF2FF' }]}>
-            <Gift size={24} color="#6366F1" />
-          </View>
-        );
-      case 'shirt':
-        return (
-          <View style={[styles.iconBox, { backgroundColor: '#ECFDF5' }]}>
-            <Shirt size={24} color="#10B981" />
-          </View>
-        );
-      case 'cancel':
-        return (
-          <View style={[styles.iconBox, { backgroundColor: '#FEF2F2' }]}>
-            <XCircle size={24} color="#EF4444" />
-          </View>
-        );
-      default:
-        return (
-          <View style={[styles.iconBox, { backgroundColor: '#EEF2FF' }]}>
-            <Shirt size={24} color="#6366F1" />
-          </View>
-        );
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    const db = getFirestore();
+    const q = query(
+      collection(db, 'users', user.uid, 'orders'),
+      orderBy('createdAt', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const fetchedOrders: any[] = [];
+      querySnapshot.forEach((doc) => {
+        fetchedOrders.push({ id: doc.id, ...doc.data() });
+      });
+      setOrders(fetchedOrders);
+      setLoading(false);
+    }, (error) => {
+      console.error("Error fetching orders:", error);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Filter orders based on active tab
+  const filteredOrders = orders.filter(order => {
+    if (activeTab === 'All') return true;
+    
+    const status = order.status || '';
+    if (activeTab === 'Completed') {
+      return status === 'delivered';
+    } else if (activeTab === 'In Progress') {
+      return status !== 'delivered' && status !== 'cancelled';
+    } else if (activeTab === 'Cancelled') {
+      return status === 'cancelled';
+    }
+    return true;
+  });
+
+  const getStatusDisplay = (status: string) => {
+    switch(status) {
+      case 'pending_payment': return 'Pending Payment';
+      case 'paid': return 'Paid (Pending Pickup)';
+      case 'placed_cod': return 'Placed (COD)';
+      case 'washing': return 'Washing';
+      case 'out_for_delivery': return 'Out for Delivery';
+      case 'delivered': return 'Delivered';
+      case 'cancelled': return 'Cancelled';
+      default: return 'In Progress';
+    }
+  };
+
+  const renderIcon = (status: string) => {
+    if (status === 'delivered') {
+      return (
+        <View style={[styles.iconBox, { backgroundColor: '#ECFDF5' }]}>
+          <Gift size={24} color="#10B981" />
+        </View>
+      );
+    } else if (status === 'cancelled') {
+      return (
+        <View style={[styles.iconBox, { backgroundColor: '#FEF2F2' }]}>
+          <XCircle size={24} color="#EF4444" />
+        </View>
+      );
+    } else if (status === 'washing' || status === 'paid' || status === 'placed_cod') {
+      return (
+        <View style={[styles.iconBox, { backgroundColor: '#EEF2FF' }]}>
+          <Shirt size={24} color="#6366F1" />
+        </View>
+      );
+    } else {
+      return (
+        <View style={[styles.iconBox, { backgroundColor: '#FFFBEB' }]}>
+          <Truck size={24} color="#F59E0B" />
+        </View>
+      );
     }
   };
 
   const getStatusColor = (status: string) => {
-    switch(status) {
-      case 'Delivered': return '#10B981'; // Green
-      case 'In Progress': return '#3B82F6'; // Blue
-      case 'Cancelled': return '#EF4444'; // Red
-      default: return '#666';
-    }
+    if (status === 'delivered') return '#10B981'; // Green
+    if (status === 'cancelled') return '#EF4444'; // Red
+    return '#3B82F6'; // Blue for all in-progress states
+  };
+
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return 'Unknown Date';
+    // Firestore timestamp extraction
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) + ' - ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
@@ -101,28 +134,39 @@ export default function OrderHistoryScreen({ navigation }: any) {
         </ScrollView>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
-        {orders.map((order, index) => (
-          <TouchableOpacity 
-            key={index} 
-            style={styles.orderCard}
-            onPress={() => navigation.navigate('OrderDetails')}
-            activeOpacity={0.7}
-          >
-            {renderIcon(order.iconType)}
-            
-            <View style={styles.orderDetails}>
-              <Text style={styles.orderId}>Order #{order.id}</Text>
-              <Text style={styles.orderDate}>{order.date}</Text>
-              <Text style={[styles.orderStatus, { color: getStatusColor(order.status) }]}>{order.status}</Text>
+      {loading ? (
+        <ActivityIndicator size="large" color="#1C158A" style={{ marginTop: 40 }} />
+      ) : (
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          
+          {filteredOrders.length === 0 ? (
+            <View style={{ alignItems: 'center', marginTop: 60 }}>
+              <Package size={48} color="#D1D5DB" />
+              <Text style={{ marginTop: 16, fontSize: 16, color: '#6B7280', fontWeight: '500' }}>No orders found.</Text>
             </View>
-            
-            <Text style={styles.orderPrice}>{order.price}</Text>
-          </TouchableOpacity>
-        ))}
+          ) : (
+            filteredOrders.map((order) => (
+              <TouchableOpacity 
+                key={order.id} 
+                style={styles.orderCard}
+                onPress={() => navigation.navigate('OrderDetails', { orderId: order.id })}
+                activeOpacity={0.7}
+              >
+                {renderIcon(order.status)}
+                
+                <View style={styles.orderDetails}>
+                  <Text style={styles.orderId}>Order #FW{order.id.substring(0, 6).toUpperCase()}</Text>
+                  <Text style={styles.orderDate}>{formatDate(order.createdAt)}</Text>
+                  <Text style={[styles.orderStatus, { color: getStatusColor(order.status) }]}>{getStatusDisplay(order.status)}</Text>
+                </View>
+                
+                <Text style={styles.orderPrice}>₹{order.pricing?.total || 0}</Text>
+              </TouchableOpacity>
+            ))
+          )}
 
-      </ScrollView>
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
