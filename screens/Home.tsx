@@ -1,9 +1,79 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Home, ClipboardList, Bell, LayoutGrid, User } from 'lucide-react-native';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import { getAuth } from '@react-native-firebase/auth';
+import { getFirestore, doc, setDoc, getDoc } from '@react-native-firebase/firestore';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 export default function HomeScreen({ navigation }: any) {
+  const [userName, setUserName] = useState('App User');
+
+  useEffect(() => {
+    registerForPushNotificationsAsync().then(token => {
+      if (token) saveTokenToFirebase(token);
+    });
+    
+    // Also fetch real user name for greeting
+    const fetchUser = async () => {
+      const user = getAuth().currentUser;
+      if (user) {
+        setUserName(user.displayName || 'App User');
+        try {
+          const docSnap = await getDoc(doc(getFirestore(), 'users', user.uid));
+          if (docSnap.exists() && docSnap.data().fullName) {
+            setUserName(docSnap.data().fullName);
+          }
+        } catch(e) {}
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const saveTokenToFirebase = async (token: string) => {
+    const user = getAuth().currentUser;
+    if (user) {
+      await setDoc(doc(getFirestore(), 'users', user.uid), { pushToken: token }, { merge: true });
+    }
+  };
+
+  async function registerForPushNotificationsAsync() {
+    let token;
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+
+    if (Device.isDevice) {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== 'granted') {
+        return;
+      }
+      token = (await Notifications.getExpoPushTokenAsync({
+        projectId: 'clothiq-id' // Generic fallback since we aren't using EAS yet
+      })).data;
+    } 
+    return token;
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -11,7 +81,7 @@ export default function HomeScreen({ navigation }: any) {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>Hello, Sriram</Text>
+            <Text style={styles.greeting}>Hello, {userName.split(' ')[0]}</Text>
             <Text style={styles.subGreeting}>Let's get your laundry done!</Text>
           </View>
           <View style={styles.profileAvatar}>
