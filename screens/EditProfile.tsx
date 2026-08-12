@@ -13,6 +13,7 @@ export default function EditProfileScreen({ navigation }: any) {
   const [gender, setGender] = useState('Male');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showGenderDropdown, setShowGenderDropdown] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -133,10 +134,33 @@ export default function EditProfileScreen({ navigation }: any) {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Gender</Text>
-            <TouchableOpacity style={styles.dropdownInput} activeOpacity={0.7}>
+            <TouchableOpacity 
+              style={styles.dropdownInput} 
+              activeOpacity={0.7}
+              onPress={() => setShowGenderDropdown(!showGenderDropdown)}
+            >
               <Text style={styles.dropdownText}>{gender}</Text>
               <ChevronDown size={20} color="#6B7280" />
             </TouchableOpacity>
+            
+            {showGenderDropdown && (
+              <View style={styles.dropdownList}>
+                {['Male', 'Female', 'Prefer not to say'].map((item) => (
+                  <TouchableOpacity 
+                    key={item} 
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setGender(item);
+                      setShowGenderDropdown(false);
+                    }}
+                  >
+                    <Text style={[styles.dropdownItemText, gender === item && styles.dropdownItemTextSelected]}>
+                      {item}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </View>
 
         </View>
@@ -239,6 +263,28 @@ const styles = StyleSheet.create({
   dropdownText: {
     fontSize: 15,
     color: '#111',
+  },
+  dropdownList: {
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    backgroundColor: '#FFF',
+    overflow: 'hidden',
+  },
+  dropdownItem: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  dropdownItemText: {
+    fontSize: 15,
+    color: '#4B5563',
+  },
+  dropdownItemTextSelected: {
+    color: '#1C158A',
+    fontWeight: '600',
   },
   bottomContainer: {
     padding: 20,

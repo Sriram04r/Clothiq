@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, ChevronRight, User, Package, MapPin, CreditCard, Tag, HelpCircle, Settings, Home, ClipboardList, Bell, LayoutGrid } from 'lucide-react-native';
 import { getAuth, signOut } from '@react-native-firebase/auth';
-import { getFirestore, doc, getDoc } from '@react-native-firebase/firestore';
+import { getFirestore, doc, onSnapshot } from '@react-native-firebase/firestore';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 const menuItems = [
@@ -23,32 +23,28 @@ export default function ProfileScreen({ navigation }: any) {
   });
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const auth = getAuth();
-      const user = auth.currentUser;
-      if (user) {
-        // 1. Default to Google Sign-In profile info if it exists
-        let name = user.displayName || 'App User';
-        let email = user.email || '';
-        let phone = user.phoneNumber || 'Add your phone number';
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) return;
 
-        try {
-          // 2. Check if they have a Firestore document from Email Signup
-          const db = getFirestore();
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
-          if (userDoc.exists) {
-            const data = userDoc.data();
-            name = data?.fullName || name;
-            phone = data?.phone || phone;
-          }
-        } catch (error) {
-          console.error('Error fetching user doc:', error);
-        }
+    let name = user.displayName || 'App User';
+    let email = user.email || '';
+    let phone = user.phoneNumber || 'Add your phone number';
 
-        setUserData({ name, email, phone });
+    const db = getFirestore();
+    const unsubscribe = onSnapshot(doc(db, 'users', user.uid), (docSnap) => {
+      if (docSnap.exists) {
+        const data = docSnap.data();
+        name = data?.fullName || name;
+        phone = data?.phone || phone;
       }
-    };
-    fetchUserData();
+      setUserData({ name, email, phone });
+    }, (error) => {
+      console.error('Error fetching user doc:', error);
+      setUserData({ name, email, phone });
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const handleLogout = async () => {
@@ -109,7 +105,13 @@ export default function ProfileScreen({ navigation }: any) {
                 key={item.id} 
                 style={[styles.menuItem, isLast && { borderBottomWidth: 0 }]} 
                 activeOpacity={0.7}
-                onPress={() => item.screen && navigation.navigate(item.screen)}
+                onPress={() => {
+                  if (item.screen) {
+                    navigation.navigate(item.screen);
+                  } else {
+                    Alert.alert('Coming Soon', 'This feature is currently under development.');
+                  }
+                }}
               >
                 <View style={styles.menuIconBox}>
                   <Icon size={20} color={item.color || '#444'} />
