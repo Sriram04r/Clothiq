@@ -10,6 +10,7 @@ GoogleSignin.configure({
 });
 
 // Import Screens
+import OnboardingScreen from './screens/Onboarding';
 import SplashScreen from './screens/Splash';
 import LoginScreen from './screens/Login';
 import HomeScreen from './screens/Home';
@@ -44,7 +45,7 @@ import { useContext } from 'react';
 const Stack = createNativeStackNavigator();
 
 function RootNavigator() {
-  const { user, initializing, wasLoggedIn } = useContext(AuthContext);
+  const { user, initializing, wasLoggedIn, hasOnboarded } = useContext(AuthContext);
 
   if (initializing) {
     return null; // Don't render until auth state is loaded
@@ -77,12 +78,18 @@ function RootNavigator() {
         </>
       ) : (
         <>
-          {!wasLoggedIn && <Stack.Screen name="Splash" component={SplashScreen} />}
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Signup" component={SignupScreen} />
-          <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
-          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-          <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+          {!hasOnboarded ? (
+            <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+          ) : (
+            <>
+              {!wasLoggedIn && <Stack.Screen name="Splash" component={SplashScreen} />}
+              <Stack.Screen name="Login" component={LoginScreen} />
+              <Stack.Screen name="Signup" component={SignupScreen} />
+              <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
+              <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+              <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+            </>
+          )}
         </>
       )}
     </Stack.Navigator>
