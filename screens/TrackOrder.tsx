@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Check, Home, ClipboardList, Bell, LayoutGrid, User } from 'lucide-react-native';
 import { WebView } from 'react-native-webview';
 import * as Location from 'expo-location';
+import { getAuth } from '@react-native-firebase/auth';
+import { getFirestore, doc, onSnapshot } from '@react-native-firebase/firestore';
 
 const generateMapHtml = (sLat: number, sLng: number, cLat: number, cLng: number) => `
 <!DOCTYPE html>
@@ -75,20 +77,68 @@ const generateMapHtml = (sLat: number, sLng: number, cLat: number, cLng: number)
 </html>
 `;
 
-const timelineSteps = [
-  { id: '1', title: 'Order Placed', time: '15 May, 10:30 AM', status: 'completed' },
-  { id: '2', title: 'Pickup Completed', time: '15 May, 11:45 AM', status: 'completed' },
-  { id: '3', title: 'Washing in Progress', time: '15 May, 2:30 PM', status: 'active' },
-  { id: '4', title: 'Drying', time: '', status: 'pending' },
-  { id: '5', title: 'Ironing', time: '', status: 'pending' },
-  { id: '6', title: 'Quality Check', time: '', status: 'pending' },
-  { id: '7', title: 'Out for Delivery', time: '', status: 'pending' },
-  { id: '8', title: 'Delivered', time: '', status: 'pending' },
+const INITIAL_TIMELINE = [
+  { id: '1', title: 'Order Placed', time: '', status: 'pending', key: 'placed' },
+  { id: '2', title: 'Pickup Completed', time: '', status: 'pending', key: 'pickup' },
+  { id: '3', title: 'Washing in Progress', time: '', status: 'pending', key: 'washing' },
+  { id: '4', title: 'Drying & Ironing', time: '', status: 'pending', key: 'drying' },
+  { id: '5', title: 'Out for Delivery', time: '', status: 'pending', key: 'out_for_delivery' },
+  { id: '6', title: 'Delivered', time: '', status: 'pending', key: 'delivered' },
 ];
 
-export default function TrackOrderScreen({ navigation }: any) {
+export default function TrackOrderScreen({ route, navigation }: any) {
+  const { orderId } = route.params || {};
   const [mapActive, setMapActive] = useState(false);
   const [mapHtml, setMapHtml] = useState<string | null>(null);
+  const [order, setOrder] = useState<any>(null);
+  const [timeline, setTimeline] = useState(INITIAL_TIMELINE);
+
+  // Status progression map to determine which steps are done
+  const statusHierarchy = ['placed', 'placed_cod', 'paid', 'pickup', 'washing', 'drying', 'out_for_delivery', 'delivered'];
+  
+  useEffect(() => {
+    if (!orderId) return;
+    
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const db = getFirestore();
+    const orderRef = doc(db, 'users', user.uid, 'orders', orderId);
+    
+    const unsubscribe = onSnapshot(orderRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setOrder({ id: docSnap.id, ...data });
+        
+        // Update timeline based on current status
+        const currentStatus = data.status || 'placed';
+        
+        // Map backend status to our simplified timeline keys
+        let activeKey = 'placed';
+        if (currentStatus === 'paid' || currentStatus === 'placed_cod' || currentStatus === 'pending_payment') activeKey = 'placed';
+        else if (currentStatus === 'pickup') activeKey = 'pickup';
+        else if (currentStatus === 'washing') activeKey = 'washing';
+        else if (currentStatus === 'drying' || currentStatus === 'ironing') activeKey = 'drying';
+        else if (currentStatus === 'out_for_delivery') activeKey = 'out_for_delivery';
+        else if (currentStatus === 'delivered') activeKey = 'delivered';
+        
+        const activeIndex = INITIAL_TIMELINE.findIndex(s => s.key === activeKey);
+        
+        const updatedTimeline = INITIAL_TIMELINE.map((step, index) => {
+          let s = 'pending';
+          if (index < activeIndex) s = 'completed';
+          else if (index === activeIndex) s = currentStatus === 'delivered' ? 'completed' : 'active';
+          
+          return { ...step, status: s };
+        });
+        
+        setTimeline(updatedTimeline);
+      }
+    });
+    
+    return () => unsubscribe();
+  }, [orderId]);
 
   useEffect(() => {
     (async () => {
@@ -130,7 +180,7 @@ export default function TrackOrderScreen({ navigation }: any) {
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
           <Text style={styles.headerTitle}>Track your Order</Text>
-          <Text style={styles.headerSubtitle}>Order ID: FW123456</Text>
+          <Text style={styles.headerSubtitle}>Order ID: {orderId ? `FW${orderId.substring(0,6).toUpperCase()}` : 'FW123456'}</Text>
         </View>
       </View>
 
@@ -160,8 +210,8 @@ export default function TrackOrderScreen({ navigation }: any) {
         </View>
 
         <View style={styles.timelineContainer}>
-          {timelineSteps.map((step, index) => {
-            const isLast = index === timelineSteps.length - 1;
+          {timeline.map((step, index) => {
+            const isLast = index === timeline.length - 1;
             const isCompleted = step.status === 'completed';
             const isActive = step.status === 'active';
             
@@ -187,21 +237,14 @@ export default function TrackOrderScreen({ navigation }: any) {
                 </View>
                 
                 {/* Right side: Content */}
-                <TouchableOpacity 
-                  style={styles.contentColumn}
-                  onPress={() => {
-                    // Hidden shortcut to test delivery page
-                    if (isLast) navigation.navigate('DeliverySuccess');
-                  }}
-                  activeOpacity={0.8}
-                >
+                <View style={styles.contentColumn}>
                   <Text style={[
                     styles.stepTitle, 
                     isActive && styles.stepTitleActive,
                     step.status === 'pending' && styles.stepTitlePending
                   ]}>{step.title}</Text>
                   {step.time ? <Text style={styles.stepTime}>{step.time}</Text> : null}
-                </TouchableOpacity>
+                </View>
               </View>
             );
           })}

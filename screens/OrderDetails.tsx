@@ -151,7 +151,7 @@ export default function OrderDetailsScreen({ route, navigation }: any) {
         
         <TouchableOpacity 
           style={styles.trackBtn}
-          onPress={() => navigation.navigate('TrackOrder')}
+          onPress={() => navigation.navigate('TrackOrder', { orderId })}
         >
           <Text style={styles.trackBtnText}>Track Order</Text>
         </TouchableOpacity>

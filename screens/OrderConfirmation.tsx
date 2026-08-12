@@ -140,7 +140,7 @@ export default function OrderConfirmationScreen({ route, navigation }: any) {
       <View style={styles.bottomContainer}>
         <TouchableOpacity 
           style={styles.trackBtn}
-          onPress={() => navigation.navigate('TrackOrder')}
+          onPress={() => navigation.navigate('TrackOrder', { orderId })}
         >
           <Text style={styles.trackText}>Track Order</Text>
         </TouchableOpacity>
