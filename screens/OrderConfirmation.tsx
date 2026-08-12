@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Check, Truck, Package, Banknote } from 'lucide-react-native';
+import { Truck, Package, Banknote } from 'lucide-react-native';
+import LottieView from 'lottie-react-native';
 import { getAuth } from '@react-native-firebase/auth';
 import { getFirestore, doc, getDoc } from '@react-native-firebase/firestore';
 
@@ -70,11 +71,12 @@ export default function OrderConfirmationScreen({ route, navigation }: any) {
         
         {/* Success Icon */}
         <View style={styles.successIconContainer}>
-          <View style={styles.successIconBgOuter}>
-            <View style={styles.successIconBgInner}>
-              <Check size={40} color="#FFF" strokeWidth={3} />
-            </View>
-          </View>
+          <LottieView
+            source={require('../assets/success.json')}
+            autoPlay
+            loop={false}
+            style={{ width: 140, height: 140 }}
+          />
         </View>
 
         <Text style={styles.title}>Order Confirmed!</Text>

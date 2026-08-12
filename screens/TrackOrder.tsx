@@ -1,7 +1,79 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Check, Home, ClipboardList, Bell, LayoutGrid, User } from 'lucide-react-native';
+import { WebView } from 'react-native-webview';
+import * as Location from 'expo-location';
+
+const generateMapHtml = (sLat: number, sLng: number, cLat: number, cLng: number) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body { padding: 0; margin: 0; }
+        #map { width: 100%; height: 100vh; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        // Midpoint calculation
+        var midLat = (${sLat} + ${cLat}) / 2;
+        var midLng = (${sLng} + ${cLng}) / 2;
+
+        var map = L.map('map', { zoomControl: true }).setView([midLat, midLng], 14);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // Store Location (Home/Store icon)
+        var storeIcon = L.divIcon({
+            html: '<svg width="24" height="24" viewBox="0 0 24 24" fill="#1C158A" stroke="#FFF" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>',
+            className: '',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+        });
+        var storeMarker = L.marker([${sLat}, ${sLng}], {icon: storeIcon}).addTo(map);
+
+        // Customer Location (Pin icon)
+        var customerIcon = L.divIcon({
+            html: '<svg width="24" height="24" viewBox="0 0 24 24" fill="#FF3B30" stroke="#FFF" stroke-width="2"><circle cx="12" cy="10" r="3" fill="#FFF"></circle><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path></svg>',
+            className: '',
+            iconSize: [24, 24],
+            iconAnchor: [12, 24]
+        });
+        var customerMarker = L.marker([${cLat}, ${cLng}], {icon: customerIcon}).addTo(map);
+
+        // Draw Polyline Route
+        var latlngs = [
+            [${sLat}, ${sLng}],
+            [midLat, midLng],
+            [${cLat}, ${cLng}]
+        ];
+        var polyline = L.polyline(latlngs, {color: '#1C158A', weight: 4, dashArray: '10, 10'}).addTo(map);
+
+        // Fix missing tiles crash by relying on setView instead of fitBounds
+        
+        // Notify React Native when user touches map to lock scroll
+        document.getElementById('map').addEventListener('touchstart', function() {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'mapTouchStart' }));
+        }, { passive: true });
+        
+        document.getElementById('map').addEventListener('touchend', function() {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'mapTouchEnd' }));
+        }, { passive: true });
+        
+        document.getElementById('map').addEventListener('touchcancel', function() {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'mapTouchEnd' }));
+        }, { passive: true });
+    </script>
+</body>
+</html>
+`;
 
 const timelineSteps = [
   { id: '1', title: 'Order Placed', time: '15 May, 10:30 AM', status: 'completed' },
@@ -15,6 +87,41 @@ const timelineSteps = [
 ];
 
 export default function TrackOrderScreen({ navigation }: any) {
+  const [mapActive, setMapActive] = useState(false);
+  const [mapHtml, setMapHtml] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        // Fallback to New Delhi if permission denied
+        setMapHtml(generateMapHtml(28.6250, 77.2150, 28.6010, 77.1950));
+        return;
+      }
+      
+      let loc = await Location.getCurrentPositionAsync({});
+      const cLat = loc.coords.latitude;
+      const cLng = loc.coords.longitude;
+      
+      // Simulate store location slightly offset from customer
+      const sLat = cLat + 0.015;
+      const sLng = cLng + 0.015;
+      
+      setMapHtml(generateMapHtml(sLat, sLng, cLat, cLng));
+    })();
+  }, []);
+
+  const onWebViewMessage = (event: any) => {
+    try {
+      const data = JSON.parse(event.nativeEvent.data);
+      if (data.type === 'mapTouchStart') {
+        setMapActive(true);
+      } else if (data.type === 'mapTouchEnd') {
+        setMapActive(false);
+      }
+    } catch (e) {}
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -27,7 +134,31 @@ export default function TrackOrderScreen({ navigation }: any) {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+        scrollEnabled={!mapActive}
+      >
+        <View style={styles.mapContainer}>
+          {mapHtml ? (
+            <WebView
+              source={{ html: mapHtml }}
+              style={styles.map}
+              originWhitelist={['*']}
+              scrollEnabled={false}
+              bounces={false}
+              showsVerticalScrollIndicator={false}
+              showsHorizontalScrollIndicator={false}
+              javaScriptEnabled={true}
+              onMessage={onWebViewMessage}
+            />
+          ) : (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              <ActivityIndicator size="large" color="#1C158A" />
+            </View>
+          )}
+        </View>
+
         <View style={styles.timelineContainer}>
           {timelineSteps.map((step, index) => {
             const isLast = index === timelineSteps.length - 1;
@@ -135,9 +266,22 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   scrollContent: {
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
     paddingTop: 20,
-    paddingBottom: 100,
+    paddingBottom: 100, // padding for bottom nav
+  },
+  mapContainer: {
+    height: 250,
+    width: '100%',
+    backgroundColor: '#EAEAEA',
+    marginBottom: 24,
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#EFEFEF',
+  },
+  map: {
+    flex: 1,
   },
   timelineContainer: {
     width: '100%',

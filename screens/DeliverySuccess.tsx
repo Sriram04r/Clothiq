@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Check } from 'lucide-react-native';
+import LottieView from 'lottie-react-native';
 
 export default function DeliverySuccessScreen({ navigation }: any) {
   return (
@@ -10,7 +11,12 @@ export default function DeliverySuccessScreen({ navigation }: any) {
         
         {/* Delivery illustration from assets */}
         <View style={styles.graphicContainer}>
-          <Image source={require('../assets/Delivery.png')} style={styles.illustrationImage} resizeMode="contain" />
+          <LottieView
+            source={require('../assets/success.json')}
+            autoPlay
+            loop={false}
+            style={styles.illustrationImage}
+          />
         </View>
 
         <Text style={styles.title}>Delivered Successfully!</Text>
