@@ -1,10 +1,34 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, TextInput, Image } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, TextInput, Image, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Smartphone, ShieldAlert, Lock, User } from 'lucide-react-native';
+import { ChevronLeft, Mail, ShieldAlert, Lock, User } from 'lucide-react-native';
+import { getAuth, sendPasswordResetEmail } from '@react-native-firebase/auth';
 
 export default function ForgotPasswordScreen({ navigation }: any) {
-  const [phone, setPhone] = useState('+919666394628');
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleResetPassword = async () => {
+    if (!email) {
+      Alert.alert('Error', 'Please enter your email address');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const auth = getAuth();
+      await sendPasswordResetEmail(auth, email.trim());
+      Alert.alert(
+        'Email Sent!', 
+        'Check your inbox for a secure link to reset your password.',
+        [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
+      );
+    } catch (error: any) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -15,7 +39,7 @@ export default function ForgotPasswordScreen({ navigation }: any) {
         <View style={styles.headerTitleContainer}>
           <Text style={styles.headerTitle}>Forgot Password?</Text>
           <Text style={styles.headerSubtitle}>
-            Don't worry! Enter your registered{'\n'}mobile number and we'll send you{'\n'}an OTP to reset your password
+            Don't worry! Enter your registered{'\n'}email address and we'll send you{'\n'}a secure reset link.
           </Text>
         </View>
       </View>
@@ -23,14 +47,16 @@ export default function ForgotPasswordScreen({ navigation }: any) {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Mobile Number</Text>
+          <Text style={styles.label}>Email Address</Text>
           <View style={styles.phoneInputContainer}>
-            <Smartphone size={20} color="#6B7280" style={styles.phoneIcon} />
+            <Mail size={20} color="#6B7280" style={styles.phoneIcon} />
             <TextInput
               style={styles.phoneInput}
-              value={phone}
-              onChangeText={setPhone}
-              keyboardType="phone-pad"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              placeholder="Enter your email"
             />
           </View>
         </View>
@@ -45,9 +71,14 @@ export default function ForgotPasswordScreen({ navigation }: any) {
       <View style={styles.bottomContainer}>
         <TouchableOpacity 
           style={styles.sendBtn}
-          onPress={() => navigation.navigate('OTPVerification')} 
+          onPress={handleResetPassword}
+          disabled={loading}
         >
-          <Text style={styles.sendText}>Send OTP</Text>
+          {loading ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <Text style={styles.sendText}>Send Reset Link</Text>
+          )}
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.backToLoginBtn}
