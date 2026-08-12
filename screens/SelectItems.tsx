@@ -5,12 +5,12 @@ import { ChevronLeft, Plus, Minus } from 'lucide-react-native';
 import { useCart } from '../context/CartContext';
 
 const itemsData = [
-  { id: '1', name: 'Jeans', price: 60, icon: '👖', color: '#EEF2FF' },
-  { id: '2', name: 'Trousers', price: 40, icon: '🩳', color: '#F0FDF4' },
-  { id: '3', name: 'Shirt', price: 30, icon: '👕', color: '#F0F9FF' },
-  { id: '4', name: 'T-Shirt', price: 25, icon: '👕', color: '#ECFDF5' },
-  { id: '5', name: 'Towel', price: 60, icon: '🧻', color: '#F8FAFC' },
-  { id: '6', name: 'Blanket', price: 80, icon: '🛌', color: '#F7FEE7' },
+  { id: '1', name: 'Jeans', price: 10, icon: '👖', color: '#EEF2FF' },
+  { id: '2', name: 'Trousers', price: 7, icon: '🩳', color: '#F0FDF4' },
+  { id: '3', name: 'Shirt', price: 5, icon: '👕', color: '#F0F9FF' },
+  { id: '4', name: 'T-Shirt', price: 5, icon: '👕', color: '#ECFDF5' },
+  { id: '5', name: 'Towel', price: 15, icon: '🧻', color: '#F8FAFC' },
+  { id: '6', name: 'Blanket', price: 25, icon: '🛌', color: '#F7FEE7' },
 ];
 
 export default function SelectItemsScreen({ navigation }: any) {
@@ -36,7 +36,7 @@ export default function SelectItemsScreen({ navigation }: any) {
               <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
                 <Text style={styles.emojiIcon}>{item.icon}</Text>
               </View>
-              
+
               <View style={styles.itemDetails}>
                 <Text style={styles.itemName}>{item.name}</Text>
                 <Text style={styles.itemPrice}>₹ {item.price}</Text>
@@ -59,7 +59,7 @@ export default function SelectItemsScreen({ navigation }: any) {
       {/* Sticky Bottom Cart Bar */}
       <View style={styles.bottomBar}>
         <Text style={styles.totalText}>Total: ₹{subTotal}</Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.viewCartBtn}
           onPress={() => navigation.navigate('Cart')}
         >
