@@ -16,12 +16,12 @@ export default function ServiceDetailsScreen({ navigation }: any) {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
+
         <View style={styles.imageContainer}>
-          <Image 
-            source={require('../assets/Service_details.png')} 
-            style={styles.mainImage} 
-            resizeMode="contain" 
+          <Image
+            source={require('../assets/Service_details.png')}
+            style={styles.mainImage}
+            resizeMode="contain"
           />
         </View>
 
@@ -56,22 +56,22 @@ export default function ServiceDetailsScreen({ navigation }: any) {
         {/* Service Includes Checklist */}
         <Text style={styles.sectionTitle}>Service Includes</Text>
         <View style={styles.checklistContainer}>
-          
+
           <View style={styles.checkItem}>
             <Check size={18} color="#111" style={styles.checkIcon} />
             <Text style={styles.checkText}>Washing & Drying</Text>
           </View>
-          
+
           <View style={styles.checkItem}>
             <Check size={18} color="#111" style={styles.checkIcon} />
             <Text style={styles.checkText}>Folding & Packing</Text>
           </View>
-          
+
           <View style={styles.checkItem}>
             <Check size={18} color="#111" style={styles.checkIcon} />
             <Text style={styles.checkText}>Premium Detergent</Text>
           </View>
-          
+
           <View style={styles.checkItem}>
             <Check size={18} color="#111" style={styles.checkIcon} />
             <Text style={styles.checkText}>Quality Check</Text>
@@ -83,9 +83,9 @@ export default function ServiceDetailsScreen({ navigation }: any) {
 
       {/* Bottom Button */}
       <View style={styles.bottomContainer}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.continueBtn}
-          onPress={() => navigation.navigate('SelectItems')} 
+          onPress={() => navigation.navigate('SelectItems')}
         >
           <Text style={styles.continueText}>Continue</Text>
         </TouchableOpacity>

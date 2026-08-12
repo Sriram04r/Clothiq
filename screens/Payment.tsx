@@ -31,23 +31,32 @@ export default function PaymentScreen({ route, navigation }: any) {
       
       // --- NEW UPI INTENT LOGIC ---
       if (selectedMethod !== 'cod') {
-        // Real UPI ID for the business owner
         const upiId = '9014428656@axl';
-        // Adding mc=0000 (Generic Merchant) and tr (Transaction ID) to prevent PhonePe from blocking it
-        const upiUrl = `upi://pay?pa=${upiId}&pn=Clothiq&mc=0000&tr=${orderId}&tn=Order_${orderId}&am=${amount || 688}&cu=INR`;
+        const queryParams = `pa=${upiId}&pn=Clothiq&tn=Order_${orderId}&am=${amount || 688}&cu=INR`;
         
+        let specificUrl = `upi://pay?${queryParams}`;
+        if (selectedMethod === 'gpay') {
+          specificUrl = `tez://upi/pay?${queryParams}`;
+        } else if (selectedMethod === 'phonepe') {
+          specificUrl = `phonepe://pay?${queryParams}`;
+        } else if (selectedMethod === 'paytm') {
+          specificUrl = `paytmmp://pay?${queryParams}`;
+        }
+
         try {
-          // In Android 11+, canOpenURL returns false unless the scheme is registered in AndroidManifest.xml
-          // So we bypass canOpenURL and directly try to open the URL.
-          await Linking.openURL(upiUrl);
-          
-          // Wait 3.5 seconds to simulate them completing payment in the other app before they switch back
+          await Linking.openURL(specificUrl);
           await new Promise(resolve => setTimeout(resolve, 3500));
         } catch (e) {
-          console.log("UPI Intent error:", e);
-          // If they are on an emulator without UPI apps installed, it will throw an error and simulate gracefully
-          Alert.alert("Test Mode", "Could not open UPI app. Simulating successful payment.");
-          await new Promise(resolve => setTimeout(resolve, 1500));
+          console.log(`Failed to open specific app (${specificUrl}), falling back to generic upi://`);
+          try {
+            const fallbackUrl = `upi://pay?${queryParams}`;
+            await Linking.openURL(fallbackUrl);
+            await new Promise(resolve => setTimeout(resolve, 3500));
+          } catch (fallbackErr) {
+            console.log("UPI Intent error:", fallbackErr);
+            Alert.alert("Test Mode", "Could not open UPI app. Simulating successful payment.");
+            await new Promise(resolve => setTimeout(resolve, 1500));
+          }
         }
       }
       // ----------------------------
@@ -59,7 +68,6 @@ export default function PaymentScreen({ route, navigation }: any) {
       const db = getFirestore();
       const orderRef = doc(db, 'users', user.uid, 'orders', orderId);
       
-      // Update order status to 'paid' (or 'placed_cod' if Cash on Delivery)
       const newStatus = selectedMethod === 'cod' ? 'placed_cod' : 'paid';
       
       await updateDoc(orderRef, {
@@ -68,8 +76,6 @@ export default function PaymentScreen({ route, navigation }: any) {
       });
 
       clearCart();
-
-      // Navigate to Confirmation
       navigation.navigate('OrderConfirmation', { orderId });
       
     } catch (error) {

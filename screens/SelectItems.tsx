@@ -10,7 +10,7 @@ const itemsData = [
   { id: '3', name: 'Shirt', price: 5, icon: '👕', color: '#F0F9FF' },
   { id: '4', name: 'T-Shirt', price: 5, icon: '👕', color: '#ECFDF5' },
   { id: '5', name: 'Towel', price: 15, icon: '🧻', color: '#F8FAFC' },
-  { id: '6', name: 'Blanket', price: 25, icon: '🛌', color: '#F7FEE7' },
+  { id: '6', name: 'Blanket', price: 25, icon: '🛏️', color: '#F7FEE7' },
 ];
 
 export default function SelectItemsScreen({ navigation }: any) {
