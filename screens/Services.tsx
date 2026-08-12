@@ -24,7 +24,7 @@ export default function ServicesScreen({ navigation }: any) {
           <View style={styles.cardContent}>
             <Text style={styles.cardTitle}>Wash & Fold</Text>
             <Text style={styles.cardDesc}>Wash, dry and neatly folded</Text>
-            <Text style={styles.cardPrice}>From ₹ 120</Text>
+            <Text style={styles.cardPrice}>From ₹ 10/pc</Text>
           </View>
           <ChevronRight size={20} color="#111" />
         </TouchableOpacity>
