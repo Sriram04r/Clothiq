@@ -7,7 +7,7 @@ export default function HomeScreen({ navigation }: any) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
+
         {/* Header */}
         <View style={styles.header}>
           <View>
@@ -41,30 +41,30 @@ export default function HomeScreen({ navigation }: any) {
               <Text style={styles.seeAll}>See All</Text>
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.servicesGrid}>
             <TouchableOpacity style={[styles.serviceCard, { backgroundColor: '#FFF5FA' }]} onPress={() => navigation.navigate('Services')} activeOpacity={0.7}>
               <Image source={require('../assets/Wash_Fold.png')} style={styles.serviceImage} resizeMode="contain" />
               <Text style={styles.serviceName}>Wash & Fold</Text>
-              <Text style={styles.servicePrice}>From ₹40/kg</Text>
+              <Text style={styles.servicePrice}>From ₹1O/PC</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity style={[styles.serviceCard, { backgroundColor: '#F0FDF4' }]} onPress={() => navigation.navigate('Services')} activeOpacity={0.7}>
               <Image source={require('../assets/Dry_cleaning.png')} style={styles.serviceImage} resizeMode="contain" />
               <Text style={styles.serviceName}>Dry Cleaning</Text>
-              <Text style={styles.servicePrice}>From ₹120</Text>
+              <Text style={styles.servicePrice}>From ₹100/pc</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity style={[styles.serviceCard, { backgroundColor: '#EFF6FF' }]} onPress={() => navigation.navigate('Services')} activeOpacity={0.7}>
               <Image source={require('../assets/Steam_Iron.png')} style={styles.serviceImage} resizeMode="contain" />
               <Text style={styles.serviceName}>Steam Iron</Text>
-              <Text style={styles.servicePrice}>From ₹20pc</Text>
+              <Text style={styles.servicePrice}>From ₹15/pc</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity style={[styles.serviceCard, { backgroundColor: '#F5F5F5' }]} onPress={() => navigation.navigate('Services')} activeOpacity={0.7}>
               <Image source={require('../assets/Wash_Iron.png')} style={styles.serviceImage} resizeMode="contain" />
               <Text style={styles.serviceName}>Wash & Iron</Text>
-              <Text style={styles.servicePrice}>From ₹60kg</Text>
+              <Text style={styles.servicePrice}>From ₹30/kg</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -74,7 +74,7 @@ export default function HomeScreen({ navigation }: any) {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Active Orders</Text>
           </View>
-          
+
           <View style={styles.orderCard}>
             <View style={styles.orderHeader}>
               <View style={styles.orderStatusIcon}>
@@ -93,7 +93,7 @@ export default function HomeScreen({ navigation }: any) {
             </View>
           </View>
         </View>
-        
+
       </ScrollView>
 
       {/* Fixed Bottom Navigation */}
@@ -102,22 +102,22 @@ export default function HomeScreen({ navigation }: any) {
           <Home size={24} color="#2945FF" />
           <Text style={[styles.navText, styles.navTextActive]}>Home</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('OrderHistory')}>
           <ClipboardList size={24} color="#8e8e93" />
           <Text style={styles.navText}>Orders</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Notifications')}>
           <Bell size={24} color="#8e8e93" />
           <Text style={styles.navText}>Notifications</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Services')}>
           <LayoutGrid size={24} color="#8e8e93" />
           <Text style={styles.navText}>Services</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Profile')}>
           <User size={24} color="#8e8e93" />
           <Text style={styles.navText}>Profile</Text>
