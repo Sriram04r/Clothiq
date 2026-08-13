@@ -95,7 +95,7 @@ export default function EditProfileScreen({ navigation }: any) {
           
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Full Name</Text>
-            <TextInput
+            <TextInput placeholderTextColor="#9ca3af"
               style={styles.input}
               value={fullName}
               onChangeText={setFullName}
@@ -104,7 +104,7 @@ export default function EditProfileScreen({ navigation }: any) {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Email Address</Text>
-            <TextInput
+            <TextInput placeholderTextColor="#9ca3af"
               style={styles.input}
               value={email}
               onChangeText={setEmail}
@@ -115,7 +115,7 @@ export default function EditProfileScreen({ navigation }: any) {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Phone Number</Text>
-            <TextInput
+            <TextInput placeholderTextColor="#9ca3af"
               style={styles.input}
               value={phone}
               onChangeText={setPhone}
@@ -125,7 +125,7 @@ export default function EditProfileScreen({ navigation }: any) {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Date of Birth</Text>
-            <TextInput
+            <TextInput placeholderTextColor="#9ca3af"
               style={styles.input}
               value={dob}
               onChangeText={setDob}

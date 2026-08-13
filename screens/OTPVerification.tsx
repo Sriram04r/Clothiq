@@ -92,7 +92,7 @@ export default function OTPVerificationScreen({ route, navigation }: any) {
         {/* OTP Inputs */}
         <View style={styles.otpContainer}>
           {otp.map((digit, index) => (
-            <TextInput
+            <TextInput placeholderTextColor="#9ca3af"
               key={index}
               style={styles.otpInput}
               value={digit}

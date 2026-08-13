@@ -50,7 +50,7 @@ export default function ForgotPasswordScreen({ navigation }: any) {
           <Text style={styles.label}>Email Address</Text>
           <View style={styles.phoneInputContainer}>
             <Mail size={20} color="#6B7280" style={styles.phoneIcon} />
-            <TextInput
+            <TextInput placeholderTextColor="#9ca3af"
               style={styles.phoneInput}
               value={email}
               onChangeText={setEmail}

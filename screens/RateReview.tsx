@@ -37,14 +37,14 @@ export default function RateReviewScreen({ navigation }: any) {
 
         {/* Review Input */}
         <View style={styles.inputContainer}>
-          <TextInput
+          <TextInput placeholderTextColor="#9ca3af"
             style={styles.textInputTitle}
             placeholder="Review Title"
             value={reviewTitle}
             onChangeText={setReviewTitle}
           />
           <View style={styles.inputDivider} />
-          <TextInput
+          <TextInput placeholderTextColor="#9ca3af"
             style={styles.textInputBody}
             multiline
             numberOfLines={4}

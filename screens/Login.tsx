@@ -85,7 +85,7 @@ export default function LoginScreen({ navigation }: any) {
           <View style={styles.formContainer}>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Email</Text>
-              <TextInput
+              <TextInput placeholderTextColor="#9ca3af"
                 style={styles.input}
                 placeholder="Enter your email"
                 keyboardType="email-address"
@@ -98,7 +98,7 @@ export default function LoginScreen({ navigation }: any) {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Password</Text>
               <View style={styles.passwordWrapper}>
-                <TextInput
+                <TextInput placeholderTextColor="#9ca3af"
                   style={styles.passwordInput}
                   placeholder="*************"
                   secureTextEntry={!isPasswordVisible}

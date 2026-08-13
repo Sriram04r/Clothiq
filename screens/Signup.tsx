@@ -73,7 +73,7 @@ export default function SignupScreen({ navigation }: any) {
         
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Full Name</Text>
-          <TextInput
+          <TextInput placeholderTextColor="#9ca3af"
             style={styles.input}
             placeholder="Enter your name"
             value={fullName}
@@ -83,7 +83,7 @@ export default function SignupScreen({ navigation }: any) {
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Email Address</Text>
-          <TextInput
+          <TextInput placeholderTextColor="#9ca3af"
             style={styles.input}
             placeholder="Enter your email address"
             keyboardType="email-address"
@@ -95,7 +95,7 @@ export default function SignupScreen({ navigation }: any) {
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Phone Number</Text>
-          <TextInput
+          <TextInput placeholderTextColor="#9ca3af"
             style={styles.input}
             placeholder="Enter your phone number"
             keyboardType="phone-pad"
@@ -107,7 +107,7 @@ export default function SignupScreen({ navigation }: any) {
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Password</Text>
           <View style={styles.passwordContainer}>
-            <TextInput
+            <TextInput placeholderTextColor="#9ca3af"
               style={styles.passwordInput}
               placeholder="Create a password"
               secureTextEntry={!showPassword}
@@ -123,7 +123,7 @@ export default function SignupScreen({ navigation }: any) {
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Confirm Password</Text>
           <View style={styles.passwordContainer}>
-            <TextInput
+            <TextInput placeholderTextColor="#9ca3af"
               style={styles.passwordInput}
               placeholder="Confirm your password"
               secureTextEntry={!showConfirmPassword}

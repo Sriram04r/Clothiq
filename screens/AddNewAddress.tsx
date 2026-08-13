@@ -276,32 +276,32 @@ export default function AddNewAddressScreen({ navigation }: any) {
           
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Full Name</Text>
-            <TextInput style={styles.input} value={fullName} onChangeText={setFullName} />
+            <TextInput placeholder="Enter your full name" placeholderTextColor="#9ca3af" style={styles.input} value={fullName} onChangeText={setFullName} />
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Phone Number</Text>
-            <TextInput style={styles.input} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+            <TextInput placeholder="Enter phone number" placeholderTextColor="#9ca3af" style={styles.input} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>House No..Building Name</Text>
-            <TextInput style={styles.input} value={houseNo} onChangeText={setHouseNo} />
+            <TextInput placeholder="E.g., Flat 101, Galaxy Apts" placeholderTextColor="#9ca3af" style={styles.input} value={houseNo} onChangeText={setHouseNo} />
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Area / Locality</Text>
-            <TextInput style={styles.input} value={area} onChangeText={setArea} />
+            <TextInput placeholder="E.g., Kothaguda" placeholderTextColor="#9ca3af" style={styles.input} value={area} onChangeText={setArea} />
           </View>
 
           <View style={styles.rowInputs}>
             <View style={[styles.inputGroup, { flex: 1 }]}>
               <Text style={styles.label}>City</Text>
-              <TextInput style={styles.input} value={city} onChangeText={setCity} />
+              <TextInput placeholder="City" placeholderTextColor="#9ca3af" style={styles.input} value={city} onChangeText={setCity} />
             </View>
             <View style={[styles.inputGroup, { flex: 1 }]}>
               <Text style={styles.label}>PIN Code</Text>
-              <TextInput style={styles.input} value={pinCode} onChangeText={setPinCode} keyboardType="number-pad" />
+              <TextInput placeholder="PIN Code" placeholderTextColor="#9ca3af" style={styles.input} value={pinCode} onChangeText={setPinCode} keyboardType="number-pad" />
             </View>
           </View>
 

@@ -27,7 +27,7 @@ export default function ResetPasswordScreen({ navigation }: any) {
           <Text style={styles.label}>New Password</Text>
           <View style={styles.passwordContainer}>
             <Lock size={18} color="#4B5563" style={styles.lockIcon} />
-            <TextInput
+            <TextInput placeholderTextColor="#9ca3af"
               style={styles.passwordInput}
               placeholder="********"
               secureTextEntry={!showPassword}
@@ -44,7 +44,7 @@ export default function ResetPasswordScreen({ navigation }: any) {
           <Text style={styles.label}>Confirm Password</Text>
           <View style={styles.passwordContainer}>
             <Lock size={18} color="#4B5563" style={styles.lockIcon} />
-            <TextInput
+            <TextInput placeholderTextColor="#9ca3af"
               style={styles.passwordInput}
               placeholder="********"
               secureTextEntry={!showConfirmPassword}
