@@ -5,7 +5,7 @@ import { Home, ClipboardList, Bell, LayoutGrid, User } from 'lucide-react-native
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { getAuth } from '@react-native-firebase/auth';
-import { getFirestore, doc, setDoc, getDoc } from '@react-native-firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, collection, query, orderBy, limit, onSnapshot, where } from '@react-native-firebase/firestore';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -17,15 +17,17 @@ Notifications.setNotificationHandler({
 
 export default function HomeScreen({ navigation }: any) {
   const [userName, setUserName] = useState('App User');
+  const [activeOrder, setActiveOrder] = useState<any>(null);
 
   useEffect(() => {
     registerForPushNotificationsAsync().then(token => {
       if (token) saveTokenToFirebase(token);
     });
     
-    // Also fetch real user name for greeting
+    const user = getAuth().currentUser;
+    let unsubscribeOrder: any;
+
     const fetchUser = async () => {
-      const user = getAuth().currentUser;
       if (user) {
         setUserName(user.displayName || 'App User');
         try {
@@ -36,7 +38,34 @@ export default function HomeScreen({ navigation }: any) {
         } catch(e) {}
       }
     };
+    
     fetchUser();
+
+    if (user) {
+      const q = query(
+        collection(getFirestore(), 'users', user.uid, 'orders'),
+        orderBy('createdAt', 'desc'),
+        limit(10)
+      );
+      
+      unsubscribeOrder = onSnapshot(q, (snapshot) => {
+        if (!snapshot.empty) {
+          // Find the most recent order that is NOT delivered
+          const activeDoc = snapshot.docs.find(doc => doc.data().status !== 'delivered');
+          if (activeDoc) {
+            setActiveOrder({ id: activeDoc.id, ...activeDoc.data() });
+          } else {
+            setActiveOrder(null);
+          }
+        } else {
+          setActiveOrder(null);
+        }
+      });
+    }
+
+    return () => {
+      if (unsubscribeOrder) unsubscribeOrder();
+    };
   }, []);
 
   const saveTokenToFirebase = async (token: string) => {
@@ -140,29 +169,42 @@ export default function HomeScreen({ navigation }: any) {
         </View>
 
         {/* Active Orders Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Active Orders</Text>
-          </View>
+        {activeOrder && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Active Orders</Text>
+            </View>
 
-          <View style={styles.orderCard}>
-            <View style={styles.orderHeader}>
-              <View style={styles.orderStatusIcon}>
-                <View style={styles.statusDot} />
+            <View style={styles.orderCard}>
+              <View style={styles.orderHeader}>
+                <View style={styles.orderStatusIcon}>
+                  <View style={styles.statusDot} />
+                </View>
+                <View style={{ flex: 1, paddingRight: 10 }}>
+                  <Text style={styles.orderId}>Order #FW{activeOrder.id.substring(0,6).toUpperCase()}</Text>
+                  <Text style={styles.orderStatus}>
+                    {activeOrder.status === 'placed' || activeOrder.status === 'placed_cod' ? 'Order Placed' :
+                     activeOrder.status === 'pickup' ? 'Ready for Pickup' :
+                     activeOrder.status === 'washing' ? 'Washing in progress' :
+                     activeOrder.status === 'out_for_delivery' ? 'Out for Delivery' : 
+                     'In Progress'}
+                  </Text>
+                </View>
+                <TouchableOpacity 
+                  style={styles.trackButton}
+                  onPress={() => navigation.navigate('TrackOrder', { orderId: activeOrder.id })}
+                >
+                  <Text style={styles.trackLink}>Track</Text>
+                </TouchableOpacity>
               </View>
-              <View>
-                <Text style={styles.orderId}>Order #FW12345</Text>
-                <Text style={styles.orderStatus}>Washing in progress</Text>
+              <View style={styles.orderFooter}>
+                <Text style={styles.deliveryDate}>
+                  Items: {activeOrder.itemsCount}  |  Total: ₹{activeOrder.pricing?.total || 0}
+                </Text>
               </View>
-              <TouchableOpacity style={styles.trackButton}>
-                <Text style={styles.trackLink}>Track Now</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.orderFooter}>
-              <Text style={styles.deliveryDate}>Expected Delivery: 16 May</Text>
             </View>
           </View>
-        </View>
+        )}
 
       </ScrollView>
 
