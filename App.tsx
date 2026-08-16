@@ -38,6 +38,10 @@ import SavedAddressesScreen from './screens/SavedAddresses';
 import AddNewAddressScreen from './screens/AddNewAddress';
 import NotificationsScreen from './screens/Notifications';
 
+// Driver Screens
+import DriverHomeScreen from './screens/driver/DriverHome';
+import TaskDetailsScreen from './screens/driver/TaskDetails';
+
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { useContext } from 'react';
@@ -45,7 +49,7 @@ import { useContext } from 'react';
 const Stack = createNativeStackNavigator();
 
 function RootNavigator() {
-  const { user, initializing, wasLoggedIn, hasOnboarded } = useContext(AuthContext);
+  const { user, initializing, wasLoggedIn, hasOnboarded, userRole } = useContext(AuthContext);
 
   if (initializing) {
     return null; // Don't render until auth state is loaded
@@ -54,6 +58,12 @@ function RootNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {user ? (
+        userRole === 'driver' ? (
+          <>
+            <Stack.Screen name="DriverHome" component={DriverHomeScreen} />
+            <Stack.Screen name="TaskDetails" component={TaskDetailsScreen} />
+          </>
+        ) : (
         <>
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Services" component={ServicesScreen} />
@@ -76,6 +86,7 @@ function RootNavigator() {
           <Stack.Screen name="AddNewAddress" component={AddNewAddressScreen} />
           <Stack.Screen name="Notifications" component={NotificationsScreen} />
         </>
+        )
       ) : (
         <>
           {!hasOnboarded ? (

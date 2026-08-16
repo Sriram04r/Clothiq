@@ -1,11 +1,13 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { getAuth, FirebaseAuthTypes } from '@react-native-firebase/auth';
+import { getFirestore, doc, getDoc } from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface AuthContextType {
   user: FirebaseAuthTypes.User | null;
   initializing: boolean;
   wasLoggedIn: boolean;
+  userRole: 'customer' | 'driver' | null;
   hasOnboarded: boolean;
   completeOnboarding: () => Promise<void>;
 }
@@ -14,6 +16,7 @@ export const AuthContext = createContext<AuthContextType>({
   user: null,
   initializing: true,
   wasLoggedIn: false,
+  userRole: null,
   hasOnboarded: false,
   completeOnboarding: async () => {},
 });
@@ -22,11 +25,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
   const [initializing, setInitializing] = useState(true);
   const [wasLoggedIn, setWasLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState<'customer' | 'driver' | null>(null);
   const [hasOnboarded, setHasOnboarded] = useState(false);
 
   // Handle user state changes
-  function onAuthStateChanged(user: FirebaseAuthTypes.User | null) {
-    if (user) setWasLoggedIn(true);
+  async function onAuthStateChanged(user: FirebaseAuthTypes.User | null) {
+    if (user) {
+      setWasLoggedIn(true);
+      // Fetch role
+      try {
+        const db = getFirestore();
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists) {
+          const data = userDoc.data();
+          setUserRole(data?.role === 'driver' ? 'driver' : 'customer');
+        } else {
+          setUserRole('customer');
+        }
+      } catch (err) {
+        console.error('Error fetching role', err);
+        setUserRole('customer');
+      }
+    } else {
+      setUserRole(null);
+    }
     setUser(user);
     // Don't set initializing to false here, we do it after AsyncStorage check
   }
@@ -67,7 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, initializing, wasLoggedIn, hasOnboarded, completeOnboarding }}>
+    <AuthContext.Provider value={{ user, initializing, wasLoggedIn, userRole, hasOnboarded, completeOnboarding }}>
       {children}
     </AuthContext.Provider>
   );

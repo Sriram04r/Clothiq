@@ -43,6 +43,7 @@ export default function SignupScreen({ navigation }: any) {
         fullName,
         email: email.trim(),
         phone,
+        role: email.toLowerCase().includes('driver') ? 'driver' : 'customer',
         createdAt: new Date().toISOString(),
       });
       
