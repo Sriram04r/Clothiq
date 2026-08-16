@@ -1,19 +1,28 @@
 import { useEffect, useState } from 'react';
-import { collectionGroup, doc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { collectionGroup, collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Loader2 } from 'lucide-react';
 
 export default function Orders() {
   const [orders, setOrders] = useState<any[]>([]);
+  const [drivers, setDrivers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Note: collectionGroup requires an index in production for orderBy. 
-    // For this prototype, we'll fetch all orders and sort in JS if needed.
+    const fetchDrivers = async () => {
+      try {
+        const q = query(collection(db, 'users'), where('role', '==', 'driver'));
+        const snap = await getDocs(q);
+        const d = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setDrivers(d);
+      } catch (err) {
+        console.error("Error fetching drivers:", err);
+      }
+    };
+    
     const fetchOrders = async () => {
       try {
         const q = collectionGroup(db, 'orders');
-        // If we want real-time across ALL users, we can use onSnapshot on collectionGroup
         const unsubscribe = onSnapshot(q, (snapshot) => {
           const fetchedOrders: any[] = [];
           snapshot.forEach((doc) => {
@@ -24,7 +33,6 @@ export default function Orders() {
             });
           });
           
-          // Sort by date descending
           fetchedOrders.sort((a, b) => {
             const dateA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
             const dateB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
@@ -42,6 +50,7 @@ export default function Orders() {
       }
     };
     
+    fetchDrivers();
     fetchOrders();
   }, []);
 
@@ -56,11 +65,24 @@ export default function Orders() {
     }
   };
 
+  const assignDriver = async (userId: string, orderId: string, driverId: string) => {
+    if (!userId || !orderId || !driverId) return;
+    try {
+      const orderRef = doc(db, 'users', userId, 'orders', orderId);
+      await updateDoc(orderRef, { driverId });
+    } catch (err) {
+      console.error("Error assigning driver:", err);
+      alert("Failed to assign driver");
+    }
+  };
+
   const stages = [
     { key: 'placed_cod', label: 'Placed (COD)' },
     { key: 'paid', label: 'Placed (Paid)' },
-    { key: 'pickup', label: 'Pickup Ready' },
+    { key: 'pickup_ready', label: 'Pickup Ready' },
+    { key: 'out_for_pickup', label: 'Out for Pickup' },
     { key: 'washing', label: 'Washing' },
+    { key: 'delivery_ready', label: 'Delivery Ready' },
     { key: 'out_for_delivery', label: 'Out for Delivery' },
     { key: 'delivered', label: 'Delivered' }
   ];
@@ -70,7 +92,7 @@ export default function Orders() {
   return (
     <div className="animate-in">
       <h1 className="page-title">Order Management</h1>
-      <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Click a status button to instantly update the customer's live tracking.</p>
+      <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Assign drivers and update order status in real-time.</p>
       
       <div className="glass-panel" style={{ overflowX: 'auto', padding: '0' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
@@ -80,6 +102,7 @@ export default function Orders() {
               <th style={{ padding: '16px', color: 'var(--text-muted)', fontWeight: '500' }}>Items</th>
               <th style={{ padding: '16px', color: 'var(--text-muted)', fontWeight: '500' }}>Total</th>
               <th style={{ padding: '16px', color: 'var(--text-muted)', fontWeight: '500' }}>Current Status</th>
+              <th style={{ padding: '16px', color: 'var(--text-muted)', fontWeight: '500' }}>Driver</th>
               <th style={{ padding: '16px', color: 'var(--text-muted)', fontWeight: '500' }}>Update To...</th>
             </tr>
           </thead>
@@ -99,26 +122,53 @@ export default function Orders() {
                   </span>
                 </td>
                 <td style={{ padding: '16px' }}>
-                  <select 
-                    className="input-field" 
-                    style={{ padding: '8px', width: 'auto', background: 'var(--bg-dark)' }}
-                    value={order.status}
-                    onChange={(e) => updateOrderStatus(order.userId, order.id, e.target.value)}
-                  >
-                    <option value="placed">Placed</option>
-                    <option value="placed_cod">Placed (COD)</option>
-                    <option value="paid">Placed (Paid)</option>
-                    <option value="pickup">Pickup Ready</option>
-                    <option value="washing">Washing</option>
-                    <option value="out_for_delivery">Out for Delivery</option>
-                    <option value="delivered">Delivered</option>
-                  </select>
+                  {order.status === 'delivered' ? (
+                    <span style={{ color: 'var(--text-muted)' }}>{drivers.find(d => d.id === order.driverId)?.name || 'N/A'}</span>
+                  ) : (
+                    <select 
+                      value={order.driverId || ''} 
+                      onChange={(e) => assignDriver(order.userId, order.id, e.target.value)}
+                      style={{ 
+                        background: 'rgba(255,255,255,0.05)', 
+                        border: '1px solid var(--border-light)', 
+                        color: 'var(--text-main)',
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        outline: 'none'
+                      }}
+                    >
+                      <option value="" disabled>Assign Driver...</option>
+                      {drivers.map(driver => (
+                        <option key={driver.id} value={driver.id}>{driver.fullName || driver.name || 'Unnamed Driver'}</option>
+                      ))}
+                    </select>
+                  )}
+                </td>
+                <td style={{ padding: '16px' }}>
+                  {order.status !== 'delivered' && (
+                    <select 
+                      value={order.status} 
+                      onChange={(e) => updateOrderStatus(order.userId, order.id, e.target.value)}
+                      style={{ 
+                        background: 'rgba(255,255,255,0.05)', 
+                        border: '1px solid var(--border-light)', 
+                        color: 'var(--text-main)',
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        outline: 'none'
+                      }}
+                    >
+                      {stages.map(stage => (
+                        <option key={stage.key} value={stage.key}>{stage.label}</option>
+                      ))}
+                    </select>
+                  )}
                 </td>
               </tr>
             ))}
             {orders.length === 0 && (
               <tr>
-                <td colSpan={5} style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)' }}>No orders found.</td>
+                <td colSpan={6} style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)' }}>No orders found.</td>
               </tr>
             )}
           </tbody>
