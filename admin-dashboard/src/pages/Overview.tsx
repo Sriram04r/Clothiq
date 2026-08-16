@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { collectionGroup, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { TrendingUp, Users, ShoppingBag, DollarSign, Activity } from 'lucide-react';
 
 export default function Overview() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalRevenue: 0,
     totalOrders: 0,
@@ -105,7 +107,11 @@ export default function Overview() {
           </div>
         </div>
 
-        <div className="glass-panel animate-in delay-4">
+        <div 
+          className="glass-panel animate-in delay-4"
+          style={{ cursor: 'pointer' }}
+          onClick={() => navigate('/customers')}
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <div style={{ color: 'var(--text-muted)', fontSize: '14px', fontWeight: '500' }}>Active Customers</div>
             <div style={{ background: 'rgba(139, 92, 246, 0.1)', padding: '8px', borderRadius: '8px' }}>
