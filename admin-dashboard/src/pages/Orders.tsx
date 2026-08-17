@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { collectionGroup, collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Loader2 } from 'lucide-react';
@@ -7,6 +7,17 @@ export default function Orders() {
   const [orders, setOrders] = useState<any[]>([]);
   const [drivers, setDrivers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const isInitialLoad = useRef(true);
+
+  const playAdminBeep = () => {
+    try {
+      const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+      audio.play().catch(e => console.log("Browser blocked audio play. Please click somewhere on the page first.", e));
+    } catch (e) {
+      console.log("Audio play failed.", e);
+    }
+  };
+
 
   useEffect(() => {
     const fetchDrivers = async () => {
@@ -24,6 +35,14 @@ export default function Orders() {
       try {
         const q = collectionGroup(db, 'orders');
         const unsubscribe = onSnapshot(q, (snapshot) => {
+          if (!isInitialLoad.current) {
+            const hasNewOrder = snapshot.docChanges().some(change => change.type === 'added');
+            if (hasNewOrder) {
+              playAdminBeep();
+            }
+          }
+          isInitialLoad.current = false;
+
           const fetchedOrders: any[] = [];
           snapshot.forEach((doc) => {
             fetchedOrders.push({
@@ -137,9 +156,9 @@ export default function Orders() {
                         outline: 'none'
                       }}
                     >
-                      <option value="" disabled>Assign Driver...</option>
+                      <option value="" disabled style={{ background: '#111', color: '#fff' }}>Assign Driver...</option>
                       {drivers.map(driver => (
-                        <option key={driver.id} value={driver.id}>{driver.fullName || driver.name || 'Unnamed Driver'}</option>
+                        <option key={driver.id} value={driver.id} style={{ background: '#111', color: '#fff' }}>{driver.fullName || driver.name || 'Unnamed Driver'}</option>
                       ))}
                     </select>
                   )}
@@ -159,7 +178,7 @@ export default function Orders() {
                       }}
                     >
                       {stages.map(stage => (
-                        <option key={stage.key} value={stage.key}>{stage.label}</option>
+                        <option key={stage.key} value={stage.key} style={{ background: '#111', color: '#fff' }}>{stage.label}</option>
                       ))}
                     </select>
                   )}
