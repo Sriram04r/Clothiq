@@ -118,6 +118,7 @@ export default function Orders() {
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border-light)' }}>
               <th style={{ padding: '16px', color: 'var(--text-muted)', fontWeight: '500' }}>Order ID</th>
+              <th style={{ padding: '16px', color: 'var(--text-muted)', fontWeight: '500' }}>Schedule</th>
               <th style={{ padding: '16px', color: 'var(--text-muted)', fontWeight: '500' }}>Items</th>
               <th style={{ padding: '16px', color: 'var(--text-muted)', fontWeight: '500' }}>Total</th>
               <th style={{ padding: '16px', color: 'var(--text-muted)', fontWeight: '500' }}>Current Status</th>
@@ -128,7 +129,17 @@ export default function Orders() {
           <tbody>
             {orders.map((order, index) => (
               <tr key={order.id} className={`animate-in delay-${(index % 4) + 1}`} style={{ borderBottom: '1px solid var(--border-light)' }}>
-                <td style={{ padding: '16px', fontWeight: '500' }}>#{order.id.substring(0, 6).toUpperCase()}</td>
+                <td style={{ padding: '16px', fontWeight: '500' }}>
+                  #{order.id.substring(0, 6).toUpperCase()}
+                </td>
+                <td style={{ padding: '16px', fontSize: '13px' }}>
+                  <div style={{ color: 'var(--info)', marginBottom: '4px' }}>
+                    <strong>Pick:</strong> {order.pickupSchedule?.date || 'N/A'} ({order.pickupSchedule?.time || 'Any'})
+                  </div>
+                  <div style={{ color: 'var(--success)' }}>
+                    <strong>Del:</strong> {order.deliveryOption === 'express' ? '24 Hrs' : '48 Hrs'} ({order.deliveryOption || 'standard'})
+                  </div>
+                </td>
                 <td style={{ padding: '16px' }}>{order.itemsCount || 0}</td>
                 <td style={{ padding: '16px' }}>₹{order.pricing?.total || 0}</td>
                 <td style={{ padding: '16px' }}>
