@@ -30,7 +30,7 @@ export default function Orders() {
         console.error("Error fetching drivers:", err);
       }
     };
-    
+
     const fetchOrders = async () => {
       try {
         const q = collectionGroup(db, 'orders');
@@ -51,24 +51,24 @@ export default function Orders() {
               ...doc.data()
             });
           });
-          
+
           fetchedOrders.sort((a, b) => {
             const dateA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
             const dateB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
             return dateB - dateA;
           });
-          
+
           setOrders(fetchedOrders);
           setLoading(false);
         });
-        
+
         return () => unsubscribe();
       } catch (err) {
         console.error("Error fetching orders:", err);
         setLoading(false);
       }
     };
-    
+
     fetchDrivers();
     fetchOrders();
   }, []);
@@ -112,7 +112,7 @@ export default function Orders() {
     <div className="animate-in">
       <h1 className="page-title">Order Management</h1>
       <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Assign drivers and update order status in real-time.</p>
-      
+
       <div className="glass-panel" style={{ overflowX: 'auto', padding: '0' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
@@ -128,12 +128,12 @@ export default function Orders() {
           <tbody>
             {orders.map((order, index) => (
               <tr key={order.id} className={`animate-in delay-${(index % 4) + 1}`} style={{ borderBottom: '1px solid var(--border-light)' }}>
-                <td style={{ padding: '16px', fontWeight: '500' }}>#{order.id.substring(0,6).toUpperCase()}</td>
+                <td style={{ padding: '16px', fontWeight: '500' }}>#{order.id.substring(0, 6).toUpperCase()}</td>
                 <td style={{ padding: '16px' }}>{order.itemsCount || 0}</td>
                 <td style={{ padding: '16px' }}>₹{order.pricing?.total || 0}</td>
                 <td style={{ padding: '16px' }}>
-                  <span style={{ 
-                    background: order.status === 'delivered' ? 'rgba(16,185,129,0.1)' : 'rgba(59,130,246,0.1)', 
+                  <span style={{
+                    background: order.status === 'delivered' ? 'rgba(16,185,129,0.1)' : 'rgba(59,130,246,0.1)',
                     color: order.status === 'delivered' ? 'var(--success)' : 'var(--primary)',
                     padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: '600'
                   }}>
@@ -144,12 +144,12 @@ export default function Orders() {
                   {order.status === 'delivered' ? (
                     <span style={{ color: 'var(--text-muted)' }}>{drivers.find(d => d.id === order.driverId)?.name || 'N/A'}</span>
                   ) : (
-                    <select 
-                      value={order.driverId || ''} 
+                    <select
+                      value={order.driverId || ''}
                       onChange={(e) => assignDriver(order.userId, order.id, e.target.value)}
-                      style={{ 
-                        background: 'rgba(255,255,255,0.05)', 
-                        border: '1px solid var(--border-light)', 
+                      style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid var(--border-light)',
                         color: 'var(--text-main)',
                         padding: '6px 12px',
                         borderRadius: '8px',
@@ -165,12 +165,12 @@ export default function Orders() {
                 </td>
                 <td style={{ padding: '16px' }}>
                   {order.status !== 'delivered' && (
-                    <select 
-                      value={order.status} 
+                    <select
+                      value={order.status}
                       onChange={(e) => updateOrderStatus(order.userId, order.id, e.target.value)}
-                      style={{ 
-                        background: 'rgba(255,255,255,0.05)', 
-                        border: '1px solid var(--border-light)', 
+                      style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid var(--border-light)',
                         color: 'var(--text-main)',
                         padding: '6px 12px',
                         borderRadius: '8px',
