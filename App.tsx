@@ -4,6 +4,16 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import * as Notifications from 'expo-notifications';
+import { getFirestore, doc, setDoc } from '@react-native-firebase/firestore';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 GoogleSignin.configure({
   webClientId: '930212381030-t1tg6a36ciu6n5220polmkaug00n3tug.apps.googleusercontent.com',
@@ -42,12 +52,36 @@ import NotificationsScreen from './screens/Notifications';
 
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 
 const Stack = createNativeStackNavigator();
 
 function RootNavigator() {
   const { user, initializing, wasLoggedIn, hasOnboarded, userRole } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (user) {
+      (async () => {
+        try {
+          const { status: existingStatus } = await Notifications.getPermissionsAsync({
+            ios: { allowAlert: true, allowBadge: true, allowSound: true }
+          });
+          let finalStatus = existingStatus;
+          if (existingStatus !== 'granted') {
+            const { status } = await Notifications.requestPermissionsAsync();
+            finalStatus = status;
+          }
+          if (finalStatus === 'granted') {
+            const token = (await Notifications.getExpoPushTokenAsync()).data;
+            const db = getFirestore();
+            await setDoc(doc(db, 'users', user.uid), { pushToken: token }, { merge: true });
+          }
+        } catch (error) {
+          console.log("Error getting push token", error);
+        }
+      })();
+    }
+  }, [user]);
 
   if (initializing) {
     return null; // Don't render until auth state is loaded
