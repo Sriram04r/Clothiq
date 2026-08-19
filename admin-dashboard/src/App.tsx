@@ -8,6 +8,7 @@ import Overview from './pages/Overview';
 import Orders from './pages/Orders';
 import Customers from './pages/Customers';
 import RevenueDetails from './pages/RevenueDetails';
+import PendingPickups from './pages/PendingPickups';
 
 function App() {
   const [user, setUser] = useState<any>(null);
@@ -45,6 +46,7 @@ function App() {
             <Route path="orders" element={<Orders />} />
             <Route path="customers" element={<Customers />} />
             <Route path="revenue" element={<RevenueDetails />} />
+            <Route path="pending-pickups" element={<PendingPickups />} />
           </Route>
         ) : (
           <Route path="*" element={<Navigate to="/login" />} />
