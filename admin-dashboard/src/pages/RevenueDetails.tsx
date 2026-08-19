@@ -135,8 +135,9 @@ export default function RevenueDetails() {
                   
                   {order.items && order.items.length > 0 ? (
                     <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '12px' }}>
+                      {/* Items List */}
                       {order.items.map((item: any, idx: number) => (
-                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: idx !== order.items.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--text-light)', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '600' }}>{item.qty}x</span>
                             <span style={{ color: 'var(--text-light)' }}>{item.name}</span>
@@ -144,6 +145,32 @@ export default function RevenueDetails() {
                           <div style={{ color: 'var(--text-muted)' }}>₹{item.price * item.qty}</div>
                         </div>
                       ))}
+                      
+                      {/* Pricing Breakdown */}
+                      <div style={{ paddingTop: '12px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-muted)' }}>
+                          <span>Subtotal</span>
+                          <span>₹{order.pricing?.subtotal || 0}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-muted)' }}>
+                          <span>Delivery Fee</span>
+                          <span>₹{order.pricing?.deliveryFee || 0}</span>
+                        </div>
+                        {order.pricing?.discount > 0 && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--success)' }}>
+                            <span>Discount</span>
+                            <span>-₹{order.pricing?.discount}</span>
+                          </div>
+                        )}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-muted)' }}>
+                          <span>GST (18%)</span>
+                          <span>₹{order.pricing?.gst || 0}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', fontWeight: '700', color: 'var(--text-main)', marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed rgba(255,255,255,0.1)' }}>
+                          <span>Total Paid</span>
+                          <span>₹{order.pricing?.total || 0}</span>
+                        </div>
+                      </div>
                     </div>
                   ) : (
                     <div style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '14px' }}>No items recorded for this order.</div>
