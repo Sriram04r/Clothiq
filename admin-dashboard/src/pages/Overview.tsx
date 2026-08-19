@@ -92,7 +92,7 @@ export default function Overview() {
         <div 
           className="glass-panel animate-in delay-1"
           style={{ cursor: 'pointer' }}
-          onClick={() => navigate('/orders')}
+          onClick={() => navigate('/revenue')}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <div style={{ color: 'var(--text-muted)', fontSize: '14px', fontWeight: '500' }}>Total Revenue</div>

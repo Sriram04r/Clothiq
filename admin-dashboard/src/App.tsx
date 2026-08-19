@@ -7,6 +7,7 @@ import DashboardLayout from './components/DashboardLayout';
 import Overview from './pages/Overview';
 import Orders from './pages/Orders';
 import Customers from './pages/Customers';
+import RevenueDetails from './pages/RevenueDetails';
 
 function App() {
   const [user, setUser] = useState<any>(null);
@@ -43,6 +44,7 @@ function App() {
             <Route path="dashboard" element={<Overview />} />
             <Route path="orders" element={<Orders />} />
             <Route path="customers" element={<Customers />} />
+            <Route path="revenue" element={<RevenueDetails />} />
           </Route>
         ) : (
           <Route path="*" element={<Navigate to="/login" />} />
