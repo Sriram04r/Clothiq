@@ -6,6 +6,10 @@ import { StatusBar } from 'expo-status-bar';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import * as Notifications from 'expo-notifications';
 import { getFirestore, doc, setDoc } from '@react-native-firebase/firestore';
+import { useFonts } from 'expo-font';
+import { Chewy_400Regular } from '@expo-google-fonts/chewy';
+import { Kalam_400Regular, Kalam_700Bold } from '@expo-google-fonts/kalam';
+import { Caveat_700Bold } from '@expo-google-fonts/caveat';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -72,7 +76,9 @@ function RootNavigator() {
             finalStatus = status;
           }
           if (finalStatus === 'granted') {
-            const token = (await Notifications.getExpoPushTokenAsync()).data;
+            const token = (await Notifications.getExpoPushTokenAsync({
+              projectId: 'clothiq-id'
+            })).data;
             const db = getFirestore();
             await setDoc(doc(db, 'users', user.uid), { pushToken: token }, { merge: true });
           }
@@ -133,6 +139,17 @@ function RootNavigator() {
 }
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    Chewy: Chewy_400Regular,
+    Kalam: Kalam_400Regular,
+    KalamBold: Kalam_700Bold,
+    Caveat: Caveat_700Bold,
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
     <SafeAreaProvider>
       <AuthProvider>

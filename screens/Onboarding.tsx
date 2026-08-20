@@ -62,7 +62,7 @@ export default function OnboardingScreen() {
   const renderItem = ({ item }: any) => {
     return (
       <View style={[styles.slide, { width }]}>
-        <Image source={item.image} style={styles.image} resizeMode="contain" />
+        <Image source={item.image} style={styles.image} resizeMode="cover" />
         <View style={styles.textContainer}>
           <Text style={styles.title}>{item.title}</Text>
           <Text style={styles.subtitle}>{item.subtitle}</Text>
@@ -109,16 +109,16 @@ export default function OnboardingScreen() {
               extrapolate: 'clamp',
             });
 
-            const opacity = scrollX.interpolate({
+            const backgroundColor = scrollX.interpolate({
               inputRange,
-              outputRange: [0.3, 1, 0.3],
+              outputRange: ['#C1BFF2', '#1C158A', '#C1BFF2'],
               extrapolate: 'clamp',
             });
 
             return (
               <Animated.View 
                 key={i.toString()} 
-                style={[styles.dot, { width: dotWidth, opacity }]} 
+                style={[styles.dot, { width: dotWidth, backgroundColor }]} 
               />
             );
           })}
@@ -158,40 +158,44 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   skipText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#666',
+    fontSize: 18,
+    fontFamily: 'KalamBold',
+    fontStyle: 'italic',
+    color: '#555',
   },
   flatListContainer: {
     flex: 3,
   },
   slide: {
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 40,
+    justifyContent: 'flex-start',
   },
   image: {
-    width: width * 0.8,
-    height: width * 0.8,
+    width: width,
+    height: width,
     marginBottom: 40,
   },
   textContainer: {
     alignItems: 'center',
+    paddingHorizontal: 40,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '800',
+    fontSize: 34,
+    fontFamily: 'Chewy',
+    fontStyle: 'italic',
     color: '#111',
     textAlign: 'center',
     marginBottom: 16,
-    lineHeight: 34,
+    lineHeight: 40,
   },
   subtitle: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: '#666',
+    fontSize: 18,
+    fontFamily: 'KalamBold',
+    fontStyle: 'italic',
+    color: '#555',
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 26,
+    paddingHorizontal: 10,
   },
   footer: {
     flex: 1,
@@ -232,7 +236,8 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 24,
+    fontFamily: 'KalamBold',
+    fontStyle: 'italic',
   }
 });

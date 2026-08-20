@@ -28,7 +28,8 @@
       "@react-native-firebase/app",
       "expo-dev-client",
       "@react-native-firebase/auth",
-      "@react-native-google-signin/google-signin"
+      "@react-native-google-signin/google-signin",
+      "expo-font"
     ]
   }
 }
