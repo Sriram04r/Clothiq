@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, Image } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, Image, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Home, ClipboardList, Bell, LayoutGrid, User } from 'lucide-react-native';
 import * as Device from 'expo-device';
@@ -18,12 +18,28 @@ Notifications.setNotificationHandler({
 export default function HomeScreen({ navigation }: any) {
   const [userName, setUserName] = useState('App User');
   const [activeOrder, setActiveOrder] = useState<any>(null);
+  const bounceValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(bounceValue, {
+          toValue: -10,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(bounceValue, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
     registerForPushNotificationsAsync().then(token => {
       if (token) saveTokenToFirebase(token);
     });
-    
+
     const user = getAuth().currentUser;
     let unsubscribeOrder: any;
 
@@ -35,10 +51,10 @@ export default function HomeScreen({ navigation }: any) {
           if (docSnap.exists() && docSnap.data().fullName) {
             setUserName(docSnap.data().fullName);
           }
-        } catch(e) {}
+        } catch (e) { }
       }
     };
-    
+
     fetchUser();
 
     if (user) {
@@ -47,7 +63,7 @@ export default function HomeScreen({ navigation }: any) {
         orderBy('createdAt', 'desc'),
         limit(10)
       );
-      
+
       unsubscribeOrder = onSnapshot(q, (snapshot) => {
         if (!snapshot.empty) {
           // Find the most recent order that is NOT delivered
@@ -99,7 +115,7 @@ export default function HomeScreen({ navigation }: any) {
       token = (await Notifications.getExpoPushTokenAsync({
         projectId: 'clothiq-id' // Generic fallback since we aren't using EAS yet
       })).data;
-    } 
+    }
     return token;
   }
 
@@ -121,15 +137,17 @@ export default function HomeScreen({ navigation }: any) {
         {/* Banner */}
         <View style={styles.banner}>
           <View style={styles.bannerContent}>
-            <Text style={styles.bannerTitle}>20% OFF</Text>
-            <Text style={styles.bannerText}>On your first order</Text>
+            <Text style={styles.bannerTitle}>Welcome Back!</Text>
+            <Text style={styles.bannerText}>Ready for your next fresh wash?</Text>
             <View style={styles.promoCodeContainer}>
               <Text style={styles.promoCode}>Use Code: FRESH20</Text>
             </View>
           </View>
-          <View style={styles.bannerImage}>
-            <Text style={styles.bannerEmoji}>🧺</Text>
-          </View>
+          <Animated.Image
+            source={require('../assets/Wash_Fold.png')}
+            style={[styles.lottieIcon, { transform: [{ translateY: bounceValue }] }]}
+            resizeMode="contain"
+          />
         </View>
 
         {/* Services Section */}
@@ -181,16 +199,16 @@ export default function HomeScreen({ navigation }: any) {
                   <View style={styles.statusDot} />
                 </View>
                 <View style={{ flex: 1, paddingRight: 10 }}>
-                  <Text style={styles.orderId}>Order #FW{activeOrder.id.substring(0,6).toUpperCase()}</Text>
+                  <Text style={styles.orderId}>Order #FW{activeOrder.id.substring(0, 6).toUpperCase()}</Text>
                   <Text style={styles.orderStatus}>
                     {activeOrder.status === 'placed' || activeOrder.status === 'placed_cod' ? 'Order Placed' :
-                     activeOrder.status === 'pickup' ? 'Ready for Pickup' :
-                     activeOrder.status === 'washing' ? 'Washing in progress' :
-                     activeOrder.status === 'out_for_delivery' ? 'Out for Delivery' : 
-                     'In Progress'}
+                      activeOrder.status === 'pickup' ? 'Ready for Pickup' :
+                        activeOrder.status === 'washing' ? 'Washing in progress' :
+                          activeOrder.status === 'out_for_delivery' ? 'Out for Delivery' :
+                            'In Progress'}
                   </Text>
                 </View>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.trackButton}
                   onPress={() => navigation.navigate('TrackOrder', { orderId: activeOrder.id })}
                 >
@@ -315,14 +333,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  bannerImage: {
-    width: 80,
-    height: 80,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  bannerEmoji: {
-    fontSize: 64,
+  lottieIcon: {
+    width: 70,
+    height: 70,
   },
   section: {
     paddingHorizontal: 24,
