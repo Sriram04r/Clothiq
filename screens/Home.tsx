@@ -21,6 +21,7 @@ export default function HomeScreen({ navigation }: any) {
   const [userName, setUserName] = useState('App User');
   const [activeOrder, setActiveOrder] = useState<any>(null);
   const bounceValue = useRef(new Animated.Value(0)).current;
+  const spinValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.loop(
@@ -38,8 +39,21 @@ export default function HomeScreen({ navigation }: any) {
       ])
     ).start();
 
+    Animated.loop(
+      Animated.timing(spinValue, {
+        toValue: 1,
+        duration: 4000,
+        useNativeDriver: true,
+      })
+    ).start();
+
     registerForPushNotificationsAsync().then(token => {
       if (token) saveTokenToFirebase(token);
+    });
+
+    const spin = spinValue.interpolate({
+      inputRange: [0, 1],
+      outputRange: ['0deg', '360deg']
     });
 
     const user = getAuth().currentUser;
@@ -140,15 +154,12 @@ export default function HomeScreen({ navigation }: any) {
         <View style={styles.banner}>
           <View style={styles.bannerContent}>
             <Text style={styles.bannerTitle}>Welcome Back!</Text>
-            <Text style={styles.bannerText}>Ready for your next fresh wash?</Text>
-            <View style={styles.promoCodeContainer}>
-              <Text style={styles.promoCode}>Use Code: FRESH20</Text>
-            </View>
+            <Text style={styles.bannerText}>Your clothes deserve the best premium care.</Text>
           </View>
           <Animated.Image
-            source={require('../assets/Wash_Fold.png')}
-            style={[styles.lottieIcon, { transform: [{ translateY: bounceValue }] }]}
-            resizeMode="contain"
+            source={require('../assets/washing_machine_icon.png')}
+            style={[styles.lottieIcon, { transform: [{ translateY: bounceValue }, { rotate: spinValue.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }], opacity: 1, borderRadius: 12 }]}
+            resizeMode="cover"
           />
         </View>
 
@@ -302,42 +313,38 @@ const styles = StyleSheet.create({
   banner: {
     marginHorizontal: 24,
     marginBottom: 24,
-    backgroundColor: '#eff6ff',
+    backgroundColor: '#111111',
     borderRadius: 16,
     padding: 24,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.4,
+    shadowRadius: 15,
+    elevation: 10,
+    borderWidth: 1,
+    borderColor: '#222222',
   },
   bannerContent: {
     flex: 1,
   },
   bannerTitle: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#2945FF',
-    marginBottom: 4,
+    fontSize: 26,
+    fontWeight: '700',
+    color: '#F3E5AB',
+    marginBottom: 6,
+    letterSpacing: 0.5,
   },
   bannerText: {
-    fontSize: 14,
-    color: '#111111',
-    marginBottom: 12,
-  },
-  promoCodeContainer: {
-    backgroundColor: 'rgba(41, 69, 255, 0.1)',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
-  },
-  promoCode: {
-    color: '#2945FF',
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 13,
+    color: '#A1A1AA',
+    lineHeight: 18,
   },
   lottieIcon: {
-    width: 70,
-    height: 70,
+    width: 80,
+    height: 80,
   },
   section: {
     paddingHorizontal: 24,
