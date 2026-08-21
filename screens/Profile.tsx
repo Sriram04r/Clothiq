@@ -9,7 +9,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 const menuItems = [
   { id: '1', title: 'My Orders', icon: Package, screen: 'OrderHistory' },
   { id: '2', title: 'Saved Address', icon: MapPin, screen: 'SavedAddresses' },
-  { id: '3', title: 'Payment Methods', icon: CreditCard },
+  { id: '3', title: 'Payment Methods', icon: CreditCard, screen: 'PaymentMethods' },
   { id: '4', title: 'Offers & Coupons', icon: Tag },
   { id: '5', title: 'Help & Support', icon: HelpCircle, color: '#FF3B30' },
   { id: '6', title: 'Settings', icon: Settings },
