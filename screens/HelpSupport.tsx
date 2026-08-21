@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Linking, LayoutAnimation, Platform, UIManager } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Linking, LayoutAnimation, Platform, UIManager, Modal, TextInput, KeyboardAvoidingView, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, MessageCircle, Phone, Mail, ChevronDown, ChevronUp } from 'lucide-react-native';
+import { ChevronLeft, MessageCircle, Phone, Mail, ChevronDown, ChevronUp, X, Send } from 'lucide-react-native';
+import { getFirestore, collection, addDoc, serverTimestamp } from '@react-native-firebase/firestore';
+import { getAuth } from '@react-native-firebase/auth';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -28,6 +30,12 @@ const FAQS = [
 
 export default function HelpSupportScreen({ navigation }: any) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  
+  // Ticket Modal States
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [ticketSubject, setTicketSubject] = useState('');
+  const [ticketMessage, setTicketMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const toggleExpand = (index: number) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -40,6 +48,40 @@ export default function HelpSupportScreen({ navigation }: any) {
         Linking.openURL(url);
       }
     });
+  };
+
+  const submitTicket = async () => {
+    if (!ticketSubject.trim() || !ticketMessage.trim()) {
+      Alert.alert('Required', 'Please enter a subject and message.');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      const db = getFirestore();
+      
+      await addDoc(collection(db, 'support_tickets'), {
+        userId: user?.uid || 'anonymous',
+        userEmail: user?.email || 'Unknown Email',
+        userName: user?.displayName || 'Unknown User',
+        subject: ticketSubject.trim(),
+        message: ticketMessage.trim(),
+        status: 'open',
+        createdAt: serverTimestamp()
+      });
+      
+      setModalVisible(false);
+      setTicketSubject('');
+      setTicketMessage('');
+      Alert.alert('Success', 'Your support ticket has been sent to our Admin team!');
+    } catch (error) {
+      console.error('Error submitting ticket:', error);
+      Alert.alert('Error', 'Failed to send ticket. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -68,11 +110,11 @@ export default function HelpSupportScreen({ navigation }: any) {
               <Text style={styles.contactTitle}>Call Us</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.contactCard} onPress={() => openLink('mailto:adminclothiq2@gmail.com')} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.contactCard} onPress={() => setModalVisible(true)} activeOpacity={0.7}>
               <View style={[styles.iconBox, { backgroundColor: '#FFEDD5' }]}>
                 <Mail size={24} color="#EA580C" />
               </View>
-              <Text style={styles.contactTitle}>Email</Text>
+              <Text style={styles.contactTitle}>App Ticket</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.contactCard} onPress={() => openLink('https://wa.me/919666394628')} activeOpacity={0.7}>
@@ -118,6 +160,66 @@ export default function HelpSupportScreen({ navigation }: any) {
         </View>
 
       </ScrollView>
+
+      {/* Support Ticket Modal */}
+      <Modal
+        visible={isModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Contact Support</Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeBtn}>
+                <X size={24} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Subject</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="e.g. Issue with order #1234"
+                placeholderTextColor="#9CA3AF"
+                value={ticketSubject}
+                onChangeText={setTicketSubject}
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Message</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholder="Please describe your issue..."
+                placeholderTextColor="#9CA3AF"
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+                value={ticketMessage}
+                onChangeText={setTicketMessage}
+              />
+            </View>
+
+            <TouchableOpacity 
+              style={[styles.submitBtn, (!ticketSubject || !ticketMessage) && styles.submitBtnDisabled]}
+              onPress={submitTicket}
+              disabled={isSubmitting || !ticketSubject || !ticketMessage}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <>
+                  <Send size={20} color="#FFF" />
+                  <Text style={styles.submitBtnText}>Send to Admin</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
     </SafeAreaView>
   );
 }
@@ -243,5 +345,70 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#475569',
     lineHeight: 22,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1E293B',
+  },
+  closeBtn: {
+    padding: 4,
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#475569',
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 15,
+    color: '#1E293B',
+  },
+  textArea: {
+    height: 120,
+  },
+  submitBtn: {
+    backgroundColor: '#1C158A',
+    flexDirection: 'row',
+    padding: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 8,
+  },
+  submitBtnDisabled: {
+    opacity: 0.5,
+  },
+  submitBtnText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
