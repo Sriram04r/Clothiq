@@ -291,16 +291,6 @@ export default function HomeScreen({ navigation }: any) {
               </View>
             </View>
 
-            <View style={styles.pointsContainer}>
-              <View style={styles.pointsHeader}>
-                <Text style={styles.pointsTitle}>Wash Points</Text>
-                <Text style={styles.pointsValue}>450 <Text style={styles.pointsMax}>/ 500</Text></Text>
-              </View>
-              <View style={styles.progressBarBg}>
-                <View style={[styles.progressBarFill, { width: '90%' }]} />
-              </View>
-            </View>
-
             <View style={styles.dropdownActions}>
               <TouchableOpacity style={styles.dropdownBtn} onPress={() => { toggleProfile(); navigation.navigate('Profile'); }}>
                 <User size={20} color="#1C158A" />
