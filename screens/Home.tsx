@@ -143,30 +143,12 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={styles.bannerText}>Your clothes deserve the best premium care.</Text>
           </View>
 
-          {/* Custom Animated Washing Machine */}
-          <Animated.View style={{ transform: [{ translateY: bounceValue }] }}>
-            <View style={styles.machineBody}>
-              {/* Control Panel */}
-              <View style={styles.machinePanel}>
-                <View style={styles.machineButton} />
-                <View style={styles.machineButton} />
-                <View style={{ flex: 1 }} />
-                <View style={styles.machineScreen} />
-              </View>
-              {/* Drum */}
-              <View style={styles.machineDrum}>
-                {/* Tumbling Clothes */}
-                <Animated.View style={[styles.clothesContainer, { transform: [{ rotate: spin }] }]}>
-                  <View style={[styles.cloth, { backgroundColor: '#3B82F6', width: 22, height: 22, top: -2, left: 0 }]} />
-                  <View style={[styles.cloth, { backgroundColor: '#F59E0B', width: 18, height: 18, top: 20, left: 2 }]} />
-                  <View style={[styles.cloth, { backgroundColor: '#EF4444', width: 20, height: 20, top: 6, left: 18 }]} />
-                  <View style={[styles.cloth, { backgroundColor: '#10B981', width: 16, height: 16, top: 24, left: 16 }]} />
-                </Animated.View>
-                {/* Glass Cover */}
-                <View style={styles.glassCover} />
-              </View>
-            </View>
-          </Animated.View>
+          {/* Reverted to original bouncing Wash_Fold.png */}
+          <Animated.Image
+            source={require('../assets/Wash_Fold.png')}
+            style={[styles.lottieIcon, { transform: [{ translateY: bounceValue }] }]}
+            resizeMode="contain"
+          />
         </View>
 
         {/* Services Section */}
@@ -348,74 +330,10 @@ const styles = StyleSheet.create({
     color: '#A1A1AA',
     lineHeight: 18,
   },
-  machineBody: {
-    width: 70,
-    height: 85,
-    backgroundColor: '#1E1E1E',
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#D4AF37',
-    alignItems: 'center',
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  machinePanel: {
-    width: '100%',
-    height: 18,
-    borderBottomWidth: 1,
-    borderBottomColor: '#D4AF37',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 6,
-    backgroundColor: '#111111',
-  },
-  machineButton: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#D4AF37',
-    marginRight: 4,
-  },
-  machineScreen: {
-    width: 14,
-    height: 6,
-    backgroundColor: '#F3E5AB',
-    borderRadius: 2,
-    opacity: 0.8,
-  },
-  machineDrum: {
-    marginTop: 8,
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    borderWidth: 3,
-    borderColor: '#A1A1AA',
-    backgroundColor: '#000000',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  clothesContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-  },
-  cloth: {
-    position: 'absolute',
-    borderRadius: 20,
-    opacity: 0.9,
-  },
-  glassCover: {
-    position: 'absolute',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
+  lottieIcon: {
+    width: 80,
+    height: 80,
+    opacity: 0.85,
   },
   section: {
     paddingHorizontal: 24,
