@@ -54,6 +54,7 @@ import SavedAddressesScreen from './screens/SavedAddresses';
 import AddNewAddressScreen from './screens/AddNewAddress';
 import NotificationsScreen from './screens/Notifications';
 import PaymentMethodsScreen from './screens/PaymentMethods';
+import HelpSupportScreen from './screens/HelpSupport';
 
 // Driver Screens (Removed for User App)
 
@@ -119,6 +120,7 @@ function RootNavigator() {
           <Stack.Screen name="AddNewAddress" component={AddNewAddressScreen} />
           <Stack.Screen name="Notifications" component={NotificationsScreen} />
           <Stack.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
+          <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
         </>
       ) : (
         <>
