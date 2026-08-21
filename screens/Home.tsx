@@ -23,6 +23,11 @@ export default function HomeScreen({ navigation }: any) {
   const bounceValue = useRef(new Animated.Value(0)).current;
   const spinValue = useRef(new Animated.Value(0)).current;
 
+  const spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg']
+  });
+
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
@@ -50,11 +55,6 @@ export default function HomeScreen({ navigation }: any) {
 
     registerForPushNotificationsAsync().then(token => {
       if (token) saveTokenToFirebase(token);
-    });
-
-    const spin = spinValue.interpolate({
-      inputRange: [0, 1],
-      outputRange: ['0deg', '360deg']
     });
 
     const user = getAuth().currentUser;
