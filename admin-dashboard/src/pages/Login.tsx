@@ -18,9 +18,9 @@ export default function Login() {
       return;
     }
 
-    // Basic admin check (could be enforced by custom claims in production)
-    if (!email.toLowerCase().includes('admin')) {
-      setError('Unauthorized: Admin access only');
+    // Strict admin check
+    if (email.toLowerCase().trim() !== 'adminclothiq2@gmail.com') {
+      setError('Unauthorized: You are not an admin');
       return;
     }
 
@@ -31,14 +31,14 @@ export default function Login() {
       await signInWithEmailAndPassword(auth, email, password);
       navigate('/dashboard');
     } catch (err: any) {
-      // If account doesn't exist, create it automatically for admin testing
       if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+        // If they haven't created the permanent account yet, create it automatically once
         try {
           await createUserWithEmailAndPassword(auth, email, password);
           navigate('/dashboard');
           return;
         } catch (createErr: any) {
-          setError(createErr.message || 'Failed to create admin account');
+          setError('Invalid password.');
         }
       } else {
         setError(err.message || 'Failed to login');
