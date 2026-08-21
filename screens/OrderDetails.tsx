@@ -6,7 +6,7 @@ import { getAuth } from '@react-native-firebase/auth';
 import { getFirestore, doc, getDoc } from '@react-native-firebase/firestore';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
 export default function OrderDetailsScreen({ route, navigation }: any) {
   const { orderId } = route.params || {};
