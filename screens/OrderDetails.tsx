@@ -79,25 +79,32 @@ export default function OrderDetailsScreen({ route, navigation }: any) {
         <html>
           <head>
             <style>
-              body { font-family: 'Helvetica Neue', 'Helvetica', Arial, sans-serif; padding: 40px; color: #333; }
-              .header { text-align: center; margin-bottom: 40px; }
-              .title { font-size: 28px; font-weight: bold; color: #1C158A; }
-              .subtitle { font-size: 14px; color: #666; margin-top: 5px; }
+              body { font-family: 'Helvetica Neue', 'Helvetica', Arial, sans-serif; padding: 0; margin: 0; color: #333; }
+              .invoice-box { margin: 40px; padding: 40px; border: 1px solid #eee; border-top: 8px solid #1C158A; border-radius: 8px; position: relative; overflow: hidden; background: #fff; min-height: 800px; }
+              .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 140px; font-weight: 900; color: rgba(28, 21, 138, 0.03); z-index: 0; pointer-events: none; white-space: nowrap; letter-spacing: 10px; }
+              .content-wrapper { position: relative; z-index: 1; }
+              .header { text-align: center; margin-bottom: 40px; border-bottom: 1px solid #eee; padding-bottom: 30px; }
+              .title { font-size: 28px; font-weight: bold; color: #1C158A; letter-spacing: 2px; text-transform: uppercase; }
+              .subtitle { font-size: 14px; color: #666; margin-top: 8px; letter-spacing: 1px; }
               .details-container { display: flex; justify-content: space-between; margin-bottom: 40px; }
-              .section-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
-              .text { font-size: 14px; line-height: 1.5; }
-              table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-              th { text-align: left; padding: 12px; border-bottom: 2px solid #ddd; color: #666; }
-              td { padding: 12px; border-bottom: 1px solid #ddd; }
-              .total-row td { font-weight: bold; font-size: 16px; border-top: 2px solid #333; }
-              .footer { text-align: center; margin-top: 50px; font-size: 12px; color: #888; }
+              .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; border-bottom: 2px solid #f4f4f5; padding-bottom: 8px; color: #111; }
+              .text { font-size: 14px; line-height: 1.6; color: #444; }
+              table { width: 100%; border-collapse: collapse; margin-bottom: 40px; margin-top: 20px; }
+              th { text-align: left; padding: 12px; border-bottom: 2px solid #1C158A; color: #1C158A; font-weight: bold; text-transform: uppercase; font-size: 12px; }
+              td { padding: 14px 12px; border-bottom: 1px solid #f4f4f5; font-size: 14px; color: #333; }
+              .total-row td { font-weight: bold; font-size: 16px; border-top: 2px solid #111; color: #111; }
+              .footer { text-align: center; margin-top: 60px; font-size: 12px; color: #888; border-top: 1px solid #eee; padding-top: 20px; }
             </style>
           </head>
           <body>
-            <div class="header">
-              <div class="title">Clothiq Premium Care</div>
-              <div class="subtitle">Tax Invoice / Bill of Supply</div>
-            </div>
+            <div class="invoice-box">
+              <div class="watermark">CLOTHIQ</div>
+              
+              <div class="content-wrapper">
+                <div class="header">
+                  <div class="title">Clothiq</div>
+                  <div class="subtitle">PREMIUM CARE TAX INVOICE</div>
+                </div>
             
             <div class="details-container">
               <div>
@@ -152,6 +159,8 @@ export default function OrderDetailsScreen({ route, navigation }: any) {
             <div class="footer">
               Thank you for choosing Clothiq!<br>
               For any queries, contact support@clothiq.com
+            </div>
+              </div>
             </div>
           </body>
         </html>
