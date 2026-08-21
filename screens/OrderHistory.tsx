@@ -42,7 +42,7 @@ export default function OrderHistoryScreen({ navigation }: any) {
   // Filter orders based on active tab
   const filteredOrders = orders.filter(order => {
     if (activeTab === 'All') return true;
-    
+
     const status = order.status || '';
     if (activeTab === 'Completed') {
       return status === 'delivered';
@@ -55,7 +55,7 @@ export default function OrderHistoryScreen({ navigation }: any) {
   });
 
   const getStatusDisplay = (status: string) => {
-    switch(status) {
+    switch (status) {
       case 'pending_payment': return 'Pending Payment';
       case 'paid': return 'Paid (Pending Pickup)';
       case 'placed_cod': return 'Placed (COD)';
@@ -123,8 +123,8 @@ export default function OrderHistoryScreen({ navigation }: any) {
       <View style={styles.tabsContainer}>
         <View style={styles.tabsRow}>
           {['All', 'In Progress', 'Completed', 'Cancelled'].map((tab) => (
-            <TouchableOpacity 
-              key={tab} 
+            <TouchableOpacity
+              key={tab}
               style={[styles.tab, activeTab === tab && styles.activeTab]}
               onPress={() => setActiveTab(tab)}
             >
@@ -138,7 +138,7 @@ export default function OrderHistoryScreen({ navigation }: any) {
         <ActivityIndicator size="large" color="#1C158A" style={{ marginTop: 40 }} />
       ) : (
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          
+
           {filteredOrders.length === 0 ? (
             <View style={{ alignItems: 'center', marginTop: 60 }}>
               <Package size={48} color="#D1D5DB" />
@@ -146,20 +146,20 @@ export default function OrderHistoryScreen({ navigation }: any) {
             </View>
           ) : (
             filteredOrders.map((order) => (
-              <TouchableOpacity 
-                key={order.id} 
+              <TouchableOpacity
+                key={order.id}
                 style={styles.orderCard}
                 onPress={() => navigation.navigate('OrderDetails', { orderId: order.id })}
                 activeOpacity={0.7}
               >
                 {renderIcon(order.status)}
-                
+
                 <View style={styles.orderDetails}>
                   <Text style={styles.orderId}>Order #FW{order.id.substring(0, 6).toUpperCase()}</Text>
                   <Text style={styles.orderDate}>{formatDate(order.createdAt)}</Text>
                   <Text style={[styles.orderStatus, { color: getStatusColor(order.status) }]}>{getStatusDisplay(order.status)}</Text>
                 </View>
-                
+
                 <Text style={styles.orderPrice}>₹{order.pricing?.total || 0}</Text>
               </TouchableOpacity>
             ))
