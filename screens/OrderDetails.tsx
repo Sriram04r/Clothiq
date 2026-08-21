@@ -4,11 +4,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Truck, MapPin, ReceiptText } from 'lucide-react-native';
 import { getAuth } from '@react-native-firebase/auth';
 import { getFirestore, doc, getDoc } from '@react-native-firebase/firestore';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 
 export default function OrderDetailsScreen({ route, navigation }: any) {
   const { orderId } = route.params || {};
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -68,6 +71,104 @@ export default function OrderDetailsScreen({ route, navigation }: any) {
   const displayDate = pickupSchedule?.date 
     ? new Date(pickupSchedule.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) 
     : 'Unknown Date';
+
+  const generateInvoice = async () => {
+    try {
+      setIsGenerating(true);
+      const html = `
+        <html>
+          <head>
+            <style>
+              body { font-family: 'Helvetica Neue', 'Helvetica', Arial, sans-serif; padding: 40px; color: #333; }
+              .header { text-align: center; margin-bottom: 40px; }
+              .title { font-size: 28px; font-weight: bold; color: #1C158A; }
+              .subtitle { font-size: 14px; color: #666; margin-top: 5px; }
+              .details-container { display: flex; justify-content: space-between; margin-bottom: 40px; }
+              .section-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+              .text { font-size: 14px; line-height: 1.5; }
+              table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+              th { text-align: left; padding: 12px; border-bottom: 2px solid #ddd; color: #666; }
+              td { padding: 12px; border-bottom: 1px solid #ddd; }
+              .total-row td { font-weight: bold; font-size: 16px; border-top: 2px solid #333; }
+              .footer { text-align: center; margin-top: 50px; font-size: 12px; color: #888; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <div class="title">Clothiq Premium Care</div>
+              <div class="subtitle">Tax Invoice / Bill of Supply</div>
+            </div>
+            
+            <div class="details-container">
+              <div>
+                <div class="section-title">Order Details</div>
+                <div class="text"><strong>Order ID:</strong> FW${orderId?.substring(0, 6).toUpperCase()}</div>
+                <div class="text"><strong>Date:</strong> ${displayDate}</div>
+                <div class="text"><strong>Status:</strong> ${order.status || 'In Progress'}</div>
+              </div>
+              <div style="text-align: right;">
+                <div class="section-title" style="text-align: right;">Billed To</div>
+                <div class="text">${shippingAddress?.type || 'Customer'}</div>
+                <div class="text">${shippingAddress?.houseNo ? shippingAddress.houseNo + ', ' : ''}${shippingAddress?.area || ''}</div>
+                <div class="text">${shippingAddress?.pincode || ''}</div>
+              </div>
+            </div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th style="text-align: right;">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Wash & Fold (${itemsCount || 0} items)</td>
+                  <td style="text-align: right;">&#8377;${pricing?.subtotal || 0}</td>
+                </tr>
+                <tr>
+                  <td>Pickup & Delivery ${deliveryOption === 'express' ? '(Express)' : ''}</td>
+                  <td style="text-align: right;">&#8377;${pricing?.deliveryFee || 0}</td>
+                </tr>
+                <tr>
+                  <td>Coupon Discount</td>
+                  <td style="text-align: right; color: red;">- &#8377;${pricing?.discount || 0}</td>
+                </tr>
+                <tr>
+                  <td>GST (5%)</td>
+                  <td style="text-align: right;">&#8377;${pricing?.gst || 0}</td>
+                </tr>
+                <tr class="total-row">
+                  <td>Total Amount</td>
+                  <td style="text-align: right;">&#8377;${pricing?.total || 0}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="footer">
+              Thank you for choosing Clothiq!<br>
+              For any queries, contact support@clothiq.com
+            </div>
+          </body>
+        </html>
+      `;
+
+      const { uri } = await Print.printToFileAsync({ html });
+      
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
+        await Sharing.shareAsync(uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'Download Invoice',
+          UTI: 'com.adobe.pdf'
+        });
+      }
+    } catch (error) {
+      console.error("Error generating invoice:", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -145,8 +246,12 @@ export default function OrderDetailsScreen({ route, navigation }: any) {
       </ScrollView>
 
       <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.invoiceBtn}>
-          <Text style={styles.invoiceBtnText}>Download Invoice</Text>
+        <TouchableOpacity style={styles.invoiceBtn} onPress={generateInvoice} disabled={isGenerating}>
+          {isGenerating ? (
+            <ActivityIndicator size="small" color="#1C158A" />
+          ) : (
+            <Text style={styles.invoiceBtnText}>Download Invoice</Text>
+          )}
         </TouchableOpacity>
         
         <TouchableOpacity 
