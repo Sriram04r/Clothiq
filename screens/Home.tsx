@@ -299,7 +299,6 @@ export default function HomeScreen({ navigation }: any) {
               <View style={styles.progressBarBg}>
                 <View style={[styles.progressBarFill, { width: '90%' }]} />
               </View>
-              <Text style={styles.pointsHint}>50 points until your next free wash!</Text>
             </View>
 
             <View style={styles.dropdownActions}>
