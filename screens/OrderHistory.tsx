@@ -121,17 +121,17 @@ export default function OrderHistoryScreen({ navigation }: any) {
 
       {/* Tabs */}
       <View style={styles.tabsContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsScroll}>
-          {['All', 'Completed', 'In Progress', 'Cancelled'].map((tab) => (
+        <View style={styles.tabsRow}>
+          {['All', 'In Progress', 'Completed', 'Cancelled'].map((tab) => (
             <TouchableOpacity 
               key={tab} 
               style={[styles.tab, activeTab === tab && styles.activeTab]}
               onPress={() => setActiveTab(tab)}
             >
-              <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text>
+              <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]} numberOfLines={1}>{tab}</Text>
             </TouchableOpacity>
           ))}
-        </ScrollView>
+        </View>
       </View>
 
       {loading ? (
@@ -202,26 +202,31 @@ const styles = StyleSheet.create({
   tabsContainer: {
     marginBottom: 20,
   },
-  tabsScroll: {
-    paddingHorizontal: 20,
-    gap: 12,
+  tabsRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    justifyContent: 'space-between',
   },
   tab: {
+    flex: 1,
     paddingVertical: 8,
-    paddingHorizontal: 16,
+    marginHorizontal: 4,
     borderRadius: 20,
     backgroundColor: '#FFF',
     borderWidth: 1,
     borderColor: '#E5E7EB',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   activeTab: {
     backgroundColor: '#1C158A',
     borderColor: '#1C158A',
   },
   tabText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#4B5563',
-    fontWeight: '500',
+    fontWeight: '600',
+    textAlign: 'center',
   },
   activeTabText: {
     color: '#FFF',
