@@ -22,6 +22,26 @@ export default function HomeScreen({ navigation }: any) {
   const [activeOrder, setActiveOrder] = useState<any>(null);
   const bounceValue = useRef(new Animated.Value(0)).current;
 
+  // Profile Dropdown State
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileOpacity = useRef(new Animated.Value(0)).current;
+  const profileTranslateY = useRef(new Animated.Value(-20)).current;
+
+  const toggleProfile = () => {
+    if (isProfileOpen) {
+      Animated.parallel([
+        Animated.timing(profileOpacity, { toValue: 0, duration: 200, useNativeDriver: true }),
+        Animated.timing(profileTranslateY, { toValue: -20, duration: 200, useNativeDriver: true }),
+      ]).start(() => setIsProfileOpen(false));
+    } else {
+      setIsProfileOpen(true);
+      Animated.parallel([
+        Animated.timing(profileOpacity, { toValue: 1, duration: 250, useNativeDriver: true }),
+        Animated.timing(profileTranslateY, { toValue: 0, duration: 250, useNativeDriver: true, easing: Easing.out(Easing.back(1.5)) }),
+      ]).start();
+    }
+  };
+
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
@@ -131,9 +151,9 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={styles.greeting}>Hello, {userName.split(' ')[0]}</Text>
             <Text style={styles.subGreeting}>Let's get your laundry done!</Text>
           </View>
-          <View style={styles.profileAvatar}>
+          <TouchableOpacity style={styles.profileAvatar} onPress={toggleProfile} activeOpacity={0.7}>
             <User size={24} color="#2945FF" />
-          </View>
+          </TouchableOpacity>
         </View>
 
         {/* Banner */}
@@ -248,12 +268,57 @@ export default function HomeScreen({ navigation }: any) {
           <LayoutGrid size={24} color="#8e8e93" />
           <Text style={styles.navText}>Services</Text>
         </TouchableOpacity>
-
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Profile')}>
           <User size={24} color="#8e8e93" />
           <Text style={styles.navText}>Profile</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Interactive Profile Overlay */}
+      {isProfileOpen && (
+        <TouchableOpacity style={styles.overlayBg} activeOpacity={1} onPress={toggleProfile}>
+          <Animated.View style={[styles.profileDropdown, { opacity: profileOpacity, transform: [{ translateY: profileTranslateY }] }]}>
+            
+            <View style={styles.dropdownHeader}>
+              <View style={styles.dropdownAvatar}>
+                <User size={32} color="#FFF" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.dropdownName} numberOfLines={1}>{userName}</Text>
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>🏆 Clothiq Elite</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.pointsContainer}>
+              <View style={styles.pointsHeader}>
+                <Text style={styles.pointsTitle}>Wash Points</Text>
+                <Text style={styles.pointsValue}>450 <Text style={styles.pointsMax}>/ 500</Text></Text>
+              </View>
+              <View style={styles.progressBarBg}>
+                <View style={[styles.progressBarFill, { width: '90%' }]} />
+              </View>
+              <Text style={styles.pointsHint}>50 points until your next free wash!</Text>
+            </View>
+
+            <View style={styles.dropdownActions}>
+              <TouchableOpacity style={styles.dropdownBtn} onPress={() => { toggleProfile(); navigation.navigate('Profile'); }}>
+                <User size={20} color="#1C158A" />
+                <Text style={styles.dropdownBtnText}>Account Settings</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.dropdownBtn} onPress={() => { toggleProfile(); }}>
+                <Bell size={20} color="#1C158A" />
+                <Text style={styles.dropdownBtnText}>Help & Support</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.dropdownBtn, styles.logoutBtn]} onPress={() => { toggleProfile(); getAuth().signOut(); }}>
+                <Text style={styles.logoutBtnText}>Log Out</Text>
+              </TouchableOpacity>
+            </View>
+            
+          </Animated.View>
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 }
@@ -462,5 +527,137 @@ const styles = StyleSheet.create({
   },
   navTextActive: {
     color: '#2945FF',
+  },
+  overlayBg: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    zIndex: 100,
+  },
+  profileDropdown: {
+    position: 'absolute',
+    top: 70,
+    right: 20,
+    width: 320,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 24,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.8)',
+  },
+  dropdownHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+    gap: 16,
+  },
+  dropdownAvatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#1C158A',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#1C158A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  dropdownName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#111',
+    marginBottom: 4,
+  },
+  badge: {
+    backgroundColor: '#FFF8E1',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#FFE082',
+    alignSelf: 'flex-start',
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#F57F17',
+  },
+  pointsContainer: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  pointsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: 12,
+  },
+  pointsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  pointsValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1C158A',
+  },
+  pointsMax: {
+    fontSize: 14,
+    color: '#94A3B8',
+    fontWeight: '500',
+  },
+  progressBarBg: {
+    height: 8,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 10,
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: '#1C158A',
+    borderRadius: 4,
+  },
+  pointsHint: {
+    fontSize: 12,
+    color: '#64748B',
+    textAlign: 'center',
+  },
+  dropdownActions: {
+    gap: 12,
+  },
+  dropdownBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
+    gap: 12,
+  },
+  dropdownBtnText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1E293B',
+  },
+  logoutBtn: {
+    backgroundColor: '#FFF1F2',
+    marginTop: 8,
+    justifyContent: 'center',
+  },
+  logoutBtnText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#E11D48',
   },
 });
