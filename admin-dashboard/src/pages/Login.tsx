@@ -74,7 +74,7 @@ export default function Login() {
                 type="email" 
                 className="input-field" 
                 style={{ paddingLeft: '40px' }}
-                placeholder="admin@clothiq.com"
+                placeholder="adminclothiq2@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
