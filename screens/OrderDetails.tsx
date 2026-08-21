@@ -103,14 +103,18 @@ export default function OrderDetailsScreen({ route, navigation }: any) {
               <div>
                 <div class="section-title">Order Details</div>
                 <div class="text"><strong>Order ID:</strong> FW${orderId?.substring(0, 6).toUpperCase()}</div>
-                <div class="text"><strong>Date:</strong> ${displayDate}</div>
+                <div class="text"><strong>Order Date:</strong> ${displayDate}</div>
                 <div class="text"><strong>Status:</strong> ${order.status || 'In Progress'}</div>
+                <div class="text"><strong>Pickup Slot:</strong> ${pickupSchedule?.time || 'N/A'}</div>
+                <div class="text"><strong>Payment:</strong> ${order.paymentMethod ? order.paymentMethod.toUpperCase() : 'COD'}</div>
               </div>
               <div style="text-align: right;">
                 <div class="section-title" style="text-align: right;">Billed To</div>
-                <div class="text">${shippingAddress?.type || 'Customer'}</div>
+                <div class="text"><strong>${getAuth().currentUser?.displayName || 'Customer'}</strong></div>
+                ${getAuth().currentUser?.email ? `<div class="text">${getAuth().currentUser?.email}</div>` : ''}
                 <div class="text">${shippingAddress?.houseNo ? shippingAddress.houseNo + ', ' : ''}${shippingAddress?.area || ''}</div>
                 <div class="text">${shippingAddress?.pincode || ''}</div>
+                ${shippingAddress?.type ? `<div class="text" style="color: #666; font-size: 12px; margin-top: 4px;">(${shippingAddress.type})</div>` : ''}
               </div>
             </div>
 
