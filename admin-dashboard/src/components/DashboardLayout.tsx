@@ -11,17 +11,25 @@ export default function DashboardLayout() {
   const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
+    // We removed orderBy to prevent Firebase Composite Index errors. We will sort in memory.
     const q = query(
       collection(db, 'support_tickets'),
-      where('status', '==', 'open'),
-      orderBy('createdAt', 'desc')
+      where('status', '==', 'open')
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const newTickets = snapshot.docs.map(doc => ({
+      let newTickets = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
+      
+      // Sort in memory (newest first)
+      newTickets.sort((a: any, b: any) => {
+        const timeA = a.createdAt?.toMillis() || 0;
+        const timeB = b.createdAt?.toMillis() || 0;
+        return timeB - timeA;
+      });
+      
       setTickets(newTickets);
     });
 
