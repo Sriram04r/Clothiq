@@ -21,12 +21,6 @@ export default function HomeScreen({ navigation }: any) {
   const [userName, setUserName] = useState('App User');
   const [activeOrder, setActiveOrder] = useState<any>(null);
   const bounceValue = useRef(new Animated.Value(0)).current;
-  const spinValue = useRef(new Animated.Value(0)).current;
-
-  const spin = spinValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg']
-  });
 
   useEffect(() => {
     Animated.loop(
@@ -42,15 +36,6 @@ export default function HomeScreen({ navigation }: any) {
           useNativeDriver: true,
         }),
       ])
-    ).start();
-
-    Animated.loop(
-      Animated.timing(spinValue, {
-        toValue: 1,
-        duration: 2000,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
     ).start();
 
     registerForPushNotificationsAsync().then(token => {
@@ -157,7 +142,7 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={styles.bannerTitle}>Welcome Back!</Text>
             <Text style={styles.bannerText}>Your clothes deserve the best premium care.</Text>
           </View>
-          
+
           {/* Custom Animated Washing Machine */}
           <Animated.View style={{ transform: [{ translateY: bounceValue }] }}>
             <View style={styles.machineBody}>
