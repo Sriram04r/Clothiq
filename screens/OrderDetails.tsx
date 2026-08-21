@@ -6,6 +6,7 @@ import { getAuth } from '@react-native-firebase/auth';
 import { getFirestore, doc, getDoc } from '@react-native-firebase/firestore';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
 
 export default function OrderDetailsScreen({ route, navigation }: any) {
   const { orderId } = route.params || {};
@@ -168,9 +169,18 @@ export default function OrderDetailsScreen({ route, navigation }: any) {
 
       const { uri } = await Print.printToFileAsync({ html });
       
+      const userName = getAuth().currentUser?.displayName?.replace(/[^a-zA-Z0-9]/g, '_') || 'Customer';
+      const cleanOrderId = orderId ? orderId.substring(0, 6).toUpperCase() : 'Order';
+      const newUri = `${FileSystem.cacheDirectory}Clothiq_Invoice_${userName}_FW${cleanOrderId}.pdf`;
+      
+      await FileSystem.copyAsync({
+        from: uri,
+        to: newUri
+      });
+      
       const isAvailable = await Sharing.isAvailableAsync();
       if (isAvailable) {
-        await Sharing.shareAsync(uri, {
+        await Sharing.shareAsync(newUri, {
           mimeType: 'application/pdf',
           dialogTitle: 'Download Invoice',
           UTI: 'com.adobe.pdf'
