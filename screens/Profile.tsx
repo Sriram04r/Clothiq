@@ -33,7 +33,7 @@ export default function ProfileScreen({ navigation }: any) {
 
     const db = getFirestore();
     const unsubscribe = onSnapshot(doc(db, 'users', user.uid), (docSnap) => {
-      if (docSnap.exists) {
+      if (docSnap.exists()) {
         const data = docSnap.data();
         name = data?.fullName || name;
         phone = data?.phone || phone;

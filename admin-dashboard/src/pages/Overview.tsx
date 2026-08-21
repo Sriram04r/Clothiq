@@ -181,7 +181,7 @@ export default function Overview() {
               <RechartsTooltip 
                 contentStyle={{ backgroundColor: 'var(--bg-elevated)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
                 itemStyle={{ color: 'var(--text-light)', fontWeight: '600' }}
-                formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Revenue']}
+                formatter={(value: any) => [`₹${value.toLocaleString()}`, 'Revenue']}
               />
               <Area type="monotone" dataKey="revenue" stroke="var(--primary)" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
             </AreaChart>
@@ -203,7 +203,7 @@ export default function Overview() {
                 contentStyle={{ backgroundColor: 'var(--bg-elevated)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
                 itemStyle={{ color: 'var(--accent)', fontWeight: '600' }}
                 cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                formatter={(value: number) => [value, 'Orders']}
+                formatter={(value: any) => [value, 'Orders']}
               />
               <Bar dataKey="orders" fill="var(--accent)" radius={[6, 6, 0, 0]} barSize={40} />
             </BarChart>

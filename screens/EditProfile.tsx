@@ -27,7 +27,7 @@ export default function EditProfileScreen({ navigation }: any) {
         try {
           const db = getFirestore();
           const userDoc = await getDoc(doc(db, 'users', user.uid));
-          if (userDoc.exists) {
+          if (userDoc.exists()) {
             const data = userDoc.data();
             setFullName(data?.fullName || user.displayName || '');
             setPhone(data?.phone || user.phoneNumber || '');

@@ -16,6 +16,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -67,9 +69,7 @@ function RootNavigator() {
     if (user) {
       (async () => {
         try {
-          const { status: existingStatus } = await Notifications.getPermissionsAsync({
-            ios: { allowAlert: true, allowBadge: true, allowSound: true }
-          });
+          const { status: existingStatus } = await Notifications.getPermissionsAsync();
           let finalStatus = existingStatus;
           if (existingStatus !== 'granted') {
             const { status } = await Notifications.requestPermissionsAsync();

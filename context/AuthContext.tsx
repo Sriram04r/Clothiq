@@ -1,10 +1,10 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { getAuth, FirebaseAuthTypes } from '@react-native-firebase/auth';
+import { getAuth } from '@react-native-firebase/auth';
 import { getFirestore, doc, getDoc } from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface AuthContextType {
-  user: FirebaseAuthTypes.User | null;
+  user: any | null;
   initializing: boolean;
   wasLoggedIn: boolean;
   userRole: 'customer' | 'driver' | null;
@@ -22,21 +22,21 @@ export const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [initializing, setInitializing] = useState(true);
   const [wasLoggedIn, setWasLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState<'customer' | 'driver' | null>(null);
   const [hasOnboarded, setHasOnboarded] = useState(false);
 
   // Handle user state changes
-  async function onAuthStateChanged(user: FirebaseAuthTypes.User | null) {
+  async function onAuthStateChanged(user: any | null) {
     if (user) {
       setWasLoggedIn(true);
       // Fetch role
       try {
         const db = getFirestore();
         const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists) {
+        if (userDoc.exists()) {
           const data = userDoc.data();
           setUserRole(data?.role === 'driver' ? 'driver' : 'customer');
         } else {

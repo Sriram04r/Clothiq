@@ -25,7 +25,7 @@ export default function SelectAddressScreen({ navigation }: any) {
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const fetchedAddresses = querySnapshot.docs.map(doc => ({
         id: doc.id,
-        ...doc.data()
+        ...(doc.data() as any)
       }));
       
       // Sort so default is always first

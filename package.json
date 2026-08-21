@@ -8,6 +8,7 @@
     "@expo-google-fonts/chewy": "^0.4.0",
     "@expo-google-fonts/fredoka-one": "^0.2.3",
     "@expo-google-fonts/kalam": "^0.4.1",
+    "@expo/vector-icons": "^15.1.1",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-firebase/app": "^26.1.0",
     "@react-native-firebase/auth": "^26.1.0",

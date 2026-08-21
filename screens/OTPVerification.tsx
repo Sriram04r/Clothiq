@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, TextInput, Image, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft } from 'lucide-react-native';
-import { getAuth, EmailAuthProvider } from '@react-native-firebase/auth';
+import { getAuth, EmailAuthProvider, signInWithPhoneNumber } from '@react-native-firebase/auth';
 import { getFirestore, doc, setDoc } from '@react-native-firebase/firestore';
 
 export default function OTPVerificationScreen({ route, navigation }: any) {
@@ -22,7 +22,7 @@ export default function OTPVerificationScreen({ route, navigation }: any) {
   const sendOTP = async (phoneNumber: string) => {
     try {
       const auth = getAuth();
-      const confirmation = await auth.signInWithPhoneNumber(phoneNumber);
+      const confirmation = await signInWithPhoneNumber(auth, phoneNumber);
       setConfirm(confirmation);
     } catch (error: any) {
       Alert.alert('Error sending OTP', error.message);
