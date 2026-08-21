@@ -61,21 +61,21 @@ export default function HelpSupportScreen({ navigation }: any) {
           <Text style={styles.sectionSub}>Our premium support team is available 24/7 to assist you.</Text>
           
           <View style={styles.contactGrid}>
-            <TouchableOpacity style={styles.contactCard} onPress={() => openLink('tel:+1234567890')} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.contactCard} onPress={() => openLink('tel:+919666394628')} activeOpacity={0.7}>
               <View style={[styles.iconBox, { backgroundColor: '#E0E7FF' }]}>
                 <Phone size={24} color="#1C158A" />
               </View>
               <Text style={styles.contactTitle}>Call Us</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.contactCard} onPress={() => openLink('mailto:support@clothiq.com')} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.contactCard} onPress={() => openLink('mailto:admin2@clothiq.com')} activeOpacity={0.7}>
               <View style={[styles.iconBox, { backgroundColor: '#FFEDD5' }]}>
                 <Mail size={24} color="#EA580C" />
               </View>
               <Text style={styles.contactTitle}>Email</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.contactCard} onPress={() => openLink('https://wa.me/1234567890')} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.contactCard} onPress={() => openLink('https://wa.me/919666394628')} activeOpacity={0.7}>
               <View style={[styles.iconBox, { backgroundColor: '#DCFCE7' }]}>
                 <MessageCircle size={24} color="#16A34A" />
               </View>
