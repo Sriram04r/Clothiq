@@ -68,7 +68,7 @@ export default function HelpSupportScreen({ navigation }: any) {
               <Text style={styles.contactTitle}>Call Us</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.contactCard} onPress={() => openLink('mailto:admin2@clothiq.com')} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.contactCard} onPress={() => openLink('mailto:adminclothiq2@gmail.com')} activeOpacity={0.7}>
               <View style={[styles.iconBox, { backgroundColor: '#FFEDD5' }]}>
                 <Mail size={24} color="#EA580C" />
               </View>
