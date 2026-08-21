@@ -143,11 +143,11 @@ export default function HomeScreen({ navigation }: any) {
             <Text style={styles.bannerText}>Your clothes deserve the best premium care.</Text>
           </View>
 
-          {/* Reverted to original bouncing Wash_Fold.png */}
+          {/* 3D Premium Washing Machine Icon */}
           <Animated.Image
-            source={require('../assets/Wash_Fold.png')}
+            source={require('../assets/washing_machine_icon.png')}
             style={[styles.lottieIcon, { transform: [{ translateY: bounceValue }] }]}
-            resizeMode="contain"
+            resizeMode="cover"
           />
         </View>
 
