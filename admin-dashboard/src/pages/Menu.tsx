@@ -61,6 +61,13 @@ export default function Menu() {
     }
   };
 
+  const categories = ['All', 'Men', 'Women', 'Kids', 'Household'];
+  const [activeCategory, setActiveCategory] = useState('All');
+
+  const filteredItems = activeCategory === 'All' 
+    ? items 
+    : items.filter(item => item.category === activeCategory);
+
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}><Loader2 className="spin" size={32} color="var(--primary)" /></div>;
 
   return (
@@ -83,6 +90,31 @@ export default function Menu() {
           </button>
         )}
       </div>
+
+      {items.length > 0 && (
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', overflowX: 'auto', paddingBottom: '8px' }}>
+          {categories.map(category => (
+            <button
+              key={category}
+              onClick={() => setActiveCategory(category)}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '20px',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: '500',
+                fontSize: '14px',
+                backgroundColor: activeCategory === category ? 'var(--primary)' : 'var(--bg-card)',
+                color: activeCategory === category ? 'white' : 'var(--text-muted)',
+                boxShadow: activeCategory === category ? '0 4px 12px rgba(0,0,0,0.1)' : 'none',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+      )}
       
       <div className="glass-panel" style={{ overflowX: 'auto', padding: '0' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
@@ -95,7 +127,7 @@ export default function Menu() {
             </tr>
           </thead>
           <tbody>
-            {items.map((item, index) => (
+            {filteredItems.map((item, index) => (
               <tr key={item.id} className={`animate-in delay-${(index % 4) + 1}`} style={{ borderBottom: '1px solid var(--border-light)' }}>
                 <td style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: item.color || '#F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
@@ -119,6 +151,13 @@ export default function Menu() {
                 </td>
               </tr>
             ))}
+            {filteredItems.length === 0 && items.length > 0 && (
+              <tr>
+                <td colSpan={4} style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  No items found in the {activeCategory} category.
+                </td>
+              </tr>
+            )}
             {items.length === 0 && (
               <tr>
                 <td colSpan={4} style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)' }}>
