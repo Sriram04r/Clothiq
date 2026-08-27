@@ -102,12 +102,14 @@ export default function Menu() {
                 borderRadius: '20px',
                 border: 'none',
                 cursor: 'pointer',
-                fontWeight: '500',
+                fontWeight: '600',
                 fontSize: '14px',
                 backgroundColor: activeCategory === category ? 'var(--primary)' : 'var(--bg-card)',
-                color: activeCategory === category ? 'white' : 'var(--text-muted)',
-                boxShadow: activeCategory === category ? '0 4px 12px rgba(0,0,0,0.1)' : 'none',
-                transition: 'all 0.2s ease'
+                color: activeCategory === category ? 'var(--bg-dark)' : 'var(--text-muted)',
+                boxShadow: activeCategory === category ? '0 4px 12px rgba(255,255,255,0.1)' : 'none',
+                transition: 'all 0.2s ease',
+                whiteSpace: 'nowrap',
+                minWidth: 'max-content'
               }}
             >
               {category}
