@@ -1,32 +1,37 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Plus, Minus } from 'lucide-react-native';
 import { useCart } from '../context/CartContext';
 
 const itemsData = [
   // General / Men
-  { id: '1', name: 'Pant', price: 10, icon: '👖', color: '#EEF2FF' },
-  { id: '2', name: 'Shirt', price: 10, icon: '👕', color: '#F0F9FF' },
-  { id: '3', name: 'White-Liquid Pair', price: 30, icon: '👔', color: '#ECFDF5' },
+  { id: '1', name: 'Pant', price: 10, icon: '👖', color: '#EEF2FF', category: 'Men' },
+  { id: '2', name: 'Shirt', price: 10, icon: '👕', color: '#F0F9FF', category: 'Men' },
+  { id: '3', name: 'White-Liquid Pair', price: 30, icon: '👔', color: '#ECFDF5', category: 'Men' },
   
   // Ladies
-  { id: '4', name: 'Saree (Normal)', price: 30, icon: '🥻', color: '#FDF2F8' },
-  { id: '5', name: 'Saree (Pattu/Silk)', price: 45, icon: '🥻', color: '#FFF1F2' },
-  { id: '6', name: 'Chudidhar (Pair)', price: 10, icon: '👗', color: '#FDF4FF' },
-  { id: '7', name: 'Lehanga (Pair)', price: 10, icon: '👗', color: '#FAF5FF' },
-  { id: '8', name: 'Frock', price: 15, icon: '👗', color: '#F5F3FF' },
+  { id: '4', name: 'Saree (Normal)', price: 30, icon: '🥻', color: '#FDF2F8', category: 'Women' },
+  { id: '5', name: 'Saree (Pattu/Silk)', price: 45, icon: '🥻', color: '#FFF1F2', category: 'Women' },
+  { id: '6', name: 'Chudidhar (Pair)', price: 10, icon: '👗', color: '#FDF4FF', category: 'Women' },
+  { id: '7', name: 'Lehanga (Pair)', price: 10, icon: '👗', color: '#FAF5FF', category: 'Women' },
+  { id: '8', name: 'Frock', price: 15, icon: '👗', color: '#F5F3FF', category: 'Women' },
   
   // Kids
-  { id: '9', name: 'Kids Item (Single)', price: 5, icon: '🧸', color: '#FFFBEB' },
+  { id: '9', name: 'Kids Item (Single)', price: 5, icon: '🧸', color: '#FFFBEB', category: 'Kids' },
   
   // Household
-  { id: '10', name: 'Towel', price: 5, icon: '🧻', color: '#F8FAFC' },
-  { id: '11', name: 'Blanket', price: 80, icon: '🛏️', color: '#F7FEE7' },
+  { id: '10', name: 'Towel', price: 5, icon: '🧻', color: '#F8FAFC', category: 'Household' },
+  { id: '11', name: 'Blanket', price: 80, icon: '🛏️', color: '#F7FEE7', category: 'Household' },
 ];
+
+const categories = ['Men', 'Women', 'Kids', 'Household'];
 
 export default function SelectItemsScreen({ navigation }: any) {
   const { updateQuantityOrAdd, getItemQuantity, subTotal } = useCart();
+  const [activeCategory, setActiveCategory] = useState('Men');
+
+  const filteredItems = itemsData.filter(item => item.category === activeCategory);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -40,8 +45,33 @@ export default function SelectItemsScreen({ navigation }: any) {
         </View>
       </View>
 
+      {/* Category Tabs */}
+      <View style={styles.categoriesContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesScroll}>
+          {categories.map((category) => (
+            <TouchableOpacity
+              key={category}
+              style={[
+                styles.categoryTab,
+                activeCategory === category && styles.categoryTabActive
+              ]}
+              onPress={() => setActiveCategory(category)}
+            >
+              <Text
+                style={[
+                  styles.categoryText,
+                  activeCategory === category && styles.categoryTextActive
+                ]}
+              >
+                {category}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {itemsData.map((item) => {
+        {filteredItems.map((item) => {
           const qty = getItemQuantity(item.id);
           return (
             <View key={item.id} style={styles.itemCard}>
@@ -66,6 +96,11 @@ export default function SelectItemsScreen({ navigation }: any) {
             </View>
           );
         })}
+        {filteredItems.length === 0 && (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>No items found in this category.</Text>
+          </View>
+        )}
       </ScrollView>
 
       {/* Sticky Bottom Cart Bar */}
@@ -90,7 +125,7 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 20,
     paddingTop: 10,
-    paddingBottom: 20,
+    paddingBottom: 10,
   },
   backButton: {
     padding: 8,
@@ -111,6 +146,30 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     marginTop: 4,
+  },
+  categoriesContainer: {
+    marginBottom: 16,
+  },
+  categoriesScroll: {
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+  categoryTab: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#F0F0F0',
+  },
+  categoryTabActive: {
+    backgroundColor: '#000080',
+  },
+  categoryText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+  },
+  categoryTextActive: {
+    color: '#FFF',
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -170,6 +229,14 @@ const styles = StyleSheet.create({
     color: '#111',
     width: 24,
     textAlign: 'center',
+  },
+  emptyState: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  emptyStateText: {
+    color: '#888',
+    fontSize: 14,
   },
   bottomBar: {
     position: 'absolute',
