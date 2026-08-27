@@ -21,6 +21,9 @@ export default function Menu() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSeeding, setIsSeeding] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newItem, setNewItem] = useState({ name: '', price: '', category: 'Men', icon: '', color: '#334155' });
+  const [isAdding, setIsAdding] = useState(false);
 
   const fetchItems = async () => {
     setLoading(true);
@@ -61,6 +64,23 @@ export default function Menu() {
     }
   };
 
+  const handleAddItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsAdding(true);
+    try {
+      await addDoc(collection(db, 'serviceItems'), {
+        ...newItem,
+        price: Number(newItem.price)
+      });
+      setShowAddModal(false);
+      setNewItem({ name: '', price: '', category: 'Men', icon: '', color: '#334155' });
+      fetchItems();
+    } catch (err) {
+      console.error("Error adding item:", err);
+    }
+    setIsAdding(false);
+  };
+
   const categories = ['All', 'Men', 'Women', 'Kids', 'Household'];
   const [activeCategory, setActiveCategory] = useState('All');
 
@@ -85,7 +105,7 @@ export default function Menu() {
             {isSeeding ? 'Seeding...' : 'Seed Database with Initial Data'}
           </button>
         ) : (
-          <button className="btn btn-primary" onClick={() => alert("Add Item functionality coming soon!")} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button className="btn btn-primary" onClick={() => setShowAddModal(true)} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Plus size={16} /> Add Item
           </button>
         )}
@@ -171,6 +191,51 @@ export default function Menu() {
           </tbody>
         </table>
       </div>
+
+      {/* Add Item Modal */}
+      {showAddModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div className="glass-panel animate-in" style={{ width: '450px', maxWidth: '90%', padding: '32px' }}>
+            <h2 style={{ marginBottom: '24px', fontSize: '24px', fontWeight: '600' }}>Add New Item</h2>
+            <form onSubmit={handleAddItem}>
+              <div className="form-group">
+                <label className="form-label">Item Name</label>
+                <input type="text" required className="input-field" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} placeholder="e.g. Jeans" />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Price (₹)</label>
+                <input type="number" required className="input-field" value={newItem.price} onChange={e => setNewItem({...newItem, price: e.target.value})} placeholder="e.g. 20" />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Category</label>
+                <select className="input-field" style={{ appearance: 'none' }} value={newItem.category} onChange={e => setNewItem({...newItem, category: e.target.value})}>
+                  <option value="Men">Men</option>
+                  <option value="Women">Women</option>
+                  <option value="Kids">Kids</option>
+                  <option value="Household">Household</option>
+                </select>
+              </div>
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Emoji Icon</label>
+                  <input type="text" required className="input-field" value={newItem.icon} onChange={e => setNewItem({...newItem, icon: e.target.value})} placeholder="👖" />
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Icon Background</label>
+                  <input type="color" className="input-field" style={{ padding: '4px', height: '52px', cursor: 'pointer' }} value={newItem.color} onChange={e => setNewItem({...newItem, color: e.target.value})} />
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
+                <button type="button" className="btn-danger" style={{ flex: 1 }} onClick={() => setShowAddModal(false)}>Cancel</button>
+                <button type="submit" className="btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }} disabled={isAdding}>
+                  {isAdding ? <Loader2 className="spin" size={16} /> : 'Save Item'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
