@@ -5,12 +5,24 @@ import { ChevronLeft, Plus, Minus } from 'lucide-react-native';
 import { useCart } from '../context/CartContext';
 
 const itemsData = [
-  { id: '1', name: 'Jeans', price: 10, icon: '👖', color: '#EEF2FF' },
-  { id: '2', name: 'Trousers', price: 7, icon: '🩳', color: '#F0FDF4' },
-  { id: '3', name: 'Shirt', price: 5, icon: '👕', color: '#F0F9FF' },
-  { id: '4', name: 'T-Shirt', price: 5, icon: '👕', color: '#ECFDF5' },
-  { id: '5', name: 'Towel', price: 15, icon: '🧻', color: '#F8FAFC' },
-  { id: '6', name: 'Blanket', price: 25, icon: '🛏️', color: '#F7FEE7' },
+  // General / Men
+  { id: '1', name: 'Pant', price: 10, icon: '👖', color: '#EEF2FF' },
+  { id: '2', name: 'Shirt', price: 10, icon: '👕', color: '#F0F9FF' },
+  { id: '3', name: 'White-Liquid Pair', price: 30, icon: '👔', color: '#ECFDF5' },
+  
+  // Ladies
+  { id: '4', name: 'Saree (Normal)', price: 30, icon: '🥻', color: '#FDF2F8' },
+  { id: '5', name: 'Saree (Pattu/Silk)', price: 45, icon: '🥻', color: '#FFF1F2' },
+  { id: '6', name: 'Chudidhar (Pair)', price: 10, icon: '👗', color: '#FDF4FF' },
+  { id: '7', name: 'Lehanga (Pair)', price: 10, icon: '👗', color: '#FAF5FF' },
+  { id: '8', name: 'Frock', price: 15, icon: '👗', color: '#F5F3FF' },
+  
+  // Kids
+  { id: '9', name: 'Kids Item (Single)', price: 5, icon: '🧸', color: '#FFFBEB' },
+  
+  // Household
+  { id: '10', name: 'Towel', price: 5, icon: '🧻', color: '#F8FAFC' },
+  { id: '11', name: 'Blanket', price: 80, icon: '🛏️', color: '#F7FEE7' },
 ];
 
 export default function SelectItemsScreen({ navigation }: any) {
