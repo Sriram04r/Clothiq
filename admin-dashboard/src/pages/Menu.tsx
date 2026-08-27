@@ -81,6 +81,45 @@ export default function Menu() {
     setIsAdding(false);
   };
 
+  const handleNameChange = (name: string) => {
+    let icon = newItem.icon;
+    let color = newItem.color;
+    let category = newItem.category;
+    const lowerName = name.toLowerCase();
+
+    if (lowerName.includes('pant') || lowerName.includes('jean') || lowerName.includes('trouser')) {
+      icon = '👖'; color = '#EEF2FF'; category = 'Men';
+    } else if (lowerName.includes('shirt') || lowerName.includes('t-shirt') || lowerName.includes('top')) {
+      icon = '👕'; color = '#F0F9FF'; category = 'Men';
+    } else if (lowerName.includes('suit') || lowerName.includes('tie') || lowerName.includes('blazer')) {
+      icon = '👔'; color = '#ECFDF5'; category = 'Men';
+    } else if (lowerName.includes('saree')) {
+      icon = '🥻'; color = '#FDF2F8'; category = 'Women';
+    } else if (lowerName.includes('dress') || lowerName.includes('frock') || lowerName.includes('chudidhar') || lowerName.includes('lehanga')) {
+      icon = '👗'; color = '#FDF4FF'; category = 'Women';
+    } else if (lowerName.includes('towel')) {
+      icon = '🧻'; color = '#F8FAFC'; category = 'Household';
+    } else if (lowerName.includes('blanket') || lowerName.includes('bed') || lowerName.includes('pillow') || lowerName.includes('cover')) {
+      icon = '🛏️'; color = '#F7FEE7'; category = 'Household';
+    } else if (lowerName.includes('kid') || lowerName.includes('toy')) {
+      icon = '🧸'; color = '#FFFBEB'; category = 'Kids';
+    } else if (lowerName.includes('shoe') || lowerName.includes('sneaker')) {
+      icon = '👟'; color = '#F1F5F9';
+    } else if (lowerName.includes('jacket') || lowerName.includes('coat') || lowerName.includes('hoodie')) {
+      icon = '🧥'; color = '#FEF2F2';
+    } else if (lowerName.includes('sock')) {
+      icon = '🧦'; color = '#FFF7ED';
+    }
+
+    setNewItem(prev => ({
+      ...prev,
+      name,
+      icon,
+      color,
+      category
+    }));
+  };
+
   const categories = ['All', 'Men', 'Women', 'Kids', 'Household'];
   const [activeCategory, setActiveCategory] = useState('All');
 
@@ -200,7 +239,7 @@ export default function Menu() {
             <form onSubmit={handleAddItem}>
               <div className="form-group">
                 <label className="form-label">Item Name</label>
-                <input type="text" required className="input-field" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} placeholder="e.g. Jeans" />
+                <input type="text" required className="input-field" value={newItem.name} onChange={e => handleNameChange(e.target.value)} placeholder="e.g. Jeans" />
               </div>
               <div className="form-group">
                 <label className="form-label">Price (₹)</label>
