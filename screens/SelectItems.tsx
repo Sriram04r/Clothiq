@@ -1,35 +1,36 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, FlatList, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Plus, Minus } from 'lucide-react-native';
 import { useCart } from '../context/CartContext';
-
-const itemsData = [
-  // General / Men
-  { id: '1', name: 'Pant', price: 10, icon: '👖', color: '#EEF2FF', category: 'Men' },
-  { id: '2', name: 'Shirt', price: 10, icon: '👕', color: '#F0F9FF', category: 'Men' },
-  { id: '3', name: 'White-Liquid Pair', price: 30, icon: '👔', color: '#ECFDF5', category: 'Men' },
-  
-  // Ladies
-  { id: '4', name: 'Saree (Normal)', price: 30, icon: '🥻', color: '#FDF2F8', category: 'Women' },
-  { id: '5', name: 'Saree (Pattu/Silk)', price: 45, icon: '🥻', color: '#FFF1F2', category: 'Women' },
-  { id: '6', name: 'Chudidhar (Pair)', price: 10, icon: '👗', color: '#FDF4FF', category: 'Women' },
-  { id: '7', name: 'Lehanga (Pair)', price: 10, icon: '👗', color: '#FAF5FF', category: 'Women' },
-  { id: '8', name: 'Frock', price: 15, icon: '👗', color: '#F5F3FF', category: 'Women' },
-  
-  // Kids
-  { id: '9', name: 'Kids Item (Single)', price: 5, icon: '🧸', color: '#FFFBEB', category: 'Kids' },
-  
-  // Household
-  { id: '10', name: 'Towel', price: 5, icon: '🧻', color: '#F8FAFC', category: 'Household' },
-  { id: '11', name: 'Blanket', price: 80, icon: '🛏️', color: '#F7FEE7', category: 'Household' },
-];
+import { getFirestore, collection, getDocs } from '@react-native-firebase/firestore';
 
 const categories = ['Men', 'Women', 'Kids', 'Household'];
 
 export default function SelectItemsScreen({ navigation }: any) {
   const { updateQuantityOrAdd, getItemQuantity, subTotal } = useCart();
   const [activeCategory, setActiveCategory] = useState('Men');
+  const [itemsData, setItemsData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const firestore = getFirestore();
+        const snap = await getDocs(collection(firestore, 'serviceItems'));
+        const fetchedItems: any[] = [];
+        snap.forEach(doc => {
+          fetchedItems.push({ id: doc.id, ...doc.data() });
+        });
+        setItemsData(fetchedItems);
+      } catch (err) {
+        console.error("Error fetching items:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchItems();
+  }, []);
 
   const filteredItems = itemsData.filter(item => item.category === activeCategory);
 
