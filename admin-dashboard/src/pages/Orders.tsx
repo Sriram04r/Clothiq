@@ -143,10 +143,11 @@ export default function Orders() {
               
               {/* Card Header (Always Visible) */}
               <div 
+                className="responsive-flex"
                 style={{ padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', background: isExpanded ? 'rgba(255,255,255,0.02)' : 'transparent' }}
                 onClick={() => toggleExpand(order.id)}
               >
-                <div style={{ display: 'flex', gap: '24px', alignItems: 'center', flex: 1 }}>
+                <div className="responsive-flex" style={{ display: 'flex', gap: '24px', alignItems: 'center', flex: 1 }}>
                   {/* Order ID & Date */}
                   <div style={{ minWidth: '120px' }}>
                     <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-main)' }}>#{order.id.substring(0, 6).toUpperCase()}</div>
@@ -193,7 +194,7 @@ export default function Orders() {
 
               {/* Expandable Content */}
               {isExpanded && (
-                <div style={{ padding: '24px', borderTop: '1px solid var(--border-light)', display: 'flex', gap: '40px', background: 'rgba(0,0,0,0.2)' }}>
+                <div className="responsive-flex" style={{ padding: '24px', borderTop: '1px solid var(--border-light)', display: 'flex', gap: '40px', background: 'rgba(0,0,0,0.2)' }}>
                   
                   {/* Left Column: Items */}
                   <div style={{ flex: 1 }}>
@@ -240,7 +241,7 @@ export default function Orders() {
                   </div>
 
                   {/* Right Column: Customer & Fulfillment */}
-                  <div style={{ width: '300px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  <div style={{ width: '100%', maxWidth: '300px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
                     
                     {/* Customer Details */}
                     <div>
