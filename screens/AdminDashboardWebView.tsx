@@ -22,7 +22,7 @@ export default function AdminDashboardWebView() {
         </TouchableOpacity>
       </View>
       <WebView 
-        source={{ uri: 'https://clothiq-7314a.web.app' }} 
+        source={{ uri: 'https://clothiq-7314a.web.app?v=' + Date.now() }} 
         style={styles.webview}
         startInLoadingState={true}
         renderLoading={() => (
