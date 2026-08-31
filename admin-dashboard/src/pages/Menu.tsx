@@ -177,9 +177,9 @@ export default function Menu() {
         </div>
       )}
       
-      <div className="glass-panel" style={{ overflowX: 'auto', padding: '0' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead>
+      <div className="glass-panel" style={{ padding: '0', border: 'none', background: 'transparent' }}>
+        <table className="mobile-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <thead className="hide-mobile">
             <tr style={{ borderBottom: '1px solid var(--border-light)' }}>
               <th style={{ padding: '16px', color: 'var(--text-muted)', fontWeight: '500' }}>Item</th>
               <th style={{ padding: '16px', color: 'var(--text-muted)', fontWeight: '500' }}>Category</th>
@@ -190,25 +190,27 @@ export default function Menu() {
           <tbody>
             {filteredItems.map((item, index) => (
               <tr key={item.id} className={`animate-in delay-${(index % 4) + 1}`} style={{ borderBottom: '1px solid var(--border-light)' }}>
-                <td style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <td data-label="Item" style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: item.color || '#F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
                     {item.icon}
                   </div>
                   <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>{item.name}</span>
                 </td>
-                <td style={{ padding: '16px' }}>
+                <td data-label="Category" style={{ padding: '16px' }}>
                   <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: '500', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>
                     {item.category}
                   </span>
                 </td>
-                <td style={{ padding: '16px', color: 'var(--primary)', fontWeight: '600' }}>₹{item.price}</td>
-                <td style={{ padding: '16px', textAlign: 'right' }}>
-                  <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', marginRight: 12 }}>
-                    <Edit2 size={16} />
-                  </button>
-                  <button onClick={() => handleDelete(item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--danger)' }}>
-                    <Trash2 size={16} />
-                  </button>
+                <td data-label="Price" style={{ padding: '16px', color: 'var(--primary)', fontWeight: '600' }}><span>₹{item.price}</span></td>
+                <td data-label="Actions" style={{ padding: '16px', textAlign: 'right' }}>
+                  <div>
+                    <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', marginRight: 12 }}>
+                      <Edit2 size={16} />
+                    </button>
+                    <button onClick={() => handleDelete(item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--danger)' }}>
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

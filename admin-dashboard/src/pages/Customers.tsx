@@ -77,9 +77,9 @@ export default function Customers() {
     <div className="animate-in">
       <h1 className="page-title">Customer Directory</h1>
       
-      <div className="glass-panel" style={{ overflowX: 'auto', padding: '0' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead>
+      <div className="glass-panel" style={{ padding: '0', border: 'none', background: 'transparent' }}>
+        <table className="mobile-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <thead className="hide-mobile">
             <tr style={{ borderBottom: '1px solid var(--border-light)' }}>
               <th style={{ padding: '16px', color: 'var(--text-muted)', fontWeight: '500' }}>Customer Info</th>
               <th style={{ padding: '16px', color: 'var(--text-muted)', fontWeight: '500' }}>Location</th>
@@ -91,16 +91,18 @@ export default function Customers() {
           <tbody>
             {customers.map((customer, index) => (
               <tr key={customer.id} className={`animate-in delay-${(index % 4) + 1}`} style={{ borderBottom: '1px solid var(--border-light)' }}>
-                <td style={{ padding: '16px' }}>
-                  <div style={{ fontWeight: '600', color: 'var(--text-main)', marginBottom: '4px' }}>{customer.name}</div>
-                  <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{customer.email}</div>
-                  <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{customer.phone}</div>
+                <td data-label="Customer Info" style={{ padding: '16px' }}>
+                  <div>
+                    <div style={{ fontWeight: '600', color: 'var(--text-main)', marginBottom: '4px' }}>{customer.name}</div>
+                    <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{customer.email}</div>
+                    <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{customer.phone}</div>
+                  </div>
                 </td>
-                <td style={{ padding: '16px', fontSize: '14px' }}>{customer.address}</td>
-                <td style={{ padding: '16px' }}>{customer.totalOrders}</td>
-                <td style={{ padding: '16px', color: 'var(--success)' }}>₹{customer.totalSpent}</td>
-                <td style={{ padding: '16px', color: 'var(--text-muted)' }}>
-                  {customer.lastOrderDate ? new Date(customer.lastOrderDate).toLocaleDateString() : 'N/A'}
+                <td data-label="Location" style={{ padding: '16px', fontSize: '14px' }}><span>{customer.address}</span></td>
+                <td data-label="Total Orders" style={{ padding: '16px' }}><span>{customer.totalOrders}</span></td>
+                <td data-label="Lifetime Value" style={{ padding: '16px', color: 'var(--success)' }}><span>₹{customer.totalSpent}</span></td>
+                <td data-label="Last Active" style={{ padding: '16px', color: 'var(--text-muted)' }}>
+                  <span>{customer.lastOrderDate ? new Date(customer.lastOrderDate).toLocaleDateString() : 'N/A'}</span>
                 </td>
               </tr>
             ))}
