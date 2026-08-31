@@ -10,8 +10,32 @@ export const onOrderUpdated = functions.firestore
     const afterData = change.after.data();
     const userId = context.params.userId;
 
-    // Only send notification if status specifically changed to 'delivered'
-    if (beforeData.status !== "delivered" && afterData.status === "delivered") {
+    // Only send notification if status has changed
+    if (beforeData.status !== afterData.status) {
+      let title = "";
+      let body = "";
+
+      switch (afterData.status) {
+        case "out_for_pickup":
+          title = "Driver on the way! 🚚";
+          body = "Your driver is on the way to pick up your laundry!";
+          break;
+        case "washing":
+          title = "Washing in progress 🫧";
+          body = "Your laundry is now getting a premium wash!";
+          break;
+        case "out_for_delivery":
+          title = "Out for delivery! ✨";
+          body = "Your fresh laundry is on its way back to you!";
+          break;
+        case "delivered":
+          title = "Order Delivered! 🎉";
+          body = "Your laundry has arrived! Thank you for choosing Clothiq.";
+          break;
+        default:
+          return; // No notification for this status
+      }
+
       try {
         const userDoc = await admin.firestore().collection("users").doc(userId).get();
         if (!userDoc.exists) return;
@@ -23,8 +47,8 @@ export const onOrderUpdated = functions.firestore
           const message = {
             to: pushToken,
             sound: "default",
-            title: "Order Delivered! 🎉",
-            body: "Your laundry has arrived! Thank you for choosing Clothiq.",
+            title: title,
+            body: body,
             data: { orderId: context.params.orderId },
           };
 
@@ -38,7 +62,7 @@ export const onOrderUpdated = functions.firestore
             body: JSON.stringify(message),
           });
 
-          functions.logger.info(`Successfully sent push notification to ${userId}`);
+          functions.logger.info(`Successfully sent push notification to ${userId} for status ${afterData.status}`);
         }
       } catch (error) {
         functions.logger.error("Error sending push notification", error);
