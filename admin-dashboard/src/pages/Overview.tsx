@@ -159,7 +159,7 @@ export default function Overview() {
       </div>
       
       {/* Analytics Charts Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px', paddingBottom: '40px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', paddingBottom: '40px' }}>
         
         {/* Revenue Area Chart */}
         <div className="glass-panel animate-in delay-4" style={{ height: '400px' }}>
