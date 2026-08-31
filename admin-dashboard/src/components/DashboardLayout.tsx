@@ -53,9 +53,17 @@ export default function DashboardLayout() {
 
   return (
     <div className="app-container">
-      {/* Sidebar */}
+      {/* Mobile Top Header (Hidden on Desktop) */}
+      <div className="mobile-header" style={{ display: 'none' }}>
+        <h2 style={{ color: 'var(--primary)', fontSize: '20px', letterSpacing: '-0.5px', margin: 0 }}>Clothiq Admin</h2>
+        <button onClick={handleLogout} style={{ color: 'var(--danger)', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: '500' }}>
+          <LogOut size={16} /> Logout
+        </button>
+      </div>
+
+      {/* Sidebar / Bottom Nav */}
       <aside className="sidebar animate-in">
-        <div style={{ marginBottom: '40px', paddingLeft: '8px' }}>
+        <div className="desktop-brand" style={{ marginBottom: '40px', paddingLeft: '8px' }}>
           <h2 style={{ color: 'var(--primary)', fontSize: '24px', letterSpacing: '-1px' }}>Clothiq Admin</h2>
         </div>
 
@@ -64,38 +72,38 @@ export default function DashboardLayout() {
             to="/dashboard" 
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
           >
-            <LayoutDashboard size={20} /> Overview
+            <LayoutDashboard size={20} /> <span className="nav-text">Overview</span>
           </NavLink>
           <NavLink 
             to="/orders" 
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
           >
-            <ShoppingBag size={20} /> Orders
+            <ShoppingBag size={20} /> <span className="nav-text">Orders</span>
           </NavLink>
           <NavLink 
             to="/customers" 
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
           >
-            <Users size={20} /> Customers
+            <Users size={20} /> <span className="nav-text">Customers</span>
           </NavLink>
           <NavLink 
             to="/menu" 
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
           >
-            <List size={20} /> Menu & Pricing
+            <List size={20} /> <span className="nav-text">Menu</span>
           </NavLink>
         </nav>
 
-        <button onClick={handleLogout} className="nav-item" style={{ color: 'var(--danger)', background: 'transparent', border: 'none', width: '100%', cursor: 'pointer', fontFamily: 'var(--font-family)', fontSize: '15px' }}>
-          <LogOut size={20} /> Logout
+        <button onClick={handleLogout} className="nav-item desktop-logout" style={{ color: 'var(--danger)', background: 'transparent', border: 'none', width: '100%', cursor: 'pointer', fontFamily: 'var(--font-family)', fontSize: '15px' }}>
+          <LogOut size={20} /> <span className="nav-text">Logout</span>
         </button>
       </aside>
 
       {/* Main Content Area */}
       <main className="main-content">
         {/* Top Header */}
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-          <div style={{ position: 'relative', width: '300px' }}>
+        <header className="header-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+          <div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
             <Search size={18} color="#64748b" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
             <input 
               type="text" 
