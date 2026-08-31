@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth, db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import { Lock, Mail, Loader2 } from 'lucide-react';
 
 export default function Login() {
@@ -18,28 +19,25 @@ export default function Login() {
       return;
     }
 
-    // Strict admin check
-    if (email.toLowerCase().trim() !== 'adminclothiq2@gmail.com') {
-      setError('Unauthorized: You are not an admin');
-      return;
-    }
-
     setLoading(true);
     setError('');
     
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate('/dashboard');
+      // Sign in the user
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Check if they are actually an admin in Firestore
+      const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+      
+      if (userDoc.exists() && userDoc.data().role === 'admin') {
+        navigate('/dashboard');
+      } else {
+        setError('Unauthorized: You are not an admin');
+        await auth.signOut();
+      }
     } catch (err: any) {
       if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-        // If they haven't created the permanent account yet, create it automatically once
-        try {
-          await createUserWithEmailAndPassword(auth, email, password);
-          navigate('/dashboard');
-          return;
-        } catch (createErr: any) {
-          setError('Invalid password.');
-        }
+        setError('Invalid email or password.');
       } else {
         setError(err.message || 'Failed to login');
       }
