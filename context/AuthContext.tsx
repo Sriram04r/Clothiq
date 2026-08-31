@@ -7,7 +7,7 @@ interface AuthContextType {
   user: any | null;
   initializing: boolean;
   wasLoggedIn: boolean;
-  userRole: 'customer' | 'driver' | null;
+  userRole: 'customer' | 'driver' | 'admin' | null;
   hasOnboarded: boolean;
   completeOnboarding: () => Promise<void>;
 }
@@ -25,10 +25,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<any | null>(null);
   const [initializing, setInitializing] = useState(true);
   const [wasLoggedIn, setWasLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState<'customer' | 'driver' | null>(null);
+  const [userRole, setUserRole] = useState<'customer' | 'driver' | 'admin' | null>(null);
   const [hasOnboarded, setHasOnboarded] = useState(false);
 
-  // Handle user state changes
+    // Handle user state changes
   async function onAuthStateChanged(user: any | null) {
     if (user) {
       setWasLoggedIn(true);
@@ -38,7 +38,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (userDoc.exists()) {
           const data = userDoc.data();
-          setUserRole(data?.role === 'driver' ? 'driver' : 'customer');
+          if (data?.role === 'admin') {
+            setUserRole('admin');
+          } else if (data?.role === 'driver') {
+            setUserRole('driver');
+          } else {
+            setUserRole('customer');
+          }
         } else {
           setUserRole('customer');
         }

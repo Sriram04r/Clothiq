@@ -56,7 +56,7 @@ import NotificationsScreen from './screens/Notifications';
 import PaymentMethodsScreen from './screens/PaymentMethods';
 import HelpSupportScreen from './screens/HelpSupport';
 
-// Driver Screens (Removed for User App)
+import AdminDashboardWebView from './screens/AdminDashboardWebView';
 
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -98,6 +98,9 @@ function RootNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {user ? (
+        userRole === 'admin' ? (
+          <Stack.Screen name="AdminDashboard" component={AdminDashboardWebView} />
+        ) : (
         <>
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Services" component={ServicesScreen} />
@@ -122,6 +125,7 @@ function RootNavigator() {
           <Stack.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
           <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
         </>
+        )
       ) : (
         <>
           {!hasOnboarded ? (

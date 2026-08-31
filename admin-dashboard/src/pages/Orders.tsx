@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { collectionGroup, collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Loader2, ChevronDown, ChevronUp, Phone, MapPin, Package, CreditCard } from 'lucide-react';
+import { Loader2, ChevronDown, ChevronUp, Phone, MapPin, Package } from 'lucide-react';
 
 export default function Orders() {
   const [orders, setOrders] = useState<any[]>([]);
