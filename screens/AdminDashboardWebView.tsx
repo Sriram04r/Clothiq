@@ -4,26 +4,23 @@ import { WebView } from 'react-native-webview';
 import { getAuth, signOut } from '@react-native-firebase/auth';
 
 export default function AdminDashboardWebView() {
-  const handleLogout = async () => {
-    try {
-      const auth = getAuth();
-      await signOut(auth);
-    } catch (error) {
-      console.error("Error signing out:", error);
+  const handleMessage = async (event: any) => {
+    if (event.nativeEvent.data === 'LOGOUT') {
+      try {
+        const auth = getAuth();
+        await signOut(auth);
+      } catch (error) {
+        console.error("Error signing out natively:", error);
+      }
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Admin Dashboard</Text>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <WebView 
         source={{ uri: 'https://clothiq-7314a.web.app?v=' + Date.now() }} 
         style={styles.webview}
+        onMessage={handleMessage}
         startInLoadingState={true}
         renderLoading={() => (
           <View style={styles.loadingContainer}>
@@ -39,32 +36,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
-    backgroundColor: '#FFFFFF',
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#111111',
-  },
-  logoutButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#fee2e2',
-    borderRadius: 8,
-  },
-  logoutText: {
-    color: '#ef4444',
-    fontWeight: '600',
-    fontSize: 14,
   },
   webview: {
     flex: 1,

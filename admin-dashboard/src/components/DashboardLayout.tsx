@@ -38,6 +38,9 @@ export default function DashboardLayout() {
 
   const handleLogout = async () => {
     await signOut(auth);
+    if ((window as any).ReactNativeWebView) {
+      (window as any).ReactNativeWebView.postMessage('LOGOUT');
+    }
     navigate('/login');
   };
 
