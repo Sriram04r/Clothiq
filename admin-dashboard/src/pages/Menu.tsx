@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { collection, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Loader2, Plus, Edit2, Trash2 } from 'lucide-react';
 
@@ -24,6 +24,7 @@ export default function Menu() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newItem, setNewItem] = useState({ name: '', price: '', category: 'Men', icon: '', color: '#334155' });
   const [isAdding, setIsAdding] = useState(false);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
   const fetchItems = async () => {
     setLoading(true);
@@ -68,17 +69,41 @@ export default function Menu() {
     e.preventDefault();
     setIsAdding(true);
     try {
-      await addDoc(collection(db, 'serviceItems'), {
-        ...newItem,
-        price: Number(newItem.price)
-      });
-      setShowAddModal(false);
-      setNewItem({ name: '', price: '', category: 'Men', icon: '', color: '#334155' });
+      if (editingItemId) {
+        await updateDoc(doc(db, 'serviceItems', editingItemId), {
+          ...newItem,
+          price: Number(newItem.price)
+        });
+      } else {
+        await addDoc(collection(db, 'serviceItems'), {
+          ...newItem,
+          price: Number(newItem.price)
+        });
+      }
+      handleCloseModal();
       fetchItems();
     } catch (err) {
-      console.error("Error adding item:", err);
+      console.error("Error saving item:", err);
     }
     setIsAdding(false);
+  };
+
+  const handleEditClick = (item: any) => {
+    setEditingItemId(item.id);
+    setNewItem({
+      name: item.name,
+      price: item.price.toString(),
+      category: item.category,
+      icon: item.icon,
+      color: item.color || '#F0F0F0'
+    });
+    setShowAddModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowAddModal(false);
+    setEditingItemId(null);
+    setNewItem({ name: '', price: '', category: 'Men', icon: '', color: '#334155' });
   };
 
   const handleNameChange = (name: string) => {
@@ -144,7 +169,7 @@ export default function Menu() {
             {isSeeding ? 'Seeding...' : 'Seed Database with Initial Data'}
           </button>
         ) : (
-          <button className="btn btn-primary" onClick={() => setShowAddModal(true)} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button className="btn btn-primary" onClick={() => { setEditingItemId(null); setNewItem({ name: '', price: '', category: 'Men', icon: '', color: '#334155' }); setShowAddModal(true); }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Plus size={16} /> Add Item
           </button>
         )}
@@ -204,7 +229,7 @@ export default function Menu() {
                 <td data-label="Price" style={{ padding: '16px', color: 'var(--primary)', fontWeight: '600' }}><span>₹{item.price}</span></td>
                 <td data-label="Actions" style={{ padding: '16px', textAlign: 'right' }}>
                   <div>
-                    <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', marginRight: 12 }}>
+                    <button onClick={() => handleEditClick(item)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', marginRight: 12 }}>
                       <Edit2 size={16} />
                     </button>
                     <button onClick={() => handleDelete(item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--danger)' }}>
@@ -237,7 +262,7 @@ export default function Menu() {
       {showAddModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div className="glass-panel animate-in" style={{ width: '450px', maxWidth: '90%', padding: '32px' }}>
-            <h2 style={{ marginBottom: '24px', fontSize: '24px', fontWeight: '600' }}>Add New Item</h2>
+            <h2 style={{ marginBottom: '24px', fontSize: '24px', fontWeight: '600' }}>{editingItemId ? 'Edit Item' : 'Add New Item'}</h2>
             <form onSubmit={handleAddItem}>
               <div className="form-group">
                 <label className="form-label">Item Name</label>
@@ -268,9 +293,9 @@ export default function Menu() {
               </div>
               
               <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
-                <button type="button" className="btn-danger" style={{ flex: 1 }} onClick={() => setShowAddModal(false)}>Cancel</button>
+                <button type="button" className="btn-danger" style={{ flex: 1 }} onClick={handleCloseModal}>Cancel</button>
                 <button type="submit" className="btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }} disabled={isAdding}>
-                  {isAdding ? <Loader2 className="spin" size={16} /> : 'Save Item'}
+                  {isAdding ? <Loader2 className="spin" size={16} /> : (editingItemId ? 'Save Changes' : 'Save Item')}
                 </button>
               </div>
             </form>
