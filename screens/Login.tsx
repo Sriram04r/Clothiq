@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Eye, EyeOff } from 'lucide-react-native';
+import { Eye, EyeOff, MoreVertical, Shield, User } from 'lucide-react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
 import { getAuth, signInWithEmailAndPassword, signInWithCredential, GoogleAuthProvider } from '@react-native-firebase/auth';
@@ -26,6 +26,7 @@ export default function LoginScreen({ navigation }: any) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [loginType, setLoginType] = useState<'customer' | 'admin'>('customer');
+  const [menuVisible, setMenuVisible] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -48,9 +49,9 @@ export default function LoginScreen({ navigation }: any) {
     try {
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       const signInResult = await GoogleSignin.signIn();
-      
+
       let idToken = signInResult.data?.idToken || (signInResult as any).idToken;
-      
+
       if (!idToken) {
         throw new Error('No ID token found');
       }
@@ -58,7 +59,7 @@ export default function LoginScreen({ navigation }: any) {
       const googleCredential = GoogleAuthProvider.credential(idToken);
       const auth = getAuth();
       await signInWithCredential(auth, googleCredential);
-      
+
     } catch (error: any) {
       console.log('Google Sign-In Error:', error);
       Alert.alert('Google Sign-In Failed', 'Please check your Web Client ID configuration.');
@@ -69,24 +70,36 @@ export default function LoginScreen({ navigation }: any) {
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Welcome Back!</Text>
-            <Text style={styles.subtitle}>Login to continue</Text>
-          </View>
+          <View style={styles.headerRow}>
+            <View style={styles.headerTextContainer}>
+              <Text style={styles.title}>{loginType === 'admin' ? 'Admin Portal' : 'Welcome Back!'}</Text>
+              <Text style={styles.subtitle}>{loginType === 'admin' ? 'Enter admin credentials' : 'Login to continue'}</Text>
+            </View>
+            <View style={{ zIndex: 50 }}>
+              <TouchableOpacity onPress={() => setMenuVisible(!menuVisible)} style={styles.menuIcon}>
+                <MoreVertical size={24} color="#111111" />
+              </TouchableOpacity>
 
-          <View style={styles.tabsContainer}>
-            <TouchableOpacity 
-              style={[styles.tab, loginType === 'customer' && styles.tabActive]}
-              onPress={() => setLoginType('customer')}
-            >
-              <Text style={loginType === 'customer' ? styles.tabTextActive : styles.tabText}>Customer</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.tab, loginType === 'admin' && styles.tabActive]}
-              onPress={() => setLoginType('admin')}
-            >
-              <Text style={loginType === 'admin' ? styles.tabTextActive : styles.tabText}>Admin</Text>
-            </TouchableOpacity>
+              {menuVisible && (
+                <View style={styles.dropdownMenu}>
+                  <TouchableOpacity
+                    style={styles.dropdownItem}
+                    onPress={() => { setLoginType('customer'); setMenuVisible(false); }}
+                  >
+                    <User size={16} color="#4b5563" />
+                    <Text style={styles.dropdownText}>Customer</Text>
+                  </TouchableOpacity>
+                  <View style={styles.dropdownDivider} />
+                  <TouchableOpacity
+                    style={styles.dropdownItem}
+                    onPress={() => { setLoginType('admin'); setMenuVisible(false); }}
+                  >
+                    <Shield size={16} color="#4b5563" />
+                    <Text style={styles.dropdownText}>Clothiq Admin</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
           </View>
 
           <View style={styles.formContainer}>
@@ -191,9 +204,52 @@ const styles = StyleSheet.create({
     padding: 24,
     justifyContent: 'center',
   },
-  header: {
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     marginTop: 40,
     marginBottom: 40,
+    zIndex: 100, // Important for dropdown visibility
+  },
+  headerTextContainer: {
+    flex: 1,
+  },
+  menuIcon: {
+    padding: 8,
+    marginRight: -8,
+  },
+  dropdownMenu: {
+    position: 'absolute',
+    top: 40,
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 8,
+    width: 180,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
+    zIndex: 1000,
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    gap: 12,
+  },
+  dropdownDivider: {
+    height: 1,
+    backgroundColor: '#f3f4f6',
+    marginVertical: 4,
+  },
+  dropdownText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#111111',
   },
   title: {
     fontSize: 32,
@@ -205,36 +261,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#8e8e93',
   },
-  tabsContainer: {
-    flexDirection: 'row',
-    marginBottom: 40,
-    gap: 16,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e5e5ea',
-    alignItems: 'center',
-    marginHorizontal: 8,
-  },
-  tabActive: {
-    backgroundColor: '#2945FF',
-    borderColor: '#2945FF',
-  },
-  tabText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111111',
-  },
-  tabTextActive: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
   formContainer: {
     gap: 20,
+    zIndex: 1, // Keep below header dropdown
   },
   inputGroup: {
     marginBottom: 20,
