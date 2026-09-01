@@ -25,6 +25,7 @@ export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loginType, setLoginType] = useState<'customer' | 'admin'>('customer');
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -74,11 +75,17 @@ export default function LoginScreen({ navigation }: any) {
           </View>
 
           <View style={styles.tabsContainer}>
-            <TouchableOpacity style={[styles.tab, styles.tabActive]}>
-              <Text style={styles.tabTextActive}>Login</Text>
+            <TouchableOpacity 
+              style={[styles.tab, loginType === 'customer' && styles.tabActive]}
+              onPress={() => setLoginType('customer')}
+            >
+              <Text style={loginType === 'customer' ? styles.tabTextActive : styles.tabText}>Customer</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.tab} onPress={() => navigation.navigate('Signup')}>
-              <Text style={styles.tabText}>Sign Up</Text>
+            <TouchableOpacity 
+              style={[styles.tab, loginType === 'admin' && styles.tabActive]}
+              onPress={() => setLoginType('admin')}
+            >
+              <Text style={loginType === 'admin' ? styles.tabTextActive : styles.tabText}>Admin</Text>
             </TouchableOpacity>
           </View>
 
