@@ -124,9 +124,11 @@ export default function LoginScreen({ navigation }: any) {
               </View>
             </View>
 
-            <TouchableOpacity style={styles.forgotPassword} onPress={() => navigation.navigate('ForgotPassword')}>
-              <Text style={styles.linkText}>Forgot Password</Text>
-            </TouchableOpacity>
+            {loginType === 'customer' && (
+              <TouchableOpacity style={styles.forgotPassword} onPress={() => navigation.navigate('ForgotPassword')}>
+                <Text style={styles.linkText}>Forgot Password</Text>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity
               style={styles.loginButton}
@@ -142,30 +144,34 @@ export default function LoginScreen({ navigation }: any) {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.dividerContainer}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or connect with</Text>
-            <View style={styles.dividerLine} />
-          </View>
+          {loginType === 'customer' && (
+            <>
+              <View style={styles.dividerContainer}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>or connect with</Text>
+                <View style={styles.dividerLine} />
+              </View>
 
-          <View style={styles.socialContainer}>
-            <TouchableOpacity style={styles.socialButton} onPress={handleGoogleLogin}>
-              <GoogleIcon />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.socialButton}>
-              <FontAwesome5 name="facebook" size={24} color="#4267B2" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.socialButton}>
-              <FontAwesome5 name="apple" size={24} color="#000000" />
-            </TouchableOpacity>
-          </View>
+              <View style={styles.socialContainer}>
+                <TouchableOpacity style={styles.socialButton} onPress={handleGoogleLogin}>
+                  <GoogleIcon />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.socialButton}>
+                  <FontAwesome5 name="facebook" size={24} color="#4267B2" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.socialButton}>
+                  <FontAwesome5 name="apple" size={24} color="#000000" />
+                </TouchableOpacity>
+              </View>
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-              <Text style={styles.signupText}>Sign Up</Text>
-            </TouchableOpacity>
-          </View>
+              <View style={styles.footer}>
+                <Text style={styles.footerText}>Don't have an account? </Text>
+                <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+                  <Text style={styles.signupText}>Sign Up</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
