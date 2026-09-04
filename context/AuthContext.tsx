@@ -75,9 +75,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Check onboarding status
     const checkOnboarding = async () => {
       try {
-        // TEMPORARY: Reset onboarding so you can test it on Expo Go
-        await AsyncStorage.removeItem('@has_onboarded');
-        
         const value = await AsyncStorage.getItem('@has_onboarded');
         if (value === 'true') {
           setHasOnboarded(true);
