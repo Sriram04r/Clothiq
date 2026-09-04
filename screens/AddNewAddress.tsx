@@ -37,7 +37,7 @@ const mapHtml = (lat: number, lng: number) => `
     </svg>
     <script>
         var map = L.map('map', { zoomControl: true }).setView([${lat}, ${lng}], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.jpg', {
             maxZoom: 19,
             attribution: '© OpenStreetMap'
         }).addTo(map);
