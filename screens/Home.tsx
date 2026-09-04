@@ -165,7 +165,7 @@ export default function HomeScreen({ navigation }: any) {
 
           {/* 3D Premium Washing Machine Icon */}
           <Animated.Image
-            source={require('../assets/washing_machine_icon.png')}
+            source={require('../assets/washing_machine_icon.jpg')}
             style={[styles.lottieIcon, { transform: [{ translateY: bounceValue }] }]}
             resizeMode="cover"
           />
