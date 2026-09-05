@@ -21,19 +21,19 @@ const slides = [
     id: '1',
     title: 'Premium Laundry Service',
     subtitle: 'Let us handle the dirty work. We provide top-notch cleaning for all your garments.',
-    image: require('../assets/onboarding_laundry.png')
+    image: require('../assets/onboarding_laundry.jpg')
   },
   {
     id: '2',
     title: 'Fast & Reliable Delivery',
     subtitle: 'Get your clothes back fresh and folded within 24-48 hours.',
-    image: require('../assets/onboarding_delivery.png')
+    image: require('../assets/onboarding_delivery.jpg')
   },
   {
     id: '3',
     title: 'Eco-Friendly Process',
     subtitle: 'We use gentle, environmentally friendly products that care for your clothes and the planet.',
-    image: require('../assets/onboarding_eco.png')
+    image: require('../assets/onboarding_eco.jpg')
   }
 ];
 
