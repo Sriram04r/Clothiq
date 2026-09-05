@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "930212381030",
+    "project_id": "clothiq-7314a",
+    "storage_bucket": "clothiq-7314a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:930212381030:android:2e251cf9099024d2a088a7",
+        "android_client_info": {
+          "package_name": "com.clothiq.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAw67Qp_CSTIYCq-3s7EIXC8kZQ6ll7GpA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

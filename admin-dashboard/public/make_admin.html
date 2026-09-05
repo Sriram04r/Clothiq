@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clothiq - Make Admin</title>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAw67Qp_CSTIYCq-3s7EIXC8kZQ6ll7GpA",
+            authDomain: "clothiq-7314a.firebaseapp.com",
+            projectId: "clothiq-7314a",
+            storageBucket: "clothiq-7314a.firebasestorage.app",
+            messagingSenderId: "930212381030",
+            appId: "1:930212381030:web:1234567890abcdef"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        window.makeAdmin = async () => {
+            const email = document.getElementById("emailInput").value.trim();
+            const password = document.getElementById("passwordInput").value;
+            const statusText = document.getElementById("status");
+            
+            if (!email || !password) {
+                statusText.innerText = "Please enter both email and password.";
+                statusText.style.color = "red";
+                return;
+            }
+
+            statusText.innerText = "Authenticating and upgrading to admin...";
+            statusText.style.color = "black";
+
+            try {
+                // 1. Sign in as the user (this proves they own the account and gives them permission to edit their own doc)
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const uid = userCredential.user.uid;
+
+                // 2. Update their own document's role to admin
+                await updateDoc(doc(db, "users", uid), {
+                    role: "admin"
+                });
+
+                statusText.innerText = `✅ Success! ${email} is now an Admin! You can log into the mobile app now.`;
+                statusText.style.color = "green";
+
+            } catch (error) {
+                statusText.innerText = "Error: " + error.message;
+                statusText.style.color = "red";
+            }
+        };
+    </script>
+</head>
+<body style="font-family: sans-serif; padding: 40px; text-align: center;">
+    <h2>👑 Clothiq Admin Setup 👑</h2>
+    <p>Enter the email and password you just used to sign up.</p>
+    
+    <input type="email" id="emailInput" placeholder="Email (adminclothiq@gmail.com)" style="padding: 10px; width: 250px; font-size: 16px; margin-bottom: 10px;"><br>
+    <input type="password" id="passwordInput" placeholder="Password" style="padding: 10px; width: 250px; font-size: 16px; margin-bottom: 20px;"><br>
+    
+    <button onclick="makeAdmin()" style="padding: 10px 20px; font-size: 16px; background-color: #2945FF; color: white; border: none; border-radius: 8px; cursor: pointer;">
+        Make me an Admin
+    </button>
+
+    <h3 id="status" style="margin-top: 30px;"></h3>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "Clothiq",
+    "slug": "clothiq",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.jpg",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.clothiq.app"
+    },
+    "android": {
+      "package": "com.clothiq.app",
+      "googleServicesFile": "./google-services.json",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.jpg",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "@react-native-firebase/app",
+      "expo-dev-client",
+      "@react-native-firebase/auth",
+      "@react-native-google-signin/google-signin",
+      "expo-font",
+      ["expo-build-properties", { "android": { "ndkVersion": "26.1.10909125" } }]
+    ]
+  }
+}
