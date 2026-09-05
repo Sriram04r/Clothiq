@@ -27,7 +27,7 @@ const generateMapHtml = (sLat: number, sLng: number, cLat: number, cLng: number)
         var midLng = (${sLng} + ${cLng}) / 2;
 
         var map = L.map('map', { zoomControl: true }).setView([midLat, midLng], 14);
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.jpg', {
             maxZoom: 19,
             attribution: '© OpenStreetMap'
         }).addTo(map);
