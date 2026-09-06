@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Home, ClipboardList, Bell, LayoutGrid, User, Clock, CheckCircle2, Gift, Percent, Megaphone } from 'lucide-react-native';
+import ChatBotFAB from '../components/ChatBotFAB';
 
 const notifications = [
   {
@@ -186,6 +187,8 @@ export default function NotificationsScreen({ navigation }: any) {
 
       </ScrollView>
 
+      <ChatBotFAB />
+
       {/* Fixed Bottom Navigation */}
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
@@ -355,8 +358,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#e5e5ea',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
+    justifyContent: 'space-around',
     paddingTop: 12,
     paddingBottom: Platform.OS === 'ios' ? 34 : 12,
   },

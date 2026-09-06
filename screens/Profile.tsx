@@ -5,13 +5,14 @@ import { ChevronLeft, ChevronRight, User, Package, MapPin, CreditCard, Tag, Help
 import { getAuth, signOut } from '@react-native-firebase/auth';
 import { getFirestore, doc, onSnapshot } from '@react-native-firebase/firestore';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import ChatBotFAB from '../components/ChatBotFAB';
 
 const menuItems = [
   { id: '1', title: 'My Orders', icon: Package, screen: 'OrderHistory' },
   { id: '2', title: 'Saved Address', icon: MapPin, screen: 'SavedAddresses' },
   { id: '3', title: 'Payment Methods', icon: CreditCard, screen: 'PaymentMethods' },
   { id: '4', title: 'Offers & Coupons', icon: Tag },
-  { id: '5', title: 'Help & Support', icon: HelpCircle, color: '#FF3B30', screen: 'HelpSupport' },
+  { id: '5', title: 'Help & Support', icon: HelpCircle, color: '#FF3B30', screen: 'SupportChat' },
   { id: '6', title: 'Settings', icon: Settings },
 ];
 
@@ -128,6 +129,8 @@ export default function ProfileScreen({ navigation }: any) {
         </TouchableOpacity>
 
       </ScrollView>
+
+      <ChatBotFAB />
 
       {/* Bottom Nav */}
       <View style={styles.bottomNav}>
@@ -284,8 +287,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#e5e5ea',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
+    justifyContent: 'space-around',
     paddingTop: 12,
     paddingBottom: Platform.OS === 'ios' ? 34 : 12,
   },

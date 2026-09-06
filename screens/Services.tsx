@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, ChevronRight, Home, ClipboardList, Bell, User, Sparkles } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, Home, ClipboardList, Bell, User, LayoutGrid } from 'lucide-react-native';
+import ChatBotFAB from '../components/ChatBotFAB';
 
 export default function ServicesScreen({ navigation }: any) {
   return (
@@ -66,6 +67,8 @@ export default function ServicesScreen({ navigation }: any) {
         </TouchableOpacity>
       </ScrollView>
 
+      <ChatBotFAB />
+
       {/* Static Bottom Tab Bar matching design */}
       <View style={styles.bottomBar}>
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Home')}>
@@ -81,10 +84,10 @@ export default function ServicesScreen({ navigation }: any) {
           <Text style={styles.tabText}>Notifications</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.tabItem}>
-          <Sparkles size={24} color="#2945FF" />
+          <LayoutGrid size={24} color="#2945FF" />
           <Text style={[styles.tabText, { color: '#2945FF' }]}>Services</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem}>
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Profile')}>
           <User size={24} color="#8e8e93" />
           <Text style={styles.tabText}>Profile</Text>
         </TouchableOpacity>
@@ -170,10 +173,9 @@ const styles = StyleSheet.create({
   },
   bottomBar: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     alignItems: 'center',
     backgroundColor: '#FFF',
-    paddingHorizontal: 20,
     paddingVertical: 12,
     borderTopWidth: 1,
     borderTopColor: '#F0F0F0',

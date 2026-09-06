@@ -6,6 +6,7 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { getAuth } from '@react-native-firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, query, orderBy, limit, onSnapshot, where } from '@react-native-firebase/firestore';
+import ChatBotFAB from '../components/ChatBotFAB';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -134,9 +135,13 @@ export default function HomeScreen({ navigation }: any) {
       if (finalStatus !== 'granted') {
         return;
       }
-      token = (await Notifications.getExpoPushTokenAsync({
-        projectId: 'clothiq-id' // Generic fallback since we aren't using EAS yet
-      })).data;
+      try {
+        token = (await Notifications.getExpoPushTokenAsync({
+          projectId: 'clothiq-id' 
+        })).data;
+      } catch (error) {
+        console.log('Error getting push token', error);
+      }
     }
     return token;
   }
@@ -246,6 +251,8 @@ export default function HomeScreen({ navigation }: any) {
         )}
 
       </ScrollView>
+
+      <ChatBotFAB />
 
       {/* Fixed Bottom Navigation */}
       <View style={styles.bottomNav}>
@@ -500,8 +507,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#e5e5ea',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
+    justifyContent: 'space-around',
     paddingTop: 12,
     paddingBottom: Platform.OS === 'ios' ? 34 : 12,
   },

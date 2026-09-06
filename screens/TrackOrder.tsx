@@ -2,80 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Check, Home, ClipboardList, Bell, LayoutGrid, User } from 'lucide-react-native';
-import { WebView } from 'react-native-webview';
-import * as Location from 'expo-location';
-import { getAuth } from '@react-native-firebase/auth';
+import MapView, { Marker, Polyline } from 'react-native-maps';
 import { getFirestore, doc, onSnapshot } from '@react-native-firebase/firestore';
-
-const generateMapHtml = (sLat: number, sLng: number, cLat: number, cLng: number) => `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <style>
-        body { padding: 0; margin: 0; }
-        #map { width: 100%; height: 100vh; }
-    </style>
-</head>
-<body>
-    <div id="map"></div>
-    <script>
-        // Midpoint calculation
-        var midLat = (${sLat} + ${cLat}) / 2;
-        var midLng = (${sLng} + ${cLng}) / 2;
-
-        var map = L.map('map', { zoomControl: true }).setView([midLat, midLng], 14);
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.jpg', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-
-        // Store Location (Home/Store icon)
-        var storeIcon = L.divIcon({
-            html: '<svg width="24" height="24" viewBox="0 0 24 24" fill="#1C158A" stroke="#FFF" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>',
-            className: '',
-            iconSize: [24, 24],
-            iconAnchor: [12, 12]
-        });
-        var storeMarker = L.marker([${sLat}, ${sLng}], {icon: storeIcon}).addTo(map);
-
-        // Customer Location (Pin icon)
-        var customerIcon = L.divIcon({
-            html: '<svg width="24" height="24" viewBox="0 0 24 24" fill="#FF3B30" stroke="#FFF" stroke-width="2"><circle cx="12" cy="10" r="3" fill="#FFF"></circle><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path></svg>',
-            className: '',
-            iconSize: [24, 24],
-            iconAnchor: [12, 24]
-        });
-        var customerMarker = L.marker([${cLat}, ${cLng}], {icon: customerIcon}).addTo(map);
-
-        // Draw Polyline Route
-        var latlngs = [
-            [${sLat}, ${sLng}],
-            [midLat, midLng],
-            [${cLat}, ${cLng}]
-        ];
-        var polyline = L.polyline(latlngs, {color: '#1C158A', weight: 4, dashArray: '10, 10'}).addTo(map);
-
-        // Fix missing tiles crash by relying on setView instead of fitBounds
-        
-        // Notify React Native when user touches map to lock scroll
-        document.getElementById('map').addEventListener('touchstart', function() {
-            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'mapTouchStart' }));
-        }, { passive: true });
-        
-        document.getElementById('map').addEventListener('touchend', function() {
-            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'mapTouchEnd' }));
-        }, { passive: true });
-        
-        document.getElementById('map').addEventListener('touchcancel', function() {
-            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'mapTouchEnd' }));
-        }, { passive: true });
-    </script>
-</body>
-</html>
-`;
+import { getAuth } from '@react-native-firebase/auth';
+import * as Location from 'expo-location';
+import ChatBotFAB from '../components/ChatBotFAB';
 
 const INITIAL_TIMELINE = [
   { id: '1', title: 'Order Placed', time: '', status: 'pending', key: 'placed' },
@@ -89,7 +20,7 @@ const INITIAL_TIMELINE = [
 export default function TrackOrderScreen({ route, navigation }: any) {
   const { orderId } = route.params || {};
   const [mapActive, setMapActive] = useState(false);
-  const [mapHtml, setMapHtml] = useState<string | null>(null);
+  const [customerLocation, setCustomerLocation] = useState<any>(null);
   const [order, setOrder] = useState<any>(null);
   const [timeline, setTimeline] = useState(INITIAL_TIMELINE);
 
@@ -145,31 +76,40 @@ export default function TrackOrderScreen({ route, navigation }: any) {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         // Fallback to New Delhi if permission denied
-        setMapHtml(generateMapHtml(28.6250, 77.2150, 28.6010, 77.1950));
+        setCustomerLocation({ latitude: 28.6250, longitude: 77.2150 });
         return;
       }
       
       let loc = await Location.getCurrentPositionAsync({});
-      const cLat = loc.coords.latitude;
-      const cLng = loc.coords.longitude;
-      
-      // Simulate store location slightly offset from customer
-      const sLat = cLat + 0.015;
-      const sLng = cLng + 0.015;
-      
-      setMapHtml(generateMapHtml(sLat, sLng, cLat, cLng));
+      setCustomerLocation({
+        latitude: loc.coords.latitude,
+        longitude: loc.coords.longitude
+      });
     })();
   }, []);
 
-  const onWebViewMessage = (event: any) => {
-    try {
-      const data = JSON.parse(event.nativeEvent.data);
-      if (data.type === 'mapTouchStart') {
-        setMapActive(true);
-      } else if (data.type === 'mapTouchEnd') {
-        setMapActive(false);
-      }
-    } catch (e) {}
+  const getMapRegion = () => {
+    if (order?.driverLocation) {
+      return {
+        latitude: order.driverLocation.latitude,
+        longitude: order.driverLocation.longitude,
+        latitudeDelta: 0.015,
+        longitudeDelta: 0.015,
+      };
+    }
+    if (customerLocation) {
+      return {
+        ...customerLocation,
+        latitudeDelta: 0.015,
+        longitudeDelta: 0.015,
+      };
+    }
+    return {
+      latitude: 28.6250,
+      longitude: 77.2150,
+      latitudeDelta: 0.05,
+      longitudeDelta: 0.05,
+    };
   };
 
   return (
@@ -190,23 +130,41 @@ export default function TrackOrderScreen({ route, navigation }: any) {
         scrollEnabled={!mapActive}
       >
         <View style={styles.mapContainer}>
-          {mapHtml ? (
-            <WebView
-              source={{ html: mapHtml }}
-              style={styles.map}
-              originWhitelist={['*']}
-              scrollEnabled={false}
-              bounces={false}
-              showsVerticalScrollIndicator={false}
-              showsHorizontalScrollIndicator={false}
-              javaScriptEnabled={true}
-              onMessage={onWebViewMessage}
-            />
-          ) : (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <ActivityIndicator size="large" color="#1C158A" />
-            </View>
-          )}
+          <MapView
+            style={styles.map}
+            region={getMapRegion()}
+            onTouchStart={() => setMapActive(true)}
+            onTouchEnd={() => setMapActive(false)}
+            onTouchCancel={() => setMapActive(false)}
+            showsUserLocation={true}
+          >
+            {customerLocation && (
+              <Marker
+                coordinate={customerLocation}
+                title="Your Location"
+                description="Delivery address"
+                pinColor="blue"
+              />
+            )}
+            
+            {order?.driverLocation && (
+              <Marker
+                coordinate={order.driverLocation}
+                title="Driver"
+                description="Your driver's live location"
+                pinColor="green"
+              />
+            )}
+            
+            {customerLocation && order?.driverLocation && (
+              <Polyline
+                coordinates={[order.driverLocation, customerLocation]}
+                strokeColor="#1C158A"
+                strokeWidth={3}
+                lineDashPattern={[5, 5]}
+              />
+            )}
+          </MapView>
         </View>
 
         <View style={styles.timelineContainer}>
@@ -250,6 +208,8 @@ export default function TrackOrderScreen({ route, navigation }: any) {
           })}
         </View>
       </ScrollView>
+
+      <ChatBotFAB />
 
       {/* Bottom Nav */}
       <View style={styles.bottomNav}>
@@ -397,8 +357,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#e5e5ea',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
+    justifyContent: 'space-around',
     paddingTop: 12,
     paddingBottom: Platform.OS === 'ios' ? 34 : 12,
   },

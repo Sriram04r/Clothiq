@@ -55,6 +55,7 @@ import AddNewAddressScreen from './screens/AddNewAddress';
 import NotificationsScreen from './screens/Notifications';
 import PaymentMethodsScreen from './screens/PaymentMethods';
 import HelpSupportScreen from './screens/HelpSupport';
+import SupportChatScreen from './screens/SupportChat';
 
 import AdminDashboardWebView from './screens/AdminDashboardWebView';
 
@@ -78,11 +79,18 @@ function RootNavigator() {
             finalStatus = status;
           }
           if (finalStatus === 'granted') {
-            const token = (await Notifications.getExpoPushTokenAsync({
-              projectId: 'clothiq-id'
-            })).data;
-            const db = getFirestore();
-            await setDoc(doc(db, 'users', user.uid), { pushToken: token }, { merge: true });
+            try {
+              const token = (await Notifications.getExpoPushTokenAsync({
+                projectId: 'clothiq-id',
+              })).data;
+              const db = getFirestore();
+              await setDoc(doc(db, 'users', user.uid), { 
+                pushToken: token,
+                updatedAt: new Date(),
+              }, { merge: true });
+            } catch (e) {
+              console.log('Error fetching push token in App:', e);
+            }
           }
         } catch (error) {
           console.log("Error getting push token", error);
@@ -124,22 +132,18 @@ function RootNavigator() {
           <Stack.Screen name="Notifications" component={NotificationsScreen} />
           <Stack.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
           <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
+          <Stack.Screen name="SupportChat" component={SupportChatScreen} />
         </>
         )
       ) : (
         <>
-          {!hasOnboarded ? (
-            <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-          ) : (
-            <>
-              {!wasLoggedIn && <Stack.Screen name="Splash" component={SplashScreen} />}
-              <Stack.Screen name="Login" component={LoginScreen} />
-              <Stack.Screen name="Signup" component={SignupScreen} />
-              <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
-              <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-              <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
-            </>
-          )}
+          {!wasLoggedIn && <Stack.Screen name="Splash" component={SplashScreen} />}
+          {!hasOnboarded && <Stack.Screen name="Onboarding" component={OnboardingScreen} />}
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Signup" component={SignupScreen} />
+          <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+          <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
         </>
       )}
     </Stack.Navigator>
