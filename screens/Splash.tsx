@@ -1,10 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, Animated, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AuthContext } from '../context/AuthContext';
 
 const { height } = Dimensions.get('window');
 
 export default function SplashScreen({ navigation }: any) {
+  const { hasOnboarded } = React.useContext(AuthContext);
+  
   // Animation Values
   const logoY = useRef(new Animated.Value(-height)).current; // Starts way above the screen
   const logoScale = useRef(new Animated.Value(0.5)).current;
@@ -68,7 +71,7 @@ export default function SplashScreen({ navigation }: any) {
       <Animated.View style={[styles.bottomSection, { opacity: buttonOpacity, transform: [{ translateY: buttonY }] }]}>
         <TouchableOpacity 
           style={styles.button} 
-          onPress={() => navigation.navigate('Login')}
+          onPress={() => navigation.navigate(hasOnboarded ? 'Login' : 'Onboarding')}
           activeOpacity={0.8}
         >
           <Text style={styles.buttonText}>Get Started</Text>

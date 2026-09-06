@@ -37,7 +37,7 @@ const slides = [
   }
 ];
 
-export default function OnboardingScreen() {
+export default function OnboardingScreen({ navigation }: any) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollX = useRef(new Animated.Value(0)).current;
   const slidesRef = useRef<FlatList>(null);
@@ -56,6 +56,7 @@ export default function OnboardingScreen() {
       slidesRef.current?.scrollToIndex({ index: currentIndex + 1 });
     } else {
       completeOnboarding();
+      navigation.navigate('Login');
     }
   };
 
@@ -74,7 +75,13 @@ export default function OnboardingScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.topActions}>
-        <TouchableOpacity onPress={completeOnboarding} style={styles.skipButton}>
+        <TouchableOpacity 
+          onPress={() => {
+            completeOnboarding();
+            navigation.navigate('Login');
+          }} 
+          style={styles.skipButton}
+        >
           <Text style={styles.skipText}>Skip</Text>
         </TouchableOpacity>
       </View>
