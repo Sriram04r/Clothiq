@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { collectionGroup, collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Loader2, ChevronDown, ChevronUp, Phone, MapPin, Package } from 'lucide-react';
+import { Loader2, ChevronDown, ChevronUp, Phone, MapPin, Package, Truck } from 'lucide-react';
 
 export default function Orders() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -137,6 +137,7 @@ export default function Orders() {
           const isExpanded = expandedOrderId === order.id;
           const address = order.shippingAddress || {};
           const items = order.items || [];
+          const assignedDriver = drivers.find(d => d.id === order.driverId);
           
           return (
             <div key={order.id} className={`glass-panel animate-in delay-${(index % 4) + 1}`} style={{ padding: '0', overflow: 'hidden', border: isExpanded ? '1px solid var(--primary)' : '1px solid var(--border-light)' }}>
@@ -177,6 +178,16 @@ export default function Orders() {
                     }}>
                       {stages.find(s => s.key === order.status)?.label || order.status}
                     </span>
+                    {assignedDriver && (
+                      <span style={{
+                        background: 'rgba(41,69,255,0.1)', color: 'var(--primary)',
+                        padding: '4px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: '600',
+                        display: 'flex', alignItems: 'center', gap: '4px',
+                        border: '1px solid rgba(41,69,255,0.2)'
+                      }}>
+                        <Truck size={12} /> {assignedDriver.fullName || assignedDriver.name || 'Driver'}
+                      </span>
+                    )}
                   </div>
                 </div>
 
