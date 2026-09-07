@@ -61,3 +61,53 @@ export async function sendMessageToGroq(userMessage: string, conversationHistory
     return "Oops! Something went wrong while sending your message. Check your internet connection.";
   }
 }
+
+export async function analyzeClothingTag(base64Image: string) {
+  try {
+    const apiKey = process.env.EXPO_PUBLIC_GROQ_API_KEY;
+    if (!apiKey || apiKey === 'paste_your_api_key_here') {
+      return "⚠️ Error: AI Key missing.";
+    }
+
+    const response = await fetch(GROQ_API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'llama-3.2-11b-vision-preview',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: 'Analyze this clothing care tag. Return ONLY a concise, bolded warning containing the most critical care instructions (e.g., "⚠️ DO NOT TUMBLE DRY. WASH COLD ONLY."). Do not include any conversational text or explanation.'
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: `data:image/jpeg;base64,${base64Image}`
+                }
+              }
+            ]
+          }
+        ],
+        temperature: 0.1,
+        max_tokens: 100,
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        console.error("Groq Vision API Error:", data);
+        return null;
+    }
+    
+    return data.choices[0]?.message?.content || null;
+  } catch (error) {
+    console.error("Error calling Groq Vision:", error);
+    return null;
+  }
+}
