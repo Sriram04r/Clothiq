@@ -5,7 +5,8 @@ import { ChevronLeft, Plus, Circle, CheckCircle2 } from 'lucide-react-native';
 import { getAuth } from '@react-native-firebase/auth';
 import { getFirestore, collection, onSnapshot, query, orderBy } from '@react-native-firebase/firestore';
 
-export default function SelectAddressScreen({ navigation }: any) {
+export default function SelectAddressScreen({ route, navigation }: any) {
+  const { specialInstructions } = route.params || {};
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [addresses, setAddresses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -114,7 +115,7 @@ export default function SelectAddressScreen({ navigation }: any) {
       <View style={styles.bottomContainer}>
         <TouchableOpacity 
           style={[styles.continueBtn, !selectedId && { opacity: 0.5 }]}
-          onPress={() => selectedId && navigation.navigate('PickupDelivery', { selectedAddressId: selectedId })}
+          onPress={() => selectedId && navigation.navigate('PickupDelivery', { selectedAddressId: selectedId, specialInstructions })}
           disabled={!selectedId}
         >
           <Text style={styles.continueText}>Continue</Text>
