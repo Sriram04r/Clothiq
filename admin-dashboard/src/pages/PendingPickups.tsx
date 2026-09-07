@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
-import { collectionGroup, getDocs, collection } from 'firebase/firestore';
+import { collectionGroup, getDocs, collection, query, where, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { ArrowLeft, Clock, MapPin } from 'lucide-react';
+import { ArrowLeft, Clock, MapPin, Truck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function PendingPickups() {
   const navigate = useNavigate();
   const [pendingOrders, setPendingOrders] = useState<any[]>([]);
   const [usersMap, setUsersMap] = useState<Record<string, any>>({});
+  const [drivers, setDrivers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [assigningOrderId, setAssigningOrderId] = useState<string | null>(null);
+  const [assigningUserId, setAssigningUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPendingData = async () => {
@@ -16,10 +19,16 @@ export default function PendingPickups() {
         // Fetch users first to map their details
         const usersSnap = await getDocs(collection(db, 'users'));
         const uMap: Record<string, any> = {};
+        const dList: any[] = [];
         usersSnap.forEach(doc => {
-          uMap[doc.id] = doc.data();
+          const data = doc.data();
+          uMap[doc.id] = data;
+          if (data.role === 'driver') {
+            dList.push({ id: doc.id, ...data });
+          }
         });
         setUsersMap(uMap);
+        setDrivers(dList);
 
         const ordersSnap = await getDocs(collectionGroup(db, 'orders'));
         const orders: any[] = [];
@@ -61,6 +70,26 @@ export default function PendingPickups() {
     fetchPendingData();
   }, []);
 
+  const handleAssignDriver = async (driverId: string) => {
+    if (!assigningOrderId || !assigningUserId) return;
+    try {
+      const orderRef = doc(db, 'users', assigningUserId, 'orders', assigningOrderId);
+      await updateDoc(orderRef, {
+        driverId: driverId,
+        status: 'pickup',
+        updatedAt: new Date()
+      });
+      // Remove the assigned order from the local state so it instantly disappears
+      setPendingOrders(prev => prev.filter(o => o.id !== assigningOrderId));
+    } catch (err) {
+      console.error("Error assigning driver:", err);
+      alert("Failed to assign driver. Please try again.");
+    } finally {
+      setAssigningOrderId(null);
+      setAssigningUserId(null);
+    }
+  };
+
   if (loading) return <div>Loading Pending Pickups...</div>;
 
   return (
@@ -101,11 +130,26 @@ export default function PendingPickups() {
                   </div>
                 </div>
                 
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '4px' }}>Expected Items</div>
-                  <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--info)' }}>
-                    {order.itemsCount || 0}
+                <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px' }}>
+                  <div>
+                    <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '4px' }}>Expected Items</div>
+                    <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--info)' }}>
+                      {order.itemsCount || 0}
+                    </div>
                   </div>
+                  
+                  {order.status === 'placed' || order.status === 'placed_cod' ? (
+                    <button 
+                      onClick={() => { setAssigningOrderId(order.id); setAssigningUserId(order.userId); }}
+                      style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}
+                    >
+                      <Truck size={16} /> Assign Driver
+                    </button>
+                  ) : order.driverId ? (
+                    <div style={{ fontSize: '13px', color: 'var(--primary)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(41,69,255,0.1)', padding: '6px 12px', borderRadius: '12px' }}>
+                      <Truck size={14} /> Driver Assigned
+                    </div>
+                  ) : null}
                 </div>
               </div>
 
@@ -141,6 +185,45 @@ export default function PendingPickups() {
           </div>
         )}
       </div>
+
+      {/* Driver Selection Modal */}
+      {assigningOrderId && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="glass-panel" style={{ width: '400px', maxWidth: '90%', padding: '24px' }}>
+            <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '8px' }}>Assign Driver</h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '24px', fontSize: '14px' }}>Select an available driver for Order #{assigningOrderId.slice(-6).toUpperCase()}</p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '300px', overflowY: 'auto', marginBottom: '24px' }}>
+              {drivers.length === 0 ? (
+                <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px' }}>No drivers registered in the system.</div>
+              ) : (
+                drivers.map(driver => (
+                  <button 
+                    key={driver.id} 
+                    onClick={() => handleAssignDriver(driver.id)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', color: 'var(--text-main)' }}
+                  >
+                    <div style={{ width: '40px', height: '40px', borderRadius: '20px', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontWeight: '700' }}>
+                      {driver.fullName ? driver.fullName.charAt(0).toUpperCase() : 'D'}
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: '600', fontSize: '15px' }}>{driver.fullName || 'Unknown Driver'}</div>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '2px' }}>{driver.phone || 'No phone'}</div>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+            
+            <button 
+              onClick={() => { setAssigningOrderId(null); setAssigningUserId(null); }}
+              style={{ width: '100%', background: 'rgba(255,255,255,0.1)', color: 'var(--text-main)', border: 'none', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
