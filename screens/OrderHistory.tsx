@@ -146,22 +146,32 @@ export default function OrderHistoryScreen({ navigation }: any) {
             </View>
           ) : (
             filteredOrders.map((order) => (
-              <TouchableOpacity
-                key={order.id}
-                style={styles.orderCard}
-                onPress={() => navigation.navigate('OrderDetails', { orderId: order.id })}
-                activeOpacity={0.7}
-              >
-                {renderIcon(order.status)}
+              <View key={order.id} style={styles.orderCardWrapper}>
+                <TouchableOpacity
+                  style={styles.orderCard}
+                  onPress={() => navigation.navigate('OrderDetails', { orderId: order.id })}
+                  activeOpacity={0.7}
+                >
+                  {renderIcon(order.status)}
 
-                <View style={styles.orderDetails}>
-                  <Text style={styles.orderId}>Order #FW{order.id.substring(0, 6).toUpperCase()}</Text>
-                  <Text style={styles.orderDate}>{formatDate(order.createdAt)}</Text>
-                  <Text style={[styles.orderStatus, { color: getStatusColor(order.status) }]}>{getStatusDisplay(order.status)}</Text>
-                </View>
+                  <View style={styles.orderDetails}>
+                    <Text style={styles.orderId}>Order #FW{order.id.substring(0, 6).toUpperCase()}</Text>
+                    <Text style={styles.orderDate}>{formatDate(order.createdAt)}</Text>
+                    <Text style={[styles.orderStatus, { color: getStatusColor(order.status) }]}>{getStatusDisplay(order.status)}</Text>
+                  </View>
 
-                <Text style={styles.orderPrice}>₹{order.pricing?.total || 0}</Text>
-              </TouchableOpacity>
+                  <Text style={styles.orderPrice}>₹{order.pricing?.total || 0}</Text>
+                </TouchableOpacity>
+
+                {order.status === 'delivered' && (
+                  <TouchableOpacity 
+                    style={styles.reviewButton}
+                    onPress={() => navigation.navigate('RateReview', { orderId: order.id })}
+                  >
+                    <Text style={styles.reviewButtonText}>Leave a Review</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             ))
           )}
 
@@ -236,14 +246,12 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     gap: 16,
   },
-  orderCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
+  orderCardWrapper: {
     backgroundColor: '#FFF',
     borderRadius: 16,
     borderWidth: 1,
     borderColor: '#F3F4F6',
+    overflow: 'hidden',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -255,6 +263,11 @@ const styles = StyleSheet.create({
         elevation: 2,
       },
     }),
+  },
+  orderCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
   },
   iconBox: {
     width: 50,
@@ -286,5 +299,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#111',
+  },
+  reviewButton: {
+    backgroundColor: '#F3F4F6',
+    marginHorizontal: 16,
+    marginBottom: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  reviewButtonText: {
+    color: '#1C158A',
+    fontWeight: '600',
+    fontSize: 14,
   },
 });
