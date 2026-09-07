@@ -68,6 +68,41 @@ export const onOrderUpdated = functions.firestore
         functions.logger.error("Error sending push notification", error);
       }
     }
+
+    // Check if a new driver was assigned
+    if (beforeData.driverId !== afterData.driverId && afterData.driverId) {
+      try {
+        const driverDoc = await admin.firestore().collection("users").doc(afterData.driverId).get();
+        if (driverDoc.exists) {
+          const pushToken = driverDoc.data()?.pushToken;
+          if (pushToken) {
+            const message = {
+              to: pushToken,
+              sound: "default",
+              title: "🚚 New Order Assigned!",
+              body: "You have been assigned a new pickup order. Check your app for details.",
+              data: { orderId: context.params.orderId },
+            };
+
+            await fetch("https://exp.host/--/api/v2/push/send", {
+              method: "POST",
+              headers: {
+                "Accept": "application/json",
+                "Accept-encoding": "gzip, deflate",
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(message),
+            });
+
+            functions.logger.info(`Successfully sent push notification to driver ${afterData.driverId}`);
+          } else {
+            functions.logger.warn(`Driver ${afterData.driverId} has no pushToken`);
+          }
+        }
+      } catch (error) {
+        functions.logger.error("Error sending push notification to driver", error);
+      }
+    }
   });
 
 export const autoAssignDriver = functions.firestore
