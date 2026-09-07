@@ -1,12 +1,47 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, ActivityIndicator, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Trash2 } from 'lucide-react-native';
+import { ChevronLeft, Trash2, Camera, AlertCircle } from 'lucide-react-native';
 import { useCart } from '../context/CartContext';
+import * as ImagePicker from 'expo-image-picker';
+import { analyzeClothingTag } from '../utils/groqApi';
 
 export default function CartScreen({ navigation }: any) {
   const { items, subTotal, total, removeItem } = useCart();
   const pickupDelivery = items.length > 0 ? 40 : 0;
+  
+  const [scanning, setScanning] = useState(false);
+  const [specialCare, setSpecialCare] = useState<string | null>(null);
+
+  const handleScanTag = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+      if (!permissionResult.granted) {
+        alert("Camera permission is required to scan tags.");
+        return;
+      }
+      
+      const result = await ImagePicker.launchCameraAsync({
+        base64: true,
+        allowsEditing: true,
+        quality: 0.5,
+      });
+
+      if (!result.canceled && result.assets && result.assets[0].base64) {
+        setScanning(true);
+        const analysis = await analyzeClothingTag(result.assets[0].base64);
+        if (analysis) {
+          setSpecialCare(analysis);
+        } else {
+          alert("Could not analyze the tag. Please try again.");
+        }
+      }
+    } catch (e) {
+      console.log("Error scanning tag:", e);
+    } finally {
+      setScanning(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -26,7 +61,34 @@ export default function CartScreen({ navigation }: any) {
             <Text style={{ fontSize: 16, color: '#666' }}>Your cart is empty.</Text>
           </View>
         ) : (
-          items.map((item) => (
+          <>
+            {/* AI Scanner Banner */}
+            <TouchableOpacity 
+              style={styles.scanBanner}
+              onPress={handleScanTag}
+              activeOpacity={0.8}
+            >
+              <View style={styles.scanIconBox}>
+                <Camera size={24} color="#FFF" />
+              </View>
+              <View style={styles.scanDetails}>
+                <Text style={styles.scanTitle}>AI Fabric Scanner</Text>
+                <Text style={styles.scanSub}>Scan your clothing tag for special care</Text>
+              </View>
+              {scanning && <ActivityIndicator color="#1C158A" />}
+            </TouchableOpacity>
+
+            {specialCare && (
+              <View style={styles.specialCareBox}>
+                <AlertCircle size={20} color="#EAB308" style={{ marginTop: 2 }} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.specialCareTitle}>AI Care Instructions Added:</Text>
+                  <Text style={styles.specialCareText}>{specialCare}</Text>
+                </View>
+              </View>
+            )}
+
+            {items.map((item) => (
             <View key={item.id} style={styles.itemCard}>
               <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
                 <Text style={styles.emojiIcon}>{item.icon}</Text>
@@ -45,8 +107,9 @@ export default function CartScreen({ navigation }: any) {
                   <Trash2 size={20} color="#FF3B30" />
                 </TouchableOpacity>
               </View>
-            </View>
-          ))
+              </View>
+            ))}
+          </>
         )}
       </ScrollView>
 
@@ -66,7 +129,7 @@ export default function CartScreen({ navigation }: any) {
 
         <TouchableOpacity 
           style={[styles.proceedBtn, items.length === 0 && { opacity: 0.5 }]}
-          onPress={() => items.length > 0 && navigation.navigate('SelectAddress')}
+          onPress={() => items.length > 0 && navigation.navigate('SelectAddress', { specialInstructions: specialCare })}
           disabled={items.length === 0}
         >
           <Text style={styles.proceedText}>Proceed</Text>
@@ -207,6 +270,60 @@ const styles = StyleSheet.create({
   proceedText: {
     color: '#FFF',
     fontSize: 16,
+    fontWeight: '600',
+  },
+  scanBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EEF2FF',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#C7D2FE',
+    marginBottom: 16,
+  },
+  scanIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#1C158A',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  scanDetails: {
+    flex: 1,
+  },
+  scanTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1C158A',
+    marginBottom: 4,
+  },
+  scanSub: {
+    fontSize: 13,
+    color: '#4F46E5',
+  },
+  specialCareBox: {
+    flexDirection: 'row',
+    backgroundColor: '#FEFCE8',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#FEF08A',
+    marginBottom: 16,
+    gap: 12,
+  },
+  specialCareTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#A16207',
+    marginBottom: 4,
+  },
+  specialCareText: {
+    fontSize: 13,
+    color: '#713F12',
+    lineHeight: 20,
     fontWeight: '600',
   },
 });
