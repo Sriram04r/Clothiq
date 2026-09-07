@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import React, { useState, useMemo, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Circle, CheckCircle2 } from 'lucide-react-native';
+import { getFirestore, collectionGroup, query, where, getCountFromServer } from '@react-native-firebase/firestore';
 
 const timeSlots = [
   '9 AM – 11 AM', '11 AM – 1 PM',
@@ -11,7 +12,7 @@ const timeSlots = [
 
 export default function PickupDeliveryScreen({ route, navigation }: any) {
   // Grab the address passed from the previous screen
-  const { selectedAddressId } = route.params || {};
+  const { selectedAddressId, specialInstructions } = route.params || {};
 
   // Dynamically generate the next 4 days for scheduling
   const dates = useMemo(() => {
@@ -35,13 +36,41 @@ export default function PickupDeliveryScreen({ route, navigation }: any) {
   const [selectedDate, setSelectedDate] = useState(dates[0].id);
   const [selectedTime, setSelectedTime] = useState(timeSlots[0]);
   const [deliveryOption, setDeliveryOption] = useState('standard');
+  const [isHighDemand, setIsHighDemand] = useState(false);
+  const [loadingDemand, setLoadingDemand] = useState(true);
+
+  useEffect(() => {
+    const checkDemand = async () => {
+      try {
+        const db = getFirestore();
+        const q = query(
+          collectionGroup(db, 'orders'),
+          where('status', 'in', ['placed_cod', 'paid', 'pickup_ready', 'out_for_pickup', 'washing'])
+        );
+        const snapshot = await getCountFromServer(q);
+        const activeCount = snapshot.data().count;
+        
+        // If there are more than 10 active orders, trigger high demand mode
+        if (activeCount > 10) {
+          setIsHighDemand(true);
+        }
+      } catch (e) {
+        console.error("Failed to fetch demand count", e);
+      } finally {
+        setLoadingDemand(false);
+      }
+    };
+    
+    checkDemand();
+  }, []);
 
   const handleContinue = () => {
     navigation.navigate('OrderSummary', {
       selectedAddressId,
       pickupDate: selectedDate,
       pickupTime: selectedTime,
-      deliveryOption
+      deliveryOption,
+      specialInstructions
     });
   };
 
@@ -124,7 +153,13 @@ export default function PickupDeliveryScreen({ route, navigation }: any) {
           </View>
           <View style={styles.deliveryDetails}>
             <Text style={styles.deliveryTitle}>Standard Delivery</Text>
-            <Text style={styles.deliverySub}>2 Days Delivery</Text>
+            {loadingDemand ? (
+              <ActivityIndicator size="small" color="#666" style={{ alignSelf: 'flex-start', marginTop: 4 }} />
+            ) : isHighDemand ? (
+              <Text style={[styles.deliverySub, { color: '#EAB308', fontWeight: '600' }]}>⚠️ 3 Days (High Demand)</Text>
+            ) : (
+              <Text style={styles.deliverySub}>2 Days Delivery</Text>
+            )}
           </View>
           <Text style={styles.deliveryFree}>FREE</Text>
         </TouchableOpacity>
