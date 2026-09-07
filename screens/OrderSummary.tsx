@@ -7,7 +7,7 @@ import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp } from '
 import { useCart } from '../context/CartContext';
 
 export default function OrderSummaryScreen({ route, navigation }: any) {
-  const { selectedAddressId, pickupDate, pickupTime, deliveryOption } = route.params || {};
+  const { selectedAddressId, pickupDate, pickupTime, deliveryOption, specialInstructions } = route.params || {};
 
   const [address, setAddress] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -81,6 +81,7 @@ export default function OrderSummaryScreen({ route, navigation }: any) {
         },
         itemsCount: totalItems,
         items: items,
+        specialInstructions: specialInstructions || null,
         createdAt: serverTimestamp(),
       };
 
@@ -158,6 +159,18 @@ export default function OrderSummaryScreen({ route, navigation }: any) {
                 <Text style={styles.orderSubtitle}>Wash & Fold</Text>
               </View>
             </View>
+
+            {specialInstructions && (
+              <View style={styles.orderRow}>
+                <View style={[styles.iconBox, { borderColor: '#FEF08A', backgroundColor: '#FEFCE8' }]}>
+                  <Text style={{ fontSize: 18 }}>⚠️</Text>
+                </View>
+                <View style={styles.orderTextContainer}>
+                  <Text style={[styles.orderTitle, { color: '#A16207' }]}>Special Care Added</Text>
+                  <Text style={styles.orderSubtitle}>{specialInstructions}</Text>
+                </View>
+              </View>
+            )}
 
             <View style={styles.orderRow}>
               <View style={styles.iconBox}>
