@@ -15,7 +15,7 @@ CRITICAL RULE: You must ONLY answer questions related to Clothiq, laundry, dry c
 
 Keep your answers brief and friendly. Do not use markdown that won't render well in a basic text view (like tables). Use simple text and emojis.`;
 
-export async function sendMessageToGroq(userMessage: string, conversationHistory: any[] = []) {
+export async function sendMessageToGroq(userMessage: string, conversationHistory: any[] = [], userContext: string = "") {
   try {
     const apiKey = process.env.EXPO_PUBLIC_GROQ_API_KEY;
     
@@ -23,9 +23,11 @@ export async function sendMessageToGroq(userMessage: string, conversationHistory
       return "It looks like my AI brain is disconnected! Please ensure your Groq API key is added to the .env file and restart the app.";
     }
 
+    const finalSystemPrompt = SYSTEM_PROMPT + (userContext ? `\n\nUser Context:\n${userContext}` : "");
+
     // Convert our internal message format to OpenAI/Groq format
     const messages = [
-      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'system', content: finalSystemPrompt },
       ...conversationHistory.map(msg => ({
         role: msg.isUser ? 'user' : 'assistant',
         content: msg.text
@@ -76,7 +78,7 @@ export async function analyzeClothingTag(base64Image: string) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'llama-3.2-11b-vision-preview',
+        model: 'llama-3.2-90b-vision-preview',
         messages: [
           {
             role: 'user',
