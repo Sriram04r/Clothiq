@@ -5,11 +5,11 @@ import { ChevronLeft, Plus, Minus } from 'lucide-react-native';
 import { useCart } from '../context/CartContext';
 import { getFirestore, collection, getDocs } from '@react-native-firebase/firestore';
 
-const categories = ['Men', 'Women', 'Kids', 'Household'];
+const categories = ['All', 'Men', 'Women', 'Kids', 'Household'];
 
 export default function SelectItemsScreen({ navigation }: any) {
   const { updateQuantityOrAdd, getItemQuantity, subTotal } = useCart();
-  const [activeCategory, setActiveCategory] = useState('Men');
+  const [activeCategory, setActiveCategory] = useState('All');
   const [itemsData, setItemsData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,7 +32,7 @@ export default function SelectItemsScreen({ navigation }: any) {
     fetchItems();
   }, []);
 
-  const filteredItems = itemsData.filter(item => item.category === activeCategory);
+  const filteredItems = activeCategory === 'All' ? itemsData : itemsData.filter(item => item.category === activeCategory);
 
   return (
     <SafeAreaView style={styles.container}>
