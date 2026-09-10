@@ -66,8 +66,11 @@ export default function DashboardLayout() {
 
       {/* Sidebar / Bottom Nav */}
       <aside className="sidebar animate-in">
-        <div className="desktop-brand" style={{ marginBottom: '40px', paddingLeft: '8px' }}>
-          <h2 style={{ color: 'var(--primary)', fontSize: '24px', letterSpacing: '-1px' }}>Clothiq Admin</h2>
+        <div className="desktop-brand" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px', paddingLeft: '8px' }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 24, fontWeight: '800', color: 'var(--bg-dark)' }}>C</span>
+          </div>
+          <h2 style={{ color: 'var(--primary)', fontSize: '32px', fontWeight: '800', letterSpacing: '-1.5px', margin: 0 }}>Clothiq</h2>
         </div>
 
         <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
