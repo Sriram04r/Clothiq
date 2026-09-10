@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  StyleSheet, Text, View, TouchableOpacity, TextInput, 
-  FlatList, KeyboardAvoidingView, Platform, ActivityIndicator 
+import {
+  StyleSheet, Text, View, TouchableOpacity, TextInput,
+  FlatList, KeyboardAvoidingView, Platform, ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Send, Bot } from 'lucide-react-native';
 import { sendMessageToGroq } from '../utils/groqApi';
+import { getFirestore, collection, query, getDocs } from '@react-native-firebase/firestore';
+import { getAuth } from '@react-native-firebase/auth';
 
 interface Message {
   id: string;
@@ -25,7 +27,34 @@ export default function SupportChatScreen({ navigation }: any) {
       timestamp: new Date()
     }
   ]);
-  
+  const [userContext, setUserContext] = useState("");
+
+  useEffect(() => {
+    const fetchContext = async () => {
+      try {
+        const auth = getAuth();
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const db = getFirestore();
+        const q = query(collection(db, 'users', user.uid, 'orders'));
+        const snapshot = await getDocs(q);
+        const activeOrders = snapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter((o: any) => o.status !== 'delivered' && o.status !== 'cancelled');
+
+        if (activeOrders.length === 0) {
+          setUserContext("The user currently has no pending orders or tasks.");
+        } else {
+          setUserContext(`The user has ${activeOrders.length} active order(s). Details: ` + JSON.stringify(activeOrders));
+        }
+      } catch (err) {
+        console.log("Error fetching user context for AI", err);
+      }
+    };
+    fetchContext();
+  }, []);
+
   const flatListRef = useRef<FlatList>(null);
 
   const handleSend = async () => {
@@ -43,8 +72,8 @@ export default function SupportChatScreen({ navigation }: any) {
     setIsTyping(true);
 
     // Call Groq API
-    const botResponseText = await sendMessageToGroq(userMsg.text, messages.slice(1)); // skip welcome msg
-    
+    const botResponseText = await sendMessageToGroq(userMsg.text, messages.slice(1), userContext);
+
     const botMsg: Message = {
       id: (Date.now() + 1).toString(),
       text: botResponseText,
@@ -58,7 +87,7 @@ export default function SupportChatScreen({ navigation }: any) {
 
   const renderMessage = ({ item }: { item: Message }) => {
     const isUser = item.isUser;
-    
+
     return (
       <View style={[styles.messageWrapper, isUser ? styles.messageWrapperUser : styles.messageWrapperBot]}>
         {!isUser && (
@@ -86,13 +115,14 @@ export default function SupportChatScreen({ navigation }: any) {
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
           <Text style={styles.headerTitle}>Clothiq Support</Text>
-          <Text style={styles.headerSubtitle}>Powered by AI</Text>
+          <Text style={styles.headerSubtitle}></Text>
         </View>
       </View>
 
       <KeyboardAvoidingView 
         style={styles.keyboardView} 
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 25}
       >
         <FlatList
           ref={flatListRef}
@@ -123,7 +153,7 @@ export default function SupportChatScreen({ navigation }: any) {
             multiline
             maxLength={500}
           />
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
             onPress={handleSend}
             disabled={!inputText.trim() || isTyping}
