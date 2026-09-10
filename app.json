@@ -30,7 +30,19 @@
       "@react-native-firebase/auth",
       "@react-native-google-signin/google-signin",
       "expo-font",
-      ["expo-build-properties", { "android": { "ndkVersion": "26.1.10909125" } }]
-    ]
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "ndkVersion": "26.1.10909125"
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "23708749-d06d-408c-b0a8-8064a0e695bc"
+      }
+    }
   }
 }
