@@ -8,8 +8,8 @@ import { useCart } from '../context/CartContext';
 
 const paymentMethods = [
   { id: 'phonepe', title: 'PhonePe', sub: 'Pay using PhonePe', localImage: require('../assets/Phonepay.png') },
-  { id: 'gpay', title: 'Google Pay', sub: 'Pay using Google Pay', icon: 'G', imageUrl: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/google-pay-icon.jpg' },
-  { id: 'paytm', title: 'Paytm', sub: 'Pay using Paytm', icon: 'T', imageUrl: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/paytm-icon.jpg' },
+  { id: 'gpay', title: 'Google Pay', sub: 'Pay using Google Pay', icon: 'G', imageUrl: 'https://img.icons8.com/color/48/000000/google-pay-india.png' },
+  { id: 'paytm', title: 'Paytm', sub: 'Pay using Paytm', icon: 'T', imageUrl: 'https://img.icons8.com/color/48/000000/paytm.png' },
   { id: 'navi', title: 'Navi', sub: 'Pay using Navi', localImage: require('../assets/Navi.png') },
   { id: 'cod', title: 'Cash on Delivery', sub: 'Pay when you receive', icon: 'C', imageUrl: 'https://img.icons8.com/color/48/000000/cash-in-hand.jpg' },
 ];
