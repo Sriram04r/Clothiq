@@ -2,11 +2,46 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, TextInput, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Star, Plus } from 'lucide-react-native';
+import { getFirestore, collection, addDoc, serverTimestamp } from '@react-native-firebase/firestore';
+import { getAuth } from '@react-native-firebase/auth';
 
 export default function RateReviewScreen({ navigation }: any) {
-  const [rating, setRating] = useState(4);
-  const [reviewTitle, setReviewTitle] = useState('Great Service!');
-  const [reviewBody, setReviewBody] = useState('Clothes were very clean and neatly packed.Delivery was on time');
+  const [rating, setRating] = useState(5);
+  const [reviewTitle, setReviewTitle] = useState('');
+  const [reviewBody, setReviewBody] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!reviewTitle.trim() || !reviewBody.trim()) {
+      alert("Please fill in both the title and the review text.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      const db = getFirestore();
+
+      await addDoc(collection(db, 'reviews'), {
+        userId: user?.uid || 'anonymous',
+        userName: user?.displayName || 'App User',
+        userEmail: user?.email || '',
+        rating: rating,
+        title: reviewTitle.trim(),
+        body: reviewBody.trim(),
+        createdAt: serverTimestamp()
+      });
+
+      alert("Thank you for your valuable feedback!");
+      navigation.navigate('Home');
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -55,35 +90,17 @@ export default function RateReviewScreen({ navigation }: any) {
           />
         </View>
 
-        <Text style={styles.sectionTitle}>Add photos (Optional)</Text>
-        
-        {/* Photo Upload Row */}
-        <View style={styles.photosRow}>
-          <View style={styles.photoPlaceholder}>
-            <Image 
-              source={{ uri: 'https://images.unsplash.com/photo-1582735689369-4fe89db7114c?w=200&h=200&fit=crop' }} 
-              style={styles.uploadedPhoto} 
-            />
-          </View>
-          <View style={styles.photoPlaceholder}>
-            <Image 
-              source={{ uri: 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=200&h=200&fit=crop' }} 
-              style={styles.uploadedPhoto} 
-            />
-          </View>
-          <TouchableOpacity style={styles.addPhotoBtn}>
-            <Plus size={24} color="#666" />
-          </TouchableOpacity>
-        </View>
+
 
       </ScrollView>
 
       <View style={styles.bottomContainer}>
         <TouchableOpacity 
-          style={styles.submitBtn}
-          onPress={() => navigation.navigate('Home')}
+          style={[styles.submitBtn, isSubmitting && { opacity: 0.7 }]}
+          onPress={handleSubmit}
+          disabled={isSubmitting}
         >
-          <Text style={styles.submitText}>Submit Review</Text>
+          <Text style={styles.submitText}>{isSubmitting ? 'Submitting...' : 'Submit Review'}</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.skipBtn}

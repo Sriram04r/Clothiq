@@ -25,7 +25,6 @@ export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [loginType, setLoginType] = useState<'customer' | 'admin'>('customer');
   const [menuVisible, setMenuVisible] = useState(false);
 
   const handleLogin = async () => {
@@ -72,8 +71,8 @@ export default function LoginScreen({ navigation }: any) {
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.headerRow}>
             <View style={styles.headerTextContainer}>
-              <Text style={styles.title}>{loginType === 'admin' ? 'Admin Portal' : 'Welcome Back!'}</Text>
-              <Text style={styles.subtitle}>{loginType === 'admin' ? 'Enter admin credentials' : 'Login to continue'}</Text>
+              <Text style={styles.title}>Welcome Back!</Text>
+              <Text style={styles.subtitle}>Login to continue</Text>
             </View>
             <View style={{ zIndex: 50 }}>
               <TouchableOpacity onPress={() => setMenuVisible(!menuVisible)} style={styles.menuIcon}>
@@ -84,7 +83,7 @@ export default function LoginScreen({ navigation }: any) {
                 <View style={styles.dropdownMenu}>
                   <TouchableOpacity
                     style={styles.dropdownItem}
-                    onPress={() => { setLoginType('customer'); setMenuVisible(false); }}
+                    onPress={() => { setMenuVisible(false); }}
                   >
                     <User size={16} color="#4b5563" />
                     <Text style={styles.dropdownText}>Customer</Text>
@@ -92,7 +91,10 @@ export default function LoginScreen({ navigation }: any) {
                   <View style={styles.dropdownDivider} />
                   <TouchableOpacity
                     style={styles.dropdownItem}
-                    onPress={() => { setLoginType('admin'); setMenuVisible(false); }}
+                    onPress={() => { 
+                      setMenuVisible(false); 
+                      navigation.navigate('AdminDashboard');
+                    }}
                   >
                     <Shield size={16} color="#4b5563" />
                     <Text style={styles.dropdownText}>Clothiq Admin</Text>
@@ -137,11 +139,9 @@ export default function LoginScreen({ navigation }: any) {
               </View>
             </View>
 
-            {loginType === 'customer' && (
-              <TouchableOpacity style={styles.forgotPassword} onPress={() => navigation.navigate('ForgotPassword')}>
-                <Text style={styles.linkText}>Forgot Password</Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity style={styles.forgotPassword} onPress={() => navigation.navigate('ForgotPassword')}>
+              <Text style={styles.linkText}>Forgot Password</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.loginButton}
@@ -157,34 +157,30 @@ export default function LoginScreen({ navigation }: any) {
             </TouchableOpacity>
           </View>
 
-          {loginType === 'customer' && (
-            <>
-              <View style={styles.dividerContainer}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>or connect with</Text>
-                <View style={styles.dividerLine} />
-              </View>
+            <View style={styles.dividerContainer}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or connect with</Text>
+              <View style={styles.dividerLine} />
+            </View>
 
-              <View style={styles.socialContainer}>
-                <TouchableOpacity style={styles.socialButton} onPress={handleGoogleLogin}>
-                  <GoogleIcon />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.socialButton}>
-                  <FontAwesome5 name="facebook" size={24} color="#4267B2" />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.socialButton}>
-                  <FontAwesome5 name="apple" size={24} color="#000000" />
-                </TouchableOpacity>
-              </View>
+            <View style={styles.socialContainer}>
+              <TouchableOpacity style={styles.socialButton} onPress={handleGoogleLogin}>
+                <GoogleIcon />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.socialButton}>
+                <FontAwesome5 name="facebook" size={24} color="#4267B2" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.socialButton}>
+                <FontAwesome5 name="apple" size={24} color="#000000" />
+              </TouchableOpacity>
+            </View>
 
-              <View style={styles.footer}>
-                <Text style={styles.footerText}>Don't have an account? </Text>
-                <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-                  <Text style={styles.signupText}>Sign Up</Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>Don't have an account? </Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+                <Text style={styles.signupText}>Sign Up</Text>
+              </TouchableOpacity>
+            </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

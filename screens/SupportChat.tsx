@@ -57,11 +57,14 @@ export default function SupportChatScreen({ navigation }: any) {
 
   const flatListRef = useRef<FlatList>(null);
 
+  // Simple unique ID generator
+  const generateId = () => Math.random().toString(36).substr(2, 9);
+
   const handleSend = async () => {
     if (!inputText.trim()) return;
 
     const userMsg: Message = {
-      id: Date.now().toString(),
+      id: generateId(),
       text: inputText.trim(),
       isUser: true,
       timestamp: new Date()
@@ -75,7 +78,7 @@ export default function SupportChatScreen({ navigation }: any) {
     const botResponseText = await sendMessageToGroq(userMsg.text, messages.slice(1), userContext);
 
     const botMsg: Message = {
-      id: (Date.now() + 1).toString(),
+      id: generateId(),
       text: botResponseText,
       isUser: false,
       timestamp: new Date()

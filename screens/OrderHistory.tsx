@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Gift, Shirt, XCircle, Truck, Package } from 'lucide-react-native';
+import { ChevronLeft, Gift, Shirt, XCircle, Truck, Package, Home, ClipboardList, Bell, LayoutGrid, User } from 'lucide-react-native';
 import { getAuth } from '@react-native-firebase/auth';
 import { getFirestore, collection, query, orderBy, onSnapshot } from '@react-native-firebase/firestore';
 
@@ -177,6 +177,30 @@ export default function OrderHistoryScreen({ navigation }: any) {
 
         </ScrollView>
       )}
+
+      {/* Bottom Nav */}
+      <View style={styles.bottomNav}>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
+          <Home size={24} color="#8e8e93" />
+          <Text style={styles.navText}>Home</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem}>
+          <ClipboardList size={24} color="#1C158A" />
+          <Text style={[styles.navText, styles.navTextActive]}>Orders</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Notifications')}>
+          <Bell size={24} color="#8e8e93" />
+          <Text style={styles.navText}>Notifications</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Services')}>
+          <LayoutGrid size={24} color="#8e8e93" />
+          <Text style={styles.navText}>Services</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Profile')}>
+          <User size={24} color="#8e8e93" />
+          <Text style={styles.navText}>Profile</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
@@ -243,7 +267,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingBottom: 40,
+    paddingBottom: 100,
     gap: 16,
   },
   orderCardWrapper: {
@@ -312,5 +336,31 @@ const styles = StyleSheet.create({
     color: '#1C158A',
     fontWeight: '600',
     fontSize: 14,
+  },
+  bottomNav: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#e5e5ea',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 12,
+  },
+  navItem: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
+  },
+  navText: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#8e8e93',
+  },
+  navTextActive: {
+    color: '#1C158A',
   },
 });

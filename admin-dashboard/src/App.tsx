@@ -10,6 +10,7 @@ import Customers from './pages/Customers';
 import RevenueDetails from './pages/RevenueDetails';
 import PendingPickups from './pages/PendingPickups';
 import Menu from './pages/Menu';
+import Reviews from './pages/Reviews';
 
 function App() {
   const [user, setUser] = useState<any>(null);
@@ -49,6 +50,7 @@ function App() {
             <Route path="revenue" element={<RevenueDetails />} />
             <Route path="pending-pickups" element={<PendingPickups />} />
             <Route path="menu" element={<Menu />} />
+            <Route path="reviews" element={<Reviews />} />
           </Route>
         ) : (
           <Route path="*" element={<Navigate to="/login" />} />

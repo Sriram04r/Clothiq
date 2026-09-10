@@ -69,27 +69,31 @@ export default function ServicesScreen({ navigation }: any) {
 
       <ChatBotFAB />
 
-      {/* Static Bottom Tab Bar matching design */}
-      <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Home')}>
+      {/* Bottom Nav */}
+      <View style={styles.bottomNav}>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
           <Home size={24} color="#8e8e93" />
-          <Text style={styles.tabText}>Home</Text>
+          <Text style={styles.navText}>Home</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('OrderHistory')}>
+        
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('OrderHistory')}>
           <ClipboardList size={24} color="#8e8e93" />
-          <Text style={styles.tabText}>Orders</Text>
+          <Text style={styles.navText}>Orders</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Notifications')}>
+        
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Notifications')}>
           <Bell size={24} color="#8e8e93" />
-          <Text style={styles.tabText}>Notifications</Text>
+          <Text style={styles.navText}>Notifications</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem}>
-          <LayoutGrid size={24} color="#2945FF" />
-          <Text style={[styles.tabText, { color: '#2945FF' }]}>Services</Text>
+        
+        <TouchableOpacity style={styles.navItem}>
+          <LayoutGrid size={24} color="#1C158A" />
+          <Text style={[styles.navText, styles.navTextActive]}>Services</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Profile')}>
+        
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Profile')}>
           <User size={24} color="#8e8e93" />
-          <Text style={styles.tabText}>Profile</Text>
+          <Text style={styles.navText}>Profile</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -128,7 +132,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingBottom: 40,
+    paddingBottom: 100, // Space for bottom nav
     gap: 16,
   },
   card: {
@@ -171,25 +175,30 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#8A91F6',
   },
-  bottomBar: {
+  bottomNav: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#e5e5ea',
     flexDirection: 'row',
     justifyContent: 'space-around',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
-    ...Platform.select({
-      ios: { paddingBottom: 24 },
-    }),
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 12,
   },
-  tabItem: {
+  navItem: {
+    flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 4,
   },
-  tabText: {
+  navText: {
     fontSize: 10,
-    marginTop: 4,
+    fontWeight: '500',
     color: '#8e8e93',
+  },
+  navTextActive: {
+    color: '#1C158A',
   },
 });

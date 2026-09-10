@@ -6,10 +6,12 @@ import { useCart } from '../context/CartContext';
 import { getFirestore, collection, getDocs } from '@react-native-firebase/firestore';
 
 const categories = ['All', 'Men', 'Women', 'Kids', 'Household'];
+const servicesList = ['Wash & Fold', 'Dry Cleaning', 'Steam Iron', 'Wash & Iron'];
 
-export default function SelectItemsScreen({ navigation }: any) {
+export default function SelectItemsScreen({ navigation, route }: any) {
   const { updateQuantityOrAdd, getItemQuantity, subTotal } = useCart();
   const [activeCategory, setActiveCategory] = useState('All');
+  const [activeService, setActiveService] = useState(route.params?.initialService || 'Wash & Fold');
   const [itemsData, setItemsData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -46,6 +48,31 @@ export default function SelectItemsScreen({ navigation }: any) {
         </View>
       </View>
 
+      {/* Service Type Tabs */}
+      <View style={styles.servicesContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesScroll}>
+          {servicesList.map((service) => (
+            <TouchableOpacity
+              key={service}
+              style={[
+                styles.serviceTab,
+                activeService === service && styles.serviceTabActive
+              ]}
+              onPress={() => setActiveService(service)}
+            >
+              <Text
+                style={[
+                  styles.serviceText,
+                  activeService === service && styles.serviceTextActive
+                ]}
+              >
+                {service}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
       {/* Category Tabs */}
       <View style={styles.categoriesContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesScroll}>
@@ -73,7 +100,7 @@ export default function SelectItemsScreen({ navigation }: any) {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {filteredItems.map((item) => {
-          const qty = getItemQuantity(item.id);
+          const qty = getItemQuantity(item.id, activeService);
           return (
             <View key={item.id} style={styles.itemCard}>
               <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
@@ -86,11 +113,11 @@ export default function SelectItemsScreen({ navigation }: any) {
               </View>
 
               <View style={styles.quantityContainer}>
-                <TouchableOpacity style={styles.quantityBtn} onPress={() => updateQuantityOrAdd(item, -1)}>
+                <TouchableOpacity style={styles.quantityBtn} onPress={() => updateQuantityOrAdd({ ...item, serviceType: activeService }, -1)}>
                   <Minus size={16} color="#111" />
                 </TouchableOpacity>
                 <Text style={styles.quantityText}>{qty}</Text>
-                <TouchableOpacity style={styles.quantityBtn} onPress={() => updateQuantityOrAdd(item, 1)}>
+                <TouchableOpacity style={styles.quantityBtn} onPress={() => updateQuantityOrAdd({ ...item, serviceType: activeService }, 1)}>
                   <Plus size={16} color="#111" />
                 </TouchableOpacity>
               </View>
@@ -148,12 +175,35 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 4,
   },
+  servicesContainer: {
+    marginBottom: 12,
+  },
   categoriesContainer: {
     marginBottom: 16,
   },
   categoriesScroll: {
     paddingHorizontal: 20,
     gap: 12,
+  },
+  serviceTab: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#EEF2FF', // light blue
+    borderWidth: 1,
+    borderColor: '#C7D2FE',
+  },
+  serviceTabActive: {
+    backgroundColor: '#2945FF',
+    borderColor: '#2945FF',
+  },
+  serviceText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4338CA', // darker blue
+  },
+  serviceTextActive: {
+    color: '#FFF',
   },
   categoryTab: {
     paddingHorizontal: 20,

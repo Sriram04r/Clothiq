@@ -7,6 +7,7 @@ export type CartItem = {
   icon: string;
   color: string;
   qty: number;
+  serviceType: string;
 };
 
 type CartContextType = {
@@ -15,12 +16,12 @@ type CartContextType = {
   expressFee: number;
   total: number;
   addItem: (item: Omit<CartItem, 'qty'>) => void;
-  removeItem: (id: string) => void;
-  updateQuantity: (id: string, delta: number) => void;
+  removeItem: (id: string, serviceType: string) => void;
+  updateQuantity: (id: string, serviceType: string, delta: number) => void;
   updateQuantityOrAdd: (item: Omit<CartItem, 'qty'>, delta: number) => void;
   setExpressFee: (fee: number) => void;
   clearCart: () => void;
-  getItemQuantity: (id: string) => number;
+  getItemQuantity: (id: string, serviceType: string) => number;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -31,22 +32,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addItem = (newItem: Omit<CartItem, 'qty'>) => {
     setItems(prev => {
-      const existing = prev.find(item => item.id === newItem.id);
+      const existing = prev.find(item => item.id === newItem.id && item.serviceType === newItem.serviceType);
       if (existing) {
-        return prev.map(item => item.id === newItem.id ? { ...item, qty: item.qty + 1 } : item);
+        return prev.map(item => (item.id === newItem.id && item.serviceType === newItem.serviceType) ? { ...item, qty: item.qty + 1 } : item);
       }
       return [...prev, { ...newItem, qty: 1 }];
     });
   };
 
-  const removeItem = (id: string) => {
-    setItems(prev => prev.filter(item => item.id !== id));
+  const removeItem = (id: string, serviceType: string) => {
+    setItems(prev => prev.filter(item => !(item.id === id && item.serviceType === serviceType)));
   };
 
-  const updateQuantity = (id: string, delta: number) => {
+  const updateQuantity = (id: string, serviceType: string, delta: number) => {
     setItems(prev => {
       return prev.map(item => {
-        if (item.id === id) {
+        if (item.id === id && item.serviceType === serviceType) {
           return { ...item, qty: Math.max(0, item.qty + delta) };
         }
         return item;
@@ -56,9 +57,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const updateQuantityOrAdd = (item: Omit<CartItem, 'qty'>, delta: number) => {
       setItems(prev => {
-          const existing = prev.find(i => i.id === item.id);
+          const existing = prev.find(i => i.id === item.id && i.serviceType === item.serviceType);
           if (existing) {
-              return prev.map(i => i.id === item.id ? { ...i, qty: Math.max(0, i.qty + delta) } : i).filter(i => i.qty > 0);
+              return prev.map(i => (i.id === item.id && i.serviceType === item.serviceType) ? { ...i, qty: Math.max(0, i.qty + delta) } : i).filter(i => i.qty > 0);
           } else if (delta > 0) {
               return [...prev, { ...item, qty: delta }];
           }
@@ -66,8 +67,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
   }
 
-  const getItemQuantity = (id: string) => {
-    const item = items.find(i => i.id === id);
+  const getItemQuantity = (id: string, serviceType: string) => {
+    const item = items.find(i => i.id === id && i.serviceType === serviceType);
     return item ? item.qty : 0;
   };
 

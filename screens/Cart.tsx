@@ -96,6 +96,7 @@ export default function CartScreen({ navigation }: any) {
               
               <View style={styles.itemDetails}>
                 <Text style={styles.itemName}>{item.name}</Text>
+                <Text style={styles.itemSubDetail}>Service: {item.serviceType}</Text>
                 <Text style={styles.itemSubDetail}>
                   ₹ {item.price}   <Text style={styles.qtyText}>Qty:{item.qty}</Text>
                 </Text>
@@ -103,11 +104,11 @@ export default function CartScreen({ navigation }: any) {
 
               <View style={styles.itemActions}>
                 <Text style={styles.itemTotal}>₹ {item.price * item.qty}</Text>
-                <TouchableOpacity style={styles.trashBtn} onPress={() => removeItem(item.id)}>
+                <TouchableOpacity style={styles.trashBtn} onPress={() => removeItem(item.id, item.serviceType)}>
                   <Trash2 size={20} color="#FF3B30" />
                 </TouchableOpacity>
               </View>
-              </View>
+            </View>
             ))}
           </>
         )}

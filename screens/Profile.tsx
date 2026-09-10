@@ -12,7 +12,7 @@ const menuItems = [
   { id: '2', title: 'Saved Address', icon: MapPin, screen: 'SavedAddresses' },
   { id: '3', title: 'Payment Methods', icon: CreditCard, screen: 'PaymentMethods' },
   { id: '4', title: 'Offers & Coupons', icon: Tag },
-  { id: '5', title: 'Help & Support', icon: HelpCircle, color: '#FF3B30', screen: 'HelpSupport' },
+  { id: '5', title: 'Help & Support', icon: HelpCircle, screen: 'HelpSupport' },
   { id: '6', title: 'Settings', icon: Settings },
 ];
 
@@ -51,7 +51,9 @@ export default function ProfileScreen({ navigation }: any) {
   const handleLogout = async () => {
     try {
       const auth = getAuth();
-      await signOut(auth);
+      if (auth.currentUser) {
+        await signOut(auth);
+      }
       
       // Also sign out of Google so the account picker shows up next time!
       try {
@@ -61,8 +63,10 @@ export default function ProfileScreen({ navigation }: any) {
       }
 
       // Navigation happens automatically via AuthContext
-    } catch (error) {
-      console.error('Logout error:', error);
+    } catch (error: any) {
+      if (error.code !== 'auth/no-current-user') {
+        console.error('Logout error:', error);
+      }
     }
   };
 
@@ -292,6 +296,7 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 34 : 12,
   },
   navItem: {
+    flex: 1,
     alignItems: 'center',
     gap: 4,
   },

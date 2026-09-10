@@ -144,6 +144,7 @@ function RootNavigator() {
           <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
           <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
           <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+          <Stack.Screen name="AdminDashboard" component={AdminDashboardWebView} />
         </>
       )}
     </Stack.Navigator>

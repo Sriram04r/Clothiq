@@ -257,7 +257,7 @@ export default function HomeScreen({ navigation }: any) {
       {/* Fixed Bottom Navigation */}
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.navItem}>
-          <Home size={24} color="#2945FF" />
+          <Home size={24} color="#1C158A" />
           <Text style={[styles.navText, styles.navTextActive]}>Home</Text>
         </TouchableOpacity>
 
@@ -512,6 +512,7 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 34 : 12,
   },
   navItem: {
+    flex: 1,
     alignItems: 'center',
     gap: 4,
   },
@@ -521,7 +522,7 @@ const styles = StyleSheet.create({
     color: '#8e8e93',
   },
   navTextActive: {
-    color: '#2945FF',
+    color: '#1C158A',
   },
   overlayBg: {
     ...StyleSheet.absoluteFillObject,

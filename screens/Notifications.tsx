@@ -363,6 +363,7 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 34 : 12,
   },
   navItem: {
+    flex: 1,
     alignItems: 'center',
     gap: 4,
   },
