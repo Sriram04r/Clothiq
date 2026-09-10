@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, View, SafeAreaView, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LogOut } from 'lucide-react-native';
 import { WebView } from 'react-native-webview';
 import { getAuth, signOut } from '@react-native-firebase/auth';

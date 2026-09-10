@@ -119,7 +119,7 @@ export default function ProfileScreen({ navigation }: any) {
                 }}
               >
                 <View style={styles.menuIconBox}>
-                  <Icon size={20} color={item.color || '#444'} />
+                  <Icon size={20} color={(item as any).color || '#444'} />
                 </View>
                 <Text style={styles.menuTitle}>{item.title}</Text>
                 <ChevronRight size={20} color="#CCC" />
