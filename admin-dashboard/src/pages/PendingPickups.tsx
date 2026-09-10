@@ -141,7 +141,7 @@ export default function PendingPickups() {
                   {order.status === 'placed' || order.status === 'placed_cod' ? (
                     <button 
                       onClick={() => { setAssigningOrderId(order.id); setAssigningUserId(order.userId); }}
-                      style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}
+                      style={{ background: 'var(--primary)', color: '#000', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}
                     >
                       <Truck size={16} /> Assign Driver
                     </button>
