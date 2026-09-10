@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Linking, LayoutAnimation, Platform, UIManager, Modal, TextInput, KeyboardAvoidingView, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, MessageCircle, Phone, Mail, ChevronDown, ChevronUp, X, Send } from 'lucide-react-native';
+import { ChevronLeft, MessageCircle, Phone, Mail, ChevronDown, ChevronUp, X, Send, Bot, ChevronRight } from 'lucide-react-native';
 import { getFirestore, collection, addDoc, serverTimestamp } from '@react-native-firebase/firestore';
 import { getAuth } from '@react-native-firebase/auth';
 
@@ -124,6 +124,17 @@ export default function HelpSupportScreen({ navigation }: any) {
               <Text style={styles.contactTitle}>Chat</Text>
             </TouchableOpacity>
           </View>
+
+          <TouchableOpacity style={styles.aiButton} onPress={() => navigation.navigate('SupportChat')} activeOpacity={0.8}>
+            <View style={styles.aiIconBox}>
+              <Bot size={24} color="#FFF" />
+            </View>
+            <View style={styles.aiTextContainer}>
+              <Text style={styles.aiTitle}>Clothiq AI Chatbot</Text>
+              <Text style={styles.aiSub}>Get instant answers about your orders</Text>
+            </View>
+            <ChevronRight size={20} color="#2945FF" />
+          </TouchableOpacity>
         </View>
 
         {/* FAQ Section */}
@@ -305,6 +316,38 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#1E293B',
+  },
+  aiButton: {
+    marginTop: 16,
+    backgroundColor: '#EEF2FF',
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#C7D2FE',
+  },
+  aiIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#2945FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  aiTextContainer: {
+    flex: 1,
+  },
+  aiTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1E293B',
+    marginBottom: 4,
+  },
+  aiSub: {
+    fontSize: 13,
+    color: '#64748B',
   },
   faqList: {
     gap: 12,
