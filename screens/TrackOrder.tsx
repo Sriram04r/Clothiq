@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Check, Home, ClipboardList, Bell, LayoutGrid, User } from 'lucide-react-native';
+import { ChevronLeft, Check, Home, ClipboardList, Bell, LayoutGrid, User, MapPin } from 'lucide-react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { getFirestore, doc, onSnapshot } from '@react-native-firebase/firestore';
 import { getAuth } from '@react-native-firebase/auth';
@@ -47,11 +47,11 @@ export default function TrackOrderScreen({ route, navigation }: any) {
         
         // Map backend status to our simplified timeline keys
         let activeKey = 'placed';
-        if (currentStatus === 'paid' || currentStatus === 'placed_cod' || currentStatus === 'pending_payment') activeKey = 'placed';
-        else if (currentStatus === 'pickup') activeKey = 'pickup';
-        else if (currentStatus === 'washing') activeKey = 'washing';
-        else if (currentStatus === 'drying' || currentStatus === 'ironing') activeKey = 'drying';
-        else if (currentStatus === 'out_for_delivery') activeKey = 'out_for_delivery';
+        if (['paid', 'placed_cod', 'pending_payment', 'pickup_ready'].includes(currentStatus)) activeKey = 'placed';
+        else if (['pickup', 'out_for_pickup'].includes(currentStatus)) activeKey = 'pickup';
+        else if (['washing', 'in_progress'].includes(currentStatus)) activeKey = 'washing';
+        else if (['drying', 'ironing'].includes(currentStatus)) activeKey = 'drying';
+        else if (['out_for_delivery', 'delivery_ready'].includes(currentStatus)) activeKey = 'out_for_delivery';
         else if (currentStatus === 'delivered') activeKey = 'delivered';
         
         const activeIndex = INITIAL_TIMELINE.findIndex(s => s.key === activeKey);
@@ -130,41 +130,10 @@ export default function TrackOrderScreen({ route, navigation }: any) {
         scrollEnabled={!mapActive}
       >
         <View style={styles.mapContainer}>
-          <MapView
-            style={styles.map}
-            region={getMapRegion()}
-            onTouchStart={() => setMapActive(true)}
-            onTouchEnd={() => setMapActive(false)}
-            onTouchCancel={() => setMapActive(false)}
-            showsUserLocation={true}
-          >
-            {customerLocation && (
-              <Marker
-                coordinate={customerLocation}
-                title="Your Location"
-                description="Delivery address"
-                pinColor="blue"
-              />
-            )}
-            
-            {order?.driverLocation && (
-              <Marker
-                coordinate={order.driverLocation}
-                title="Driver"
-                description="Your driver's live location"
-                pinColor="green"
-              />
-            )}
-            
-            {customerLocation && order?.driverLocation && (
-              <Polyline
-                coordinates={[order.driverLocation, customerLocation]}
-                strokeColor="#1C158A"
-                strokeWidth={3}
-                lineDashPattern={[5, 5]}
-              />
-            )}
-          </MapView>
+          <View style={[styles.map, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#F3F4F6' }]}>
+            <MapPin size={32} color="#9CA3AF" />
+            <Text style={{ marginTop: 8, color: '#6B7280', fontSize: 14, fontWeight: '500' }}>Live map is temporarily disabled</Text>
+          </View>
         </View>
 
         <View style={styles.timelineContainer}>

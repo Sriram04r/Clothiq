@@ -151,7 +151,7 @@ export default function Orders() {
                 <div className="responsive-flex" style={{ display: 'flex', gap: '24px', alignItems: 'center', flex: 1 }}>
                   {/* Order ID & Date */}
                   <div style={{ minWidth: '120px' }}>
-                    <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-main)' }}>#{order.id.substring(0, 6).toUpperCase()}</div>
+                    <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-main)' }}>#FW{order.id.substring(0, 6).toUpperCase()}</div>
                     <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
                       {order.createdAt ? new Date(order.createdAt.toMillis()).toLocaleString() : 'Just now'}
                     </div>
@@ -178,6 +178,16 @@ export default function Orders() {
                     }}>
                       {stages.find(s => s.key === order.status)?.label || order.status}
                     </span>
+                    {order.bagTag && (
+                      <span style={{
+                        background: 'rgba(236, 72, 153, 0.1)', color: '#EC4899', // Pink color for visibility
+                        padding: '4px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: '800',
+                        display: 'flex', alignItems: 'center', gap: '4px',
+                        border: '1px solid rgba(236, 72, 153, 0.2)'
+                      }}>
+                        <Package size={12} /> TAG: {order.bagTag.toUpperCase()}
+                      </span>
+                    )}
                     {assignedDriver && (
                       <span style={{
                         background: 'rgba(41,69,255,0.1)', color: 'var(--primary)',

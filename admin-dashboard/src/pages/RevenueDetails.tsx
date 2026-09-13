@@ -109,7 +109,7 @@ export default function RevenueDetails() {
               >
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '18px', fontWeight: '600' }}>Order #{order.id.slice(-6).toUpperCase()}</span>
+                    <span style={{ fontSize: '18px', fontWeight: '600' }}>Order #FW{order.id.substring(0, 6).toUpperCase()}</span>
                     <span style={{ fontSize: '12px', padding: '2px 8px', borderRadius: '12px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-muted)' }}>{order.status}</span>
                   </div>
                   <div style={{ color: 'var(--text-muted)', fontSize: '14px' }}>{order.formattedDate}</div>

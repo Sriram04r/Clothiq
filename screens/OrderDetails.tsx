@@ -208,6 +208,15 @@ export default function OrderDetailsScreen({ route, navigation }: any) {
         
         <Text style={styles.orderIdText}>Order ID: FW{orderId?.substring(0, 6).toUpperCase()}</Text>
         
+        {order?.bagTag && (
+          <View style={{ backgroundColor: '#EC489915', padding: 12, borderRadius: 12, marginBottom: 20, borderWidth: 1, borderColor: '#EC489930', flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={{ fontSize: 16 }}>🏷️</Text>
+            <Text style={{ marginLeft: 8, color: '#EC4899', fontWeight: '700', fontSize: 14 }}>
+              Your bag is securely tagged: {order.bagTag.toUpperCase()}
+            </Text>
+          </View>
+        )}
+
         <Text style={styles.sectionTitle}>Order Items</Text>
         
         <View style={styles.receiptContainer}>

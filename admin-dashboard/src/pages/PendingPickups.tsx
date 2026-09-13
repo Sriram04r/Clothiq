@@ -115,10 +115,15 @@ export default function PendingPickups() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '20px', fontWeight: '700' }}>Order #{order.id.slice(-6).toUpperCase()}</span>
+                    <span style={{ fontSize: '20px', fontWeight: '700' }}>Order #FW{order.id.substring(0, 6).toUpperCase()}</span>
                     <span style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '12px', background: 'rgba(251, 191, 36, 0.1)', color: 'var(--warning)', fontWeight: '600' }}>
                       {order.status.replace('_', ' ').toUpperCase()}
                     </span>
+                    {order.bagTag && (
+                      <span style={{ fontSize: '14px', padding: '4px 10px', borderRadius: '12px', background: 'rgba(236, 72, 153, 0.1)', color: '#EC4899', fontWeight: '800', border: '1px solid rgba(236, 72, 153, 0.2)' }}>
+                        🏷️ TAG: {order.bagTag.toUpperCase()}
+                      </span>
+                    )}
                   </div>
                   
                   <div style={{ fontSize: '16px', color: 'var(--text-main)', fontWeight: '500', marginBottom: '4px' }}>
@@ -191,7 +196,7 @@ export default function PendingPickups() {
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="glass-panel" style={{ width: '400px', maxWidth: '90%', padding: '24px' }}>
             <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '8px' }}>Assign Driver</h3>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '24px', fontSize: '14px' }}>Select an available driver for Order #{assigningOrderId.slice(-6).toUpperCase()}</p>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '24px', fontSize: '14px' }}>Select an available driver for Order #FW{assigningOrderId.substring(0, 6).toUpperCase()}</p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '300px', overflowY: 'auto', marginBottom: '24px' }}>
               {drivers.length === 0 ? (
