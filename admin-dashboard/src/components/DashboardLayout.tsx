@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Users, LogOut, Search, Bell, X, CheckCircle2, List, MessageSquareHeart } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Users, LogOut, Search, Bell, X, CheckCircle2, List, MessageSquareHeart, Settings } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { collection, query, where, onSnapshot, updateDoc, doc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
@@ -103,6 +103,12 @@ export default function DashboardLayout() {
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
           >
             <MessageSquareHeart size={20} /> <span className="nav-text">Reviews</span>
+          </NavLink>
+          <NavLink 
+            to="/settings" 
+            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+          >
+            <Settings size={20} /> <span className="nav-text">Master Controls</span>
           </NavLink>
         </nav>
 
