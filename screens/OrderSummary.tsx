@@ -5,6 +5,7 @@ import { ChevronLeft, Shirt, Truck, FastForward, MapPin } from 'lucide-react-nat
 import { getAuth } from '@react-native-firebase/auth';
 import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp } from '@react-native-firebase/firestore';
 import { useCart } from '../context/CartContext';
+import { useSettings } from '../context/SettingsContext';
 
 export default function OrderSummaryScreen({ route, navigation }: any) {
   const { selectedAddressId, pickupDate, pickupTime, deliveryOption, specialInstructions } = route.params || {};
@@ -16,13 +17,14 @@ export default function OrderSummaryScreen({ route, navigation }: any) {
   const { items, subTotal, clearCart } = useCart();
   const totalItems = items.reduce((sum, item) => sum + item.qty, 0);
   const couponDiscount = 30;
+  const { appConfig } = useSettings();
   
   // Calculate pricing
-  const baseDelivery = subTotal > 0 ? 40 : 0;
-  const expressFee = deliveryOption === 'express' ? 50 : 0;
+  const baseDelivery = subTotal > 0 ? appConfig.baseDeliveryFee : 0;
+  const expressFee = deliveryOption === 'express' ? appConfig.expressDeliveryFee : 0;
   const totalDeliveryFee = baseDelivery + expressFee;
   const preTaxTotal = Math.max(0, subTotal + totalDeliveryFee - couponDiscount);
-  const gst = Math.round(preTaxTotal * 0.05);
+  const gst = Math.round(preTaxTotal * (appConfig.taxPercentage / 100));
   const finalTotal = preTaxTotal + gst;
 
   useEffect(() => {
@@ -133,7 +135,7 @@ export default function OrderSummaryScreen({ route, navigation }: any) {
               <Text style={styles.discountValue}>- ₹ {couponDiscount}</Text>
             </View>
             <View style={styles.billingRow}>
-              <Text style={styles.billingLabel}>GST (5%)</Text>
+              <Text style={styles.billingLabel}>GST ({appConfig.taxPercentage}%)</Text>
               <Text style={styles.billingValue}>₹ {gst}</Text>
             </View>
             

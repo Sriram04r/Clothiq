@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import { useSettings } from './SettingsContext';
 
 export type CartItem = {
   id: string;
@@ -29,6 +30,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
   const [expressFee, setExpressFee] = useState<number>(0);
+  const { appConfig } = useSettings();
 
   const addItem = (newItem: Omit<CartItem, 'qty'>) => {
     setItems(prev => {
@@ -78,7 +80,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const subTotal = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
-  const pickupDeliveryFee = subTotal > 0 ? 40 : 0; // standard fee
+  const pickupDeliveryFee = subTotal > 0 ? appConfig.baseDeliveryFee : 0; 
   const total = subTotal > 0 ? subTotal + pickupDeliveryFee + expressFee : 0;
 
   return (

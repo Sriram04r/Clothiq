@@ -7,6 +7,7 @@ import * as Notifications from 'expo-notifications';
 import { getAuth } from '@react-native-firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, query, orderBy, limit, onSnapshot, where } from '@react-native-firebase/firestore';
 import ChatBotFAB from '../components/ChatBotFAB';
+import { useSettings } from '../context/SettingsContext';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -19,6 +20,7 @@ Notifications.setNotificationHandler({
 });
 
 export default function HomeScreen({ navigation }: any) {
+  const { appConfig } = useSettings();
   const [userName, setUserName] = useState('App User');
   const [activeOrder, setActiveOrder] = useState<any>(null);
   const bounceValue = useRef(new Animated.Value(0)).current;
@@ -161,6 +163,14 @@ export default function HomeScreen({ navigation }: any) {
           </TouchableOpacity>
         </View>
 
+        {/* Store Closed Banner */}
+        {!appConfig?.acceptOrders && (
+          <View style={{ backgroundColor: '#FEE2E2', marginHorizontal: 24, padding: 16, borderRadius: 12, marginBottom: 20, borderWidth: 1, borderColor: '#FCA5A5' }}>
+            <Text style={{ color: '#991B1B', fontWeight: 'bold', fontSize: 16, marginBottom: 4 }}>We are currently at capacity</Text>
+            <Text style={{ color: '#991B1B', fontSize: 14 }}>We are temporarily not accepting new orders today. Please check back later.</Text>
+          </View>
+        )}
+
         {/* Banner */}
         <View style={styles.banner}>
           <View style={styles.bannerContent}>
@@ -186,25 +196,45 @@ export default function HomeScreen({ navigation }: any) {
           </View>
 
           <View style={styles.servicesGrid}>
-            <TouchableOpacity style={[styles.serviceCard, { backgroundColor: '#FFF5FA' }]} onPress={() => navigation.navigate('Services')} activeOpacity={0.7}>
+            <TouchableOpacity 
+              style={[styles.serviceCard, { backgroundColor: '#FFF5FA', opacity: appConfig?.acceptOrders ? 1 : 0.5 }]} 
+              onPress={() => appConfig?.acceptOrders && navigation.navigate('Services')} 
+              activeOpacity={0.7}
+              disabled={!appConfig?.acceptOrders}
+            >
               <Image source={require('../assets/Wash_Fold.png')} style={styles.serviceImage} resizeMode="contain" />
               <Text style={styles.serviceName}>Wash & Fold</Text>
               <Text style={styles.servicePrice}>From ₹1O/PC</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.serviceCard, { backgroundColor: '#F0FDF4' }]} onPress={() => navigation.navigate('Services')} activeOpacity={0.7}>
+            <TouchableOpacity 
+              style={[styles.serviceCard, { backgroundColor: '#F0FDF4', opacity: appConfig?.acceptOrders ? 1 : 0.5 }]} 
+              onPress={() => appConfig?.acceptOrders && navigation.navigate('Services')} 
+              activeOpacity={0.7}
+              disabled={!appConfig?.acceptOrders}
+            >
               <Image source={require('../assets/Dry_cleaning.png')} style={styles.serviceImage} resizeMode="contain" />
               <Text style={styles.serviceName}>Dry Cleaning</Text>
               <Text style={styles.servicePrice}>From ₹100/pc</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.serviceCard, { backgroundColor: '#EFF6FF' }]} onPress={() => navigation.navigate('Services')} activeOpacity={0.7}>
+            <TouchableOpacity 
+              style={[styles.serviceCard, { backgroundColor: '#EFF6FF', opacity: appConfig?.acceptOrders ? 1 : 0.5 }]} 
+              onPress={() => appConfig?.acceptOrders && navigation.navigate('Services')} 
+              activeOpacity={0.7}
+              disabled={!appConfig?.acceptOrders}
+            >
               <Image source={require('../assets/Steam_Iron.png')} style={styles.serviceImage} resizeMode="contain" />
               <Text style={styles.serviceName}>Steam Iron</Text>
               <Text style={styles.servicePrice}>From ₹15/pc</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.serviceCard, { backgroundColor: '#F5F5F5' }]} onPress={() => navigation.navigate('Services')} activeOpacity={0.7}>
+            <TouchableOpacity 
+              style={[styles.serviceCard, { backgroundColor: '#F5F5F5', opacity: appConfig?.acceptOrders ? 1 : 0.5 }]} 
+              onPress={() => appConfig?.acceptOrders && navigation.navigate('Services')} 
+              activeOpacity={0.7}
+              disabled={!appConfig?.acceptOrders}
+            >
               <Image source={require('../assets/Wash_Iron.png')} style={styles.serviceImage} resizeMode="contain" />
               <Text style={styles.serviceName}>Wash & Iron</Text>
               <Text style={styles.servicePrice}>From ₹30/kg</Text>

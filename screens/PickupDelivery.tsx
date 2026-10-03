@@ -3,14 +3,12 @@ import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, Activit
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Circle, CheckCircle2 } from 'lucide-react-native';
 import { getFirestore, collectionGroup, query, where, getCountFromServer } from '@react-native-firebase/firestore';
-
-const timeSlots = [
-  '9 AM – 11 AM', '11 AM – 1 PM',
-  '1 PM – 3 PM', '3 PM – 5 PM',
-  '5 PM – 7 PM'
-];
+import { useSettings } from '../context/SettingsContext';
 
 export default function PickupDeliveryScreen({ route, navigation }: any) {
+  const { timeSlots: { slots } } = useSettings();
+  const timeSlots = slots || [];
+
   // Grab the address passed from the previous screen
   const { selectedAddressId, specialInstructions } = route.params || {};
 
@@ -34,7 +32,7 @@ export default function PickupDeliveryScreen({ route, navigation }: any) {
   }, []);
 
   const [selectedDate, setSelectedDate] = useState(dates[0].id);
-  const [selectedTime, setSelectedTime] = useState(timeSlots[0]);
+  const [selectedTime, setSelectedTime] = useState(timeSlots[0] || '10 AM - 12 PM');
   const [deliveryOption, setDeliveryOption] = useState('standard');
   const [isHighDemand, setIsHighDemand] = useState(false);
   const [loadingDemand, setLoadingDemand] = useState(true);

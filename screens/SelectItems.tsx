@@ -3,15 +3,17 @@ import { StyleSheet, Text, View, TouchableOpacity, ScrollView, FlatList, Activit
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Plus, Minus } from 'lucide-react-native';
 import { useCart } from '../context/CartContext';
+import { useSettings } from '../context/SettingsContext';
 import { getFirestore, collection, getDocs } from '@react-native-firebase/firestore';
 
-const categories = ['All', 'Men', 'Women', 'Kids', 'Household'];
-const servicesList = ['Wash & Fold', 'Dry Cleaning', 'Steam Iron', 'Wash & Iron'];
-
 export default function SelectItemsScreen({ navigation, route }: any) {
+  const { catalog } = useSettings();
+  const categories = ['All', ...(catalog?.categories || [])];
+  const servicesList = catalog?.services || [];
+
   const { updateQuantityOrAdd, getItemQuantity, subTotal } = useCart();
   const [activeCategory, setActiveCategory] = useState('All');
-  const [activeService, setActiveService] = useState(route.params?.initialService || 'Wash & Fold');
+  const [activeService, setActiveService] = useState(route.params?.initialService || (servicesList[0] || 'Wash & Fold'));
   const [itemsData, setItemsData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
