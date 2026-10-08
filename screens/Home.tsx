@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, Image, Animated, Easing } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Home, ClipboardList, Bell, LayoutGrid, User } from 'lucide-react-native';
+import { Home, ClipboardList, Bell, LayoutGrid, User, Settings } from 'lucide-react-native';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 import { getAuth } from '@react-native-firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, query, orderBy, limit, onSnapshot, where } from '@react-native-firebase/firestore';
 import ChatBotFAB from '../components/ChatBotFAB';
@@ -20,8 +22,10 @@ Notifications.setNotificationHandler({
 });
 
 export default function HomeScreen({ navigation }: any) {
+  const { t, i18n } = useTranslation();
   const { appConfig } = useSettings();
   const [userName, setUserName] = useState('App User');
+  const [profilePic, setProfilePic] = useState<string | null>(null);
   const [activeOrder, setActiveOrder] = useState<any>(null);
   const bounceValue = useRef(new Animated.Value(0)).current;
 
@@ -68,19 +72,19 @@ export default function HomeScreen({ navigation }: any) {
     const user = getAuth().currentUser;
     let unsubscribeOrder: any;
 
-    const fetchUser = async () => {
-      if (user) {
-        setUserName(user.displayName || 'App User');
-        try {
-          const docSnap = await getDoc(doc(getFirestore(), 'users', user.uid));
-          if (docSnap.exists() && docSnap.data().fullName) {
-            setUserName(docSnap.data().fullName);
-          }
-        } catch (e) { }
-      }
-    };
+    let unsubscribeUser: any;
 
-    fetchUser();
+    if (user) {
+      setUserName(user.displayName || 'App User');
+      
+      unsubscribeUser = onSnapshot(doc(getFirestore(), 'users', user.uid), (docSnap) => {
+        if (docSnap && (typeof docSnap.exists === 'function' ? docSnap.exists() : docSnap.exists)) {
+          const data = docSnap.data();
+          if (data?.fullName) setUserName(data.fullName);
+          if (data?.profilePic) setProfilePic(data.profilePic);
+        }
+      });
+    }
 
     if (user) {
       const q = query(
@@ -106,6 +110,7 @@ export default function HomeScreen({ navigation }: any) {
 
     return () => {
       if (unsubscribeOrder) unsubscribeOrder();
+      if (unsubscribeUser) unsubscribeUser();
     };
   }, []);
 
@@ -139,7 +144,7 @@ export default function HomeScreen({ navigation }: any) {
       }
       try {
         token = (await Notifications.getExpoPushTokenAsync({
-          projectId: 'clothiq-id' 
+          projectId: Constants.expoConfig?.extra?.eas?.projectId || '00000000-0000-0000-0000-000000000000'
         })).data;
       } catch (error) {
         console.log('Error getting push token', error);
@@ -155,27 +160,23 @@ export default function HomeScreen({ navigation }: any) {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>Hello, {userName.split(' ')[0]}</Text>
-            <Text style={styles.subGreeting}>Let's get your laundry done!</Text>
+            <Text style={styles.greeting}>{t('greeting')}{userName.split(' ')[0]}</Text>
+            <Text style={styles.subGreeting}>{t('subGreeting')}</Text>
           </View>
           <TouchableOpacity style={styles.profileAvatar} onPress={toggleProfile} activeOpacity={0.7}>
-            <User size={24} color="#2945FF" />
+            {profilePic ? (
+              <Image source={{ uri: profilePic }} style={{ width: 44, height: 44, borderRadius: 22 }} />
+            ) : (
+              <User size={24} color="#2945FF" />
+            )}
           </TouchableOpacity>
         </View>
-
-        {/* Store Closed Banner */}
-        {!appConfig?.acceptOrders && (
-          <View style={{ backgroundColor: '#FEE2E2', marginHorizontal: 24, padding: 16, borderRadius: 12, marginBottom: 20, borderWidth: 1, borderColor: '#FCA5A5' }}>
-            <Text style={{ color: '#991B1B', fontWeight: 'bold', fontSize: 16, marginBottom: 4 }}>We are currently at capacity</Text>
-            <Text style={{ color: '#991B1B', fontSize: 14 }}>We are temporarily not accepting new orders today. Please check back later.</Text>
-          </View>
-        )}
 
         {/* Banner */}
         <View style={styles.banner}>
           <View style={styles.bannerContent}>
-            <Text style={styles.bannerTitle}>Welcome Back!</Text>
-            <Text style={styles.bannerText}>Your clothes deserve the best premium care.</Text>
+            <Text style={styles.bannerTitle}>{t('welcomeBack')}</Text>
+            <Text style={styles.bannerText}>{t('bannerText')}</Text>
           </View>
 
           {/* 3D Premium Washing Machine Icon */}
@@ -189,55 +190,51 @@ export default function HomeScreen({ navigation }: any) {
         {/* Services Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Our Services</Text>
+            <Text style={styles.sectionTitle}>{t('ourServices')}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Services')}>
-              <Text style={styles.seeAll}>See All</Text>
+              <Text style={styles.seeAll}>{t('seeAll')}</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.servicesGrid}>
             <TouchableOpacity 
-              style={[styles.serviceCard, { backgroundColor: '#FFF5FA', opacity: appConfig?.acceptOrders ? 1 : 0.5 }]} 
-              onPress={() => appConfig?.acceptOrders && navigation.navigate('Services')} 
+              style={[styles.serviceCard, { backgroundColor: '#FFF5FA' }]} 
+              onPress={() => navigation.navigate('Services', { initialService: 'Wash & Fold' })} 
               activeOpacity={0.7}
-              disabled={!appConfig?.acceptOrders}
             >
               <Image source={require('../assets/Wash_Fold.png')} style={styles.serviceImage} resizeMode="contain" />
-              <Text style={styles.serviceName}>Wash & Fold</Text>
-              <Text style={styles.servicePrice}>From ₹1O/PC</Text>
+              <Text style={styles.serviceName}>{t('washAndFold')}</Text>
+              <Text style={styles.servicePrice}>{t('from')} ₹1O/PC</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
-              style={[styles.serviceCard, { backgroundColor: '#F0FDF4', opacity: appConfig?.acceptOrders ? 1 : 0.5 }]} 
-              onPress={() => appConfig?.acceptOrders && navigation.navigate('Services')} 
+              style={[styles.serviceCard, { backgroundColor: '#F0FDF4' }]} 
+              onPress={() => navigation.navigate('Services', { initialService: 'Dry Cleaning' })} 
               activeOpacity={0.7}
-              disabled={!appConfig?.acceptOrders}
             >
               <Image source={require('../assets/Dry_cleaning.png')} style={styles.serviceImage} resizeMode="contain" />
-              <Text style={styles.serviceName}>Dry Cleaning</Text>
-              <Text style={styles.servicePrice}>From ₹100/pc</Text>
+              <Text style={styles.serviceName}>{t('dryCleaning')}</Text>
+              <Text style={styles.servicePrice}>{t('from')} ₹100/pc</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
-              style={[styles.serviceCard, { backgroundColor: '#EFF6FF', opacity: appConfig?.acceptOrders ? 1 : 0.5 }]} 
-              onPress={() => appConfig?.acceptOrders && navigation.navigate('Services')} 
+              style={[styles.serviceCard, { backgroundColor: '#EFF6FF' }]} 
+              onPress={() => navigation.navigate('Services', { initialService: 'Steam Iron' })} 
               activeOpacity={0.7}
-              disabled={!appConfig?.acceptOrders}
             >
               <Image source={require('../assets/Steam_Iron.png')} style={styles.serviceImage} resizeMode="contain" />
-              <Text style={styles.serviceName}>Steam Iron</Text>
-              <Text style={styles.servicePrice}>From ₹15/pc</Text>
+              <Text style={styles.serviceName}>{t('steamIron')}</Text>
+              <Text style={styles.servicePrice}>{t('from')} ₹15/pc</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
-              style={[styles.serviceCard, { backgroundColor: '#F5F5F5', opacity: appConfig?.acceptOrders ? 1 : 0.5 }]} 
-              onPress={() => appConfig?.acceptOrders && navigation.navigate('Services')} 
+              style={[styles.serviceCard, { backgroundColor: '#F5F5F5' }]} 
+              onPress={() => navigation.navigate('Services', { initialService: 'Wash & Iron' })} 
               activeOpacity={0.7}
-              disabled={!appConfig?.acceptOrders}
             >
               <Image source={require('../assets/Wash_Iron.png')} style={styles.serviceImage} resizeMode="contain" />
-              <Text style={styles.serviceName}>Wash & Iron</Text>
-              <Text style={styles.servicePrice}>From ₹30/kg</Text>
+              <Text style={styles.serviceName}>{t('washAndIron')}</Text>
+              <Text style={styles.servicePrice}>{t('from')} ₹30/kg</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -246,7 +243,7 @@ export default function HomeScreen({ navigation }: any) {
         {activeOrder && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Active Orders</Text>
+              <Text style={styles.sectionTitle}>{t('activeOrders')}</Text>
             </View>
 
             <View style={styles.orderCard}>
@@ -255,25 +252,25 @@ export default function HomeScreen({ navigation }: any) {
                   <View style={styles.statusDot} />
                 </View>
                 <View style={{ flex: 1, paddingRight: 10 }}>
-                  <Text style={styles.orderId}>Order #FW{activeOrder.id.substring(0, 6).toUpperCase()}</Text>
+                  <Text style={styles.orderId}>{t('orderId')} #FW{activeOrder.id.substring(0, 6).toUpperCase()}</Text>
                   <Text style={styles.orderStatus}>
-                    {activeOrder.status === 'placed' || activeOrder.status === 'placed_cod' ? 'Order Placed' :
-                      activeOrder.status === 'pickup' ? 'Ready for Pickup' :
-                        activeOrder.status === 'washing' ? 'Washing in progress' :
-                          activeOrder.status === 'out_for_delivery' ? 'Out for Delivery' :
-                            'In Progress'}
+                    {activeOrder.status === 'placed' || activeOrder.status === 'placed_cod' ? t('orderPlaced') :
+                      activeOrder.status === 'pickup' ? t('readyForPickup') :
+                        activeOrder.status === 'washing' ? t('processing') :
+                          activeOrder.status === 'out_for_delivery' ? t('outForDelivery') :
+                            t('processing')}
                   </Text>
                 </View>
                 <TouchableOpacity
                   style={styles.trackButton}
                   onPress={() => navigation.navigate('TrackOrder', { orderId: activeOrder.id })}
                 >
-                  <Text style={styles.trackLink}>Track</Text>
+                  <Text style={styles.trackLink}>{t('track')}</Text>
                 </TouchableOpacity>
               </View>
               <View style={styles.orderFooter}>
                 <Text style={styles.deliveryDate}>
-                  Items: {activeOrder.itemsCount}  |  Total: ₹{activeOrder.pricing?.total || 0}
+                  {t('items')}: {activeOrder.itemsCount}  |  {t('total')}: ₹{activeOrder.pricing?.total || 0}
                 </Text>
               </View>
             </View>
@@ -288,26 +285,26 @@ export default function HomeScreen({ navigation }: any) {
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.navItem}>
           <Home size={24} color="#1C158A" />
-          <Text style={[styles.navText, styles.navTextActive]}>Home</Text>
+          <Text style={[styles.navText, styles.navTextActive]}>{t('home', 'Home')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('OrderHistory')}>
           <ClipboardList size={24} color="#8e8e93" />
-          <Text style={styles.navText}>Orders</Text>
+          <Text style={styles.navText}>{t('orders', 'Orders')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Notifications')}>
           <Bell size={24} color="#8e8e93" />
-          <Text style={styles.navText}>Notifications</Text>
+          <Text style={styles.navText}>{t('notifications', 'Notifications')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Services')}>
           <LayoutGrid size={24} color="#8e8e93" />
-          <Text style={styles.navText}>Services</Text>
+          <Text style={styles.navText}>{t('services', 'Services')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Profile')}>
-          <User size={24} color="#8e8e93" />
-          <Text style={styles.navText}>Profile</Text>
+          <Settings size={24} color="#8e8e93" />
+          <Text style={styles.navText}>{t('settings', 'Settings')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -318,7 +315,11 @@ export default function HomeScreen({ navigation }: any) {
             
             <View style={styles.dropdownHeader}>
               <View style={styles.dropdownAvatar}>
-                <User size={32} color="#FFF" />
+                {profilePic ? (
+                  <Image source={{ uri: profilePic }} style={{ width: 56, height: 56, borderRadius: 28 }} />
+                ) : (
+                  <User size={32} color="#FFF" />
+                )}
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.dropdownName} numberOfLines={1}>{userName}</Text>
@@ -331,14 +332,14 @@ export default function HomeScreen({ navigation }: any) {
             <View style={styles.dropdownActions}>
               <TouchableOpacity style={styles.dropdownBtn} onPress={() => { toggleProfile(); navigation.navigate('Profile'); }}>
                 <User size={20} color="#1C158A" />
-                <Text style={styles.dropdownBtnText}>Account Settings</Text>
+                <Text style={styles.dropdownBtnText}>{t('accountSettings', 'Account Settings')}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.dropdownBtn} onPress={() => { toggleProfile(); }}>
+              <TouchableOpacity style={styles.dropdownBtn} onPress={() => { toggleProfile(); navigation.navigate('HelpSupport'); }}>
                 <Bell size={20} color="#1C158A" />
-                <Text style={styles.dropdownBtnText}>Help & Support</Text>
+                <Text style={styles.dropdownBtnText}>{t('helpSupport', 'Help & Support')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.dropdownBtn, styles.logoutBtn]} onPress={() => { toggleProfile(); getAuth().signOut(); }}>
-                <Text style={styles.logoutBtnText}>Log Out</Text>
+                <Text style={styles.logoutBtnText}>{t('logout', 'Log Out')}</Text>
               </TouchableOpacity>
             </View>
             

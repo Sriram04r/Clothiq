@@ -1,12 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, FlatList, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, FlatList, ActivityIndicator, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Plus, Minus } from 'lucide-react-native';
 import { useCart } from '../context/CartContext';
 import { useSettings } from '../context/SettingsContext';
 import { getFirestore, collection, getDocs } from '@react-native-firebase/firestore';
+import { useTranslation } from 'react-i18next';
+
+const getItemImage = (name: string) => {
+  const n = name.toLowerCase();
+  
+  // Custom generated high-quality assets
+  if (n.includes('lehanga') || n.includes('lehenga')) return require('../assets/items/lehenga.png');
+  if (n.includes('chudidhar') || n.includes('chudidar')) return require('../assets/items/chudidhar.png');
+  if (n.includes('frock') || n.includes('ladies frock')) return require('../assets/items/frock.png');
+  if (n.includes('blanket')) return require('../assets/items/blanket.png');
+  if (n.includes('pair') || (n.includes('white') && (n.includes('pant') || n.includes('shirt')))) return require('../assets/items/white_shirt_pant.png');
+
+  // Fallbacks to generic icons
+  if (n.includes('skirt')) return { uri: 'https://img.icons8.com/color/96/skirt.png' };
+  if (n.includes('kurta')) return { uri: 'https://img.icons8.com/color/96/clothes.png' };
+  if (n.includes('saree') || n.includes('sari')) return { uri: 'https://img.icons8.com/color/96/saree.png' };
+  if (n.includes('dress')) return { uri: 'https://img.icons8.com/color/96/clothes.png' };
+  
+  if (n.includes('jubba') || n.includes('kid') || n.includes('baby')) return { uri: 'https://img.icons8.com/color/96/onesie.png' };
+  if (n.includes('toy')) return { uri: 'https://img.icons8.com/color/96/teddy-bear.png' };
+
+  if (n.includes('jean')) return { uri: 'https://img.icons8.com/color/96/jeans.png' };
+  if (n.includes('pant') || n.includes('trouser')) return { uri: 'https://img.icons8.com/color/96/trousers.png' };
+  if (n.includes('t-shirt') || n.includes('shirt') || n.includes('top')) return { uri: 'https://img.icons8.com/color/96/shirt.png' };
+  if (n.includes('suit') || n.includes('tie') || n.includes('blazer')) return { uri: 'https://img.icons8.com/color/96/tie.png' };
+  
+  if (n.includes('towel')) return { uri: 'https://img.icons8.com/color/96/towel.png' };
+  if (n.includes('pillow')) return { uri: 'https://img.icons8.com/color/96/pillow.png' };
+  if (n.includes('bed') || n.includes('cover')) return { uri: 'https://img.icons8.com/color/96/bed.png' };
+  if (n.includes('shoe') || n.includes('sneaker')) return { uri: 'https://img.icons8.com/color/96/shoes.png' };
+  if (n.includes('jacket') || n.includes('coat') || n.includes('hoodie')) return { uri: 'https://img.icons8.com/color/96/jacket.png' };
+  if (n.includes('sock')) return { uri: 'https://img.icons8.com/color/96/socks.png' };
+  
+  return { uri: 'https://img.icons8.com/color/96/clothes.png' };
+};
 
 export default function SelectItemsScreen({ navigation, route }: any) {
+  const { t } = useTranslation();
   const { catalog } = useSettings();
   const categories = ['All', ...(catalog?.categories || [])];
   const servicesList = catalog?.services || [];
@@ -45,8 +81,8 @@ export default function SelectItemsScreen({ navigation, route }: any) {
           <ChevronLeft size={24} color="#111" />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Select Items</Text>
-          <Text style={styles.headerSubtitle}>Choose your items and add quantity</Text>
+          <Text style={styles.headerTitle}>{t('selectItems')}</Text>
+          <Text style={styles.headerSubtitle}>{t('chooseItemsQty')}</Text>
         </View>
       </View>
 
@@ -68,7 +104,7 @@ export default function SelectItemsScreen({ navigation, route }: any) {
                   activeService === service && styles.serviceTextActive
                 ]}
               >
-                {service}
+                {t(service, service)}
               </Text>
             </TouchableOpacity>
           ))}
@@ -93,7 +129,7 @@ export default function SelectItemsScreen({ navigation, route }: any) {
                   activeCategory === category && styles.categoryTextActive
                 ]}
               >
-                {category}
+                {category === 'All' ? t('all') : t(category, category)}
               </Text>
             </TouchableOpacity>
           ))}
@@ -105,12 +141,12 @@ export default function SelectItemsScreen({ navigation, route }: any) {
           const qty = getItemQuantity(item.id, activeService);
           return (
             <View key={item.id} style={styles.itemCard}>
-              <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
-                <Text style={styles.emojiIcon}>{item.icon}</Text>
+              <View style={[styles.iconContainer, { backgroundColor: item.color || '#F0F9FF', padding: 8 }]}>
+                <Image source={getItemImage(item.name)} style={{ width: 40, height: 40 }} resizeMode="contain" />
               </View>
 
               <View style={styles.itemDetails}>
-                <Text style={styles.itemName}>{item.name}</Text>
+                <Text style={styles.itemName}>{t(item.name)}</Text>
                 <Text style={styles.itemPrice}>₹ {item.price}</Text>
               </View>
 
@@ -128,19 +164,19 @@ export default function SelectItemsScreen({ navigation, route }: any) {
         })}
         {filteredItems.length === 0 && (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>No items found in this category.</Text>
+            <Text style={styles.emptyStateText}>{t('noItemsCategory')}</Text>
           </View>
         )}
       </ScrollView>
 
       {/* Sticky Bottom Cart Bar */}
       <View style={styles.bottomBar}>
-        <Text style={styles.totalText}>Total: ₹{subTotal}</Text>
+        <Text style={styles.totalText}>{t('total')}: ₹{subTotal}</Text>
         <TouchableOpacity
           style={styles.viewCartBtn}
           onPress={() => navigation.navigate('Cart')}
         >
-          <Text style={styles.viewCartText}>View Cart</Text>
+          <Text style={styles.viewCartText}>{t('cart')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

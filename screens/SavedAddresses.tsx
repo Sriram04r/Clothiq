@@ -4,8 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, CircleDot, Building2, Home, MapPin } from 'lucide-react-native';
 import { getAuth } from '@react-native-firebase/auth';
 import { getFirestore, collection, onSnapshot, query, orderBy } from '@react-native-firebase/firestore';
+import { useTranslation } from 'react-i18next';
 
 export default function SavedAddressesScreen({ navigation }: any) {
+  const { t } = useTranslation();
   const [addresses, setAddresses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -65,7 +67,7 @@ export default function SavedAddressesScreen({ navigation }: any) {
           <ChevronLeft size={24} color="#111" />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Saved Address</Text>
+          <Text style={styles.headerTitle}>{t('savedAddressesTitle')}</Text>
         </View>
       </View>
 
@@ -75,7 +77,7 @@ export default function SavedAddressesScreen({ navigation }: any) {
           {loading ? (
             <ActivityIndicator size="large" color="#1C158A" style={{ marginTop: 40 }} />
           ) : addresses.length === 0 ? (
-            <Text style={{ textAlign: 'center', marginTop: 40, color: '#666' }}>No saved addresses yet.</Text>
+            <Text style={{ textAlign: 'center', marginTop: 40, color: '#666' }}>{t('No saved addresses yet', 'No saved addresses yet.')}</Text>
           ) : (
             addresses.map((addr, index) => (
               <View key={addr.id} style={styles.addressCard}>
@@ -85,14 +87,14 @@ export default function SavedAddressesScreen({ navigation }: any) {
                   </View>
                   <View>
                     <Text style={styles.addressType}>
-                      {addr.type} {addr.isDefault && <Text style={styles.defaultText}>(Default)</Text>}
+                      {addr.type === 'Home' ? t('HomeType', 'Home') : addr.type === 'Work' ? t('Work', 'Work') : t('Other', 'Other')} {addr.isDefault && <Text style={styles.defaultText}>({t('Default', 'Default')})</Text>}
                     </Text>
                     <Text style={styles.addressText}>{addr.houseNo}, {addr.area}</Text>
                     <Text style={styles.addressText}>{addr.city}-{addr.pinCode}</Text>
                   </View>
                 </View>
                 <TouchableOpacity style={styles.editBtn} onPress={() => navigation.navigate('AddNewAddress')}>
-                  <Text style={styles.editText}>Edit</Text>
+                  <Text style={styles.editText}>{t('edit')}</Text>
                 </TouchableOpacity>
               </View>
             ))
@@ -107,7 +109,7 @@ export default function SavedAddressesScreen({ navigation }: any) {
           style={styles.addBtn}
           onPress={() => navigation.navigate('AddNewAddress')}
         >
-          <Text style={styles.addBtnText}>+ Add New Address</Text>
+          <Text style={styles.addBtnText}>+ {t('addNewAddress')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

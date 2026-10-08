@@ -6,6 +6,7 @@ import { getAuth } from '@react-native-firebase/auth';
 import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc, doc } from '@react-native-firebase/firestore';
 import { WebView } from 'react-native-webview';
 import * as Location from 'expo-location';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 
@@ -78,6 +79,7 @@ const mapHtml = (lat: number, lng: number) => `
 `;
 
 export default function AddNewAddressScreen({ navigation }: any) {
+  const { t } = useTranslation();
   const [addressType, setAddressType] = useState('Home');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
@@ -218,7 +220,7 @@ export default function AddNewAddressScreen({ navigation }: any) {
           <ChevronLeft size={24} color="#111" />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Add New Address</Text>
+          <Text style={styles.headerTitle}>{t('addNewAddress')}</Text>
         </View>
       </View>
 
@@ -229,7 +231,7 @@ export default function AddNewAddressScreen({ navigation }: any) {
       >
         
         {/* Map Section */}
-        <Text style={styles.sectionLabel}>Location</Text>
+        <Text style={styles.sectionLabel}>{t('Location', 'Location')}</Text>
         <View 
           style={styles.mapContainer}
           onTouchStart={() => setMapActive(true)}
@@ -253,12 +255,12 @@ export default function AddNewAddressScreen({ navigation }: any) {
             onPress={getCurrentLocation}
             disabled={isLocating}
           >
-            {isLocating ? <ActivityIndicator size="small" color="#1C158A" /> : <Text style={styles.locateBtnText}>Use Current Location</Text>}
+            {isLocating ? <ActivityIndicator size="small" color="#1C158A" /> : <Text style={styles.locateBtnText}>{t('Use Current Location', 'Use Current Location')}</Text>}
           </TouchableOpacity>
         </View>
 
         {/* Address Type */}
-        <Text style={styles.sectionLabel}>Address Type</Text>
+        <Text style={styles.sectionLabel}>{t('Address Type', 'Address Type')}</Text>
         <View style={styles.typeContainer}>
           {['Home', 'Work', 'Other'].map((type) => (
             <TouchableOpacity 
@@ -266,7 +268,9 @@ export default function AddNewAddressScreen({ navigation }: any) {
               style={[styles.typePill, addressType === type && styles.activeTypePill]}
               onPress={() => setAddressType(type)}
             >
-              <Text style={[styles.typeText, addressType === type && styles.activeTypeText]}>{type}</Text>
+              <Text style={[styles.typeText, addressType === type && styles.activeTypeText]}>
+                {type === 'Home' ? t('HomeType', 'Home') : type === 'Work' ? t('Work', 'Work') : t('Other', 'Other')}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -275,33 +279,33 @@ export default function AddNewAddressScreen({ navigation }: any) {
         <View style={styles.formContainer}>
           
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Full Name</Text>
-            <TextInput placeholder="Enter your full name" placeholderTextColor="#9ca3af" style={styles.input} value={fullName} onChangeText={setFullName} />
+            <Text style={styles.label}>{t('FullName', 'Full Name')}</Text>
+            <TextInput placeholder={t('FullName', 'Full Name')} placeholderTextColor="#9ca3af" style={styles.input} value={fullName} onChangeText={setFullName} />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Phone Number</Text>
-            <TextInput placeholder="Enter phone number" placeholderTextColor="#9ca3af" style={styles.input} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+            <Text style={styles.label}>{t('PhoneNumber', 'Phone Number')}</Text>
+            <TextInput placeholder={t('PhoneNumber', 'Phone Number')} placeholderTextColor="#9ca3af" style={styles.input} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>House No..Building Name</Text>
-            <TextInput placeholder="E.g., Flat 101, Galaxy Apts" placeholderTextColor="#9ca3af" style={styles.input} value={houseNo} onChangeText={setHouseNo} />
+            <Text style={styles.label}>{t('HouseBuilding', 'House No..Building Name')}</Text>
+            <TextInput placeholder={t('HouseBuilding', 'House No..Building Name')} placeholderTextColor="#9ca3af" style={styles.input} value={houseNo} onChangeText={setHouseNo} />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Area / Locality</Text>
-            <TextInput placeholder="E.g., Kothaguda" placeholderTextColor="#9ca3af" style={styles.input} value={area} onChangeText={setArea} />
+            <Text style={styles.label}>{t('AreaLocality', 'Area / Locality')}</Text>
+            <TextInput placeholder={t('AreaLocality', 'Area / Locality')} placeholderTextColor="#9ca3af" style={styles.input} value={area} onChangeText={setArea} />
           </View>
 
           <View style={styles.rowInputs}>
             <View style={[styles.inputGroup, { flex: 1 }]}>
-              <Text style={styles.label}>City</Text>
-              <TextInput placeholder="City" placeholderTextColor="#9ca3af" style={styles.input} value={city} onChangeText={setCity} />
+              <Text style={styles.label}>{t('city')}</Text>
+              <TextInput placeholder={t('city')} placeholderTextColor="#9ca3af" style={styles.input} value={city} onChangeText={setCity} />
             </View>
             <View style={[styles.inputGroup, { flex: 1 }]}>
-              <Text style={styles.label}>PIN Code</Text>
-              <TextInput placeholder="PIN Code" placeholderTextColor="#9ca3af" style={styles.input} value={pinCode} onChangeText={setPinCode} keyboardType="number-pad" />
+              <Text style={styles.label}>{t('zipCode')}</Text>
+              <TextInput placeholder={t('zipCode')} placeholderTextColor="#9ca3af" style={styles.input} value={pinCode} onChangeText={setPinCode} keyboardType="number-pad" />
             </View>
           </View>
 
@@ -316,7 +320,7 @@ export default function AddNewAddressScreen({ navigation }: any) {
             ) : (
               <Circle size={22} color="#9CA3AF" />
             )}
-            <Text style={styles.checkboxText}>Set as Default Address</Text>
+            <Text style={styles.checkboxText}>{t('SetDefault', 'Set as Default Address')}</Text>
           </TouchableOpacity>
 
         </View>
@@ -333,7 +337,7 @@ export default function AddNewAddressScreen({ navigation }: any) {
           {saving ? (
             <ActivityIndicator color="#FFF" />
           ) : (
-            <Text style={styles.saveBtnText}>Save Address</Text>
+            <Text style={styles.saveBtnText}>{t('saveAddress')}</Text>
           )}
         </TouchableOpacity>
       </View>

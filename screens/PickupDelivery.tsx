@@ -4,8 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Circle, CheckCircle2 } from 'lucide-react-native';
 import { getFirestore, collectionGroup, query, where, getCountFromServer } from '@react-native-firebase/firestore';
 import { useSettings } from '../context/SettingsContext';
+import { useTranslation } from 'react-i18next';
 
 export default function PickupDeliveryScreen({ route, navigation }: any) {
+  const { t } = useTranslation();
   const { timeSlots: { slots } } = useSettings();
   const timeSlots = slots || [];
 
@@ -21,8 +23,8 @@ export default function PickupDeliveryScreen({ route, navigation }: any) {
       d.setDate(today.getDate() + i);
       
       let label = '';
-      if (i === 0) label = 'Today';
-      else if (i === 1) label = 'Tomorrow';
+      if (i === 0) label = t('today', 'Today');
+      else if (i === 1) label = t('tomorrow', 'Tomorrow');
       else label = d.toLocaleDateString('en-US', { weekday: 'short' });
       
       const subLabel = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
@@ -79,14 +81,14 @@ export default function PickupDeliveryScreen({ route, navigation }: any) {
           <ChevronLeft size={24} color="#111" />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Pickup & Delivery</Text>
-          <Text style={styles.headerSubtitle}>Choose your preferred time</Text>
+          <Text style={styles.headerTitle}>{t('pickupDelivery', 'Pickup & Delivery')}</Text>
+          <Text style={styles.headerSubtitle}>{t('choosePreferredTime', 'Choose your preferred time')}</Text>
         </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
-        <Text style={styles.sectionTitle}>Pickup & Delivery</Text>
+        <Text style={styles.sectionTitle}>{t('pickupDelivery', 'Pickup & Delivery')}</Text>
 
         {/* Date Selector */}
         <View style={styles.dateScroll}>
@@ -123,7 +125,7 @@ export default function PickupDeliveryScreen({ route, navigation }: any) {
           })}
         </View>
 
-        <Text style={styles.sectionTitle}>Delivery Option</Text>
+        <Text style={styles.sectionTitle}>{t('deliveryOption', 'Delivery Option')}</Text>
 
         {/* Delivery Options */}
         <TouchableOpacity 
@@ -135,8 +137,8 @@ export default function PickupDeliveryScreen({ route, navigation }: any) {
             {deliveryOption === 'express' ? <CheckCircle2 size={22} color="#111" /> : <Circle size={22} color="#666" />}
           </View>
           <View style={styles.deliveryDetails}>
-            <Text style={styles.deliveryTitle}>Express Delivery</Text>
-            <Text style={styles.deliverySub}>24 Hours Delivery</Text>
+            <Text style={styles.deliveryTitle}>{t('expressDelivery', 'Express Delivery')}</Text>
+            <Text style={styles.deliverySub}>{t('hours24', '24 Hours Delivery')}</Text>
           </View>
           <Text style={styles.deliveryPrice}>₹ 50</Text>
         </TouchableOpacity>
@@ -150,16 +152,16 @@ export default function PickupDeliveryScreen({ route, navigation }: any) {
             {deliveryOption === 'standard' ? <CheckCircle2 size={22} color="#111" /> : <Circle size={22} color="#666" />}
           </View>
           <View style={styles.deliveryDetails}>
-            <Text style={styles.deliveryTitle}>Standard Delivery</Text>
+            <Text style={styles.deliveryTitle}>{t('standardDelivery', 'Standard Delivery')}</Text>
             {loadingDemand ? (
               <ActivityIndicator size="small" color="#666" style={{ alignSelf: 'flex-start', marginTop: 4 }} />
             ) : isHighDemand ? (
-              <Text style={[styles.deliverySub, { color: '#EAB308', fontWeight: '600' }]}>⚠️ 3 Days (High Demand)</Text>
+              <Text style={[styles.deliverySub, { color: '#EAB308', fontWeight: '600' }]}>⚠️ {t('highDemand', '3 Days (High Demand)')}</Text>
             ) : (
-              <Text style={styles.deliverySub}>2 Days Delivery</Text>
+              <Text style={styles.deliverySub}>{t('days2', '2 Days Delivery')}</Text>
             )}
           </View>
-          <Text style={styles.deliveryFree}>FREE</Text>
+          <Text style={styles.deliveryFree}>{t('free', 'FREE')}</Text>
         </TouchableOpacity>
 
       </ScrollView>
@@ -169,7 +171,7 @@ export default function PickupDeliveryScreen({ route, navigation }: any) {
           style={styles.continueBtn}
           onPress={handleContinue}
         >
-          <Text style={styles.continueText}>Continue</Text>
+          <Text style={styles.continueText}>{t('continue', 'Continue')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

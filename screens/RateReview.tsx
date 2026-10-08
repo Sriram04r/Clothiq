@@ -4,8 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Star, Plus } from 'lucide-react-native';
 import { getFirestore, collection, addDoc, serverTimestamp } from '@react-native-firebase/firestore';
 import { getAuth } from '@react-native-firebase/auth';
+import { useTranslation } from 'react-i18next';
 
 export default function RateReviewScreen({ navigation }: any) {
+  const { t } = useTranslation();
   const [rating, setRating] = useState(5);
   const [reviewTitle, setReviewTitle] = useState('');
   const [reviewBody, setReviewBody] = useState('');
@@ -50,8 +52,8 @@ export default function RateReviewScreen({ navigation }: any) {
           <ChevronLeft size={24} color="#111" />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Rate & Review</Text>
-          <Text style={styles.headerSubtitle}>How was your experience?</Text>
+          <Text style={styles.headerTitle}>{t('rateReviewTitle')}</Text>
+          <Text style={styles.headerSubtitle}>{t('howWasExperience')}</Text>
         </View>
       </View>
 
@@ -74,7 +76,7 @@ export default function RateReviewScreen({ navigation }: any) {
         <View style={styles.inputContainer}>
           <TextInput placeholderTextColor="#9ca3af"
             style={styles.textInputTitle}
-            placeholder="Review Title"
+            placeholder={t('reviewTitlePlaceholder')}
             value={reviewTitle}
             onChangeText={setReviewTitle}
           />
@@ -83,7 +85,7 @@ export default function RateReviewScreen({ navigation }: any) {
             style={styles.textInputBody}
             multiline
             numberOfLines={4}
-            placeholder="Write your review here..."
+            placeholder={t('writeReviewPlaceholder')}
             value={reviewBody}
             onChangeText={setReviewBody}
             textAlignVertical="top"
@@ -100,13 +102,13 @@ export default function RateReviewScreen({ navigation }: any) {
           onPress={handleSubmit}
           disabled={isSubmitting}
         >
-          <Text style={styles.submitText}>{isSubmitting ? 'Submitting...' : 'Submit Review'}</Text>
+          <Text style={styles.submitText}>{isSubmitting ? t('submitting') : t('submitReview')}</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.skipBtn}
           onPress={() => navigation.navigate('Home')}
         >
-          <Text style={styles.skipText}>Skip</Text>
+          <Text style={styles.skipText}>{t('skip')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

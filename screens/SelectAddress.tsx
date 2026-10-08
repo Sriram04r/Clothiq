@@ -4,8 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Plus, Circle, CheckCircle2 } from 'lucide-react-native';
 import { getAuth } from '@react-native-firebase/auth';
 import { getFirestore, collection, onSnapshot, query, orderBy } from '@react-native-firebase/firestore';
+import { useTranslation } from 'react-i18next';
 
 export default function SelectAddressScreen({ route, navigation }: any) {
+  const { t } = useTranslation();
   const { specialInstructions } = route.params || {};
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [addresses, setAddresses] = useState<any[]>([]);
@@ -60,8 +62,8 @@ export default function SelectAddressScreen({ route, navigation }: any) {
           <ChevronLeft size={24} color="#111" />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Select Address</Text>
-          <Text style={styles.headerSubtitle}>Where should we pickup?</Text>
+          <Text style={styles.headerTitle}>{t('selectAddress', 'Select Address')}</Text>
+          <Text style={styles.headerSubtitle}>{t('pickupQuestion', 'Where should we pickup?')}</Text>
         </View>
       </View>
 
@@ -69,7 +71,7 @@ export default function SelectAddressScreen({ route, navigation }: any) {
         {loading ? (
           <ActivityIndicator size="large" color="#000080" style={{ marginTop: 40 }} />
         ) : addresses.length === 0 ? (
-          <Text style={{ textAlign: 'center', marginTop: 40, color: '#666' }}>No saved addresses yet.</Text>
+          <Text style={{ textAlign: 'center', marginTop: 40, color: '#666' }}>{t('No saved addresses yet', 'No saved addresses yet.')}</Text>
         ) : (
           addresses.map((address) => {
             const isSelected = selectedId === address.id;
@@ -90,11 +92,11 @@ export default function SelectAddressScreen({ route, navigation }: any) {
                 <View style={styles.addressDetails}>
                   <View style={styles.titleRow}>
                     <Text style={styles.addressTitle}>
-                      {address.type} {address.isDefault && <Text style={{fontSize: 12, color: '#666', fontWeight: '400'}}>(Default)</Text>}
+                      {address.type === 'Home' ? t('HomeType', 'Home') : address.type === 'Work' ? t('Work', 'Work') : t('Other', 'Other')} {address.isDefault && <Text style={{fontSize: 12, color: '#666', fontWeight: '400'}}>({t('Default', 'Default')})</Text>}
                     </Text>
                     {isSelected && (
                       <TouchableOpacity onPress={() => navigation.navigate('AddNewAddress')}>
-                        <Text style={styles.editText}>Edit</Text>
+                        <Text style={styles.editText}>{t('edit', 'Edit')}</Text>
                       </TouchableOpacity>
                     )}
                   </View>
@@ -108,7 +110,7 @@ export default function SelectAddressScreen({ route, navigation }: any) {
 
         <TouchableOpacity style={styles.addAddressBtn} onPress={() => navigation.navigate('AddNewAddress')}>
           <Plus size={20} color="#2945FF" />
-          <Text style={styles.addAddressText}>Add New Address</Text>
+          <Text style={styles.addAddressText}>{t('addNewAddress', 'Add New Address')}</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -118,7 +120,7 @@ export default function SelectAddressScreen({ route, navigation }: any) {
           onPress={() => selectedId && navigation.navigate('PickupDelivery', { selectedAddressId: selectedId, specialInstructions })}
           disabled={!selectedId}
         >
-          <Text style={styles.continueText}>Continue</Text>
+          <Text style={styles.continueText}>{t('continue', 'Continue')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

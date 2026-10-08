@@ -15,9 +15,11 @@ export default function AdminDashboardWebView() {
   const handleNativeLogout = async () => {
     try {
       const auth = getAuth();
-      await signOut(auth);
+      if (auth.currentUser) {
+        await signOut(auth);
+      }
     } catch (error) {
-      console.error("Error signing out natively:", error);
+      console.log("Error signing out natively:", error);
     }
   };
 

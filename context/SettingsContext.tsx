@@ -57,17 +57,17 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
 
     const unsubApp = onSnapshot(doc(db, 'master_settings', 'app_config'), (snap) => {
-      if (snap.exists) setAppConfig(snap.data() as AppConfig);
+      if (snap && (typeof snap.exists === 'function' ? snap.exists() : snap.exists)) setAppConfig({ ...defaultAppConfig, ...(snap.data() as AppConfig || {}) });
       checkLoading();
     });
 
     const unsubCatalog = onSnapshot(doc(db, 'master_settings', 'catalog'), (snap) => {
-      if (snap.exists) setCatalog(snap.data() as CatalogSettings);
+      if (snap && (typeof snap.exists === 'function' ? snap.exists() : snap.exists)) setCatalog({ ...defaultCatalog, ...(snap.data() as CatalogSettings || {}) });
       checkLoading();
     });
 
     const unsubTime = onSnapshot(doc(db, 'master_settings', 'time_slots'), (snap) => {
-      if (snap.exists) setTimeSlots({ slots: snap.data()?.slots || defaultTimeSlots.slots });
+      if (snap && (typeof snap.exists === 'function' ? snap.exists() : snap.exists)) setTimeSlots({ slots: snap.data()?.slots || defaultTimeSlots.slots });
       checkLoading();
     });
 

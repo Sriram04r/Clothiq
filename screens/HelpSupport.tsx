@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, MessageCircle, Phone, Mail, ChevronDown, ChevronUp, X, Send, Bot, ChevronRight } from 'lucide-react-native';
 import { getFirestore, collection, addDoc, serverTimestamp } from '@react-native-firebase/firestore';
 import { getAuth } from '@react-native-firebase/auth';
+import { useTranslation } from 'react-i18next';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -29,6 +30,7 @@ const FAQS = [
 ];
 
 export default function HelpSupportScreen({ navigation }: any) {
+  const { t } = useTranslation();
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   
   // Ticket Modal States
@@ -91,7 +93,7 @@ export default function HelpSupportScreen({ navigation }: any) {
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <ChevronLeft size={24} color="#111" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Help & Support</Text>
+        <Text style={styles.headerTitle}>{t('helpSupportTitle')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -99,29 +101,29 @@ export default function HelpSupportScreen({ navigation }: any) {
         
         {/* Contact Methods Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Contact Us</Text>
-          <Text style={styles.sectionSub}>Our premium support team is available 24/7 to assist you.</Text>
+          <Text style={styles.sectionTitle}>{t('contactUs')}</Text>
+          <Text style={styles.sectionSub}>{t('contactUsText')}</Text>
           
           <View style={styles.contactGrid}>
             <TouchableOpacity style={styles.contactCard} onPress={() => openLink('tel:+919666394628')} activeOpacity={0.7}>
               <View style={[styles.iconBox, { backgroundColor: '#E0E7FF' }]}>
                 <Phone size={24} color="#1C158A" />
               </View>
-              <Text style={styles.contactTitle}>Call Us</Text>
+              <Text style={styles.contactTitle}>{t('callUs')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.contactCard} onPress={() => setModalVisible(true)} activeOpacity={0.7}>
               <View style={[styles.iconBox, { backgroundColor: '#FFEDD5' }]}>
                 <Mail size={24} color="#EA580C" />
               </View>
-              <Text style={styles.contactTitle}>App Ticket</Text>
+              <Text style={styles.contactTitle}>{t('appTicket')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.contactCard} onPress={() => openLink('https://wa.me/919666394628')} activeOpacity={0.7}>
               <View style={[styles.iconBox, { backgroundColor: '#DCFCE7' }]}>
                 <MessageCircle size={24} color="#16A34A" />
               </View>
-              <Text style={styles.contactTitle}>Chat</Text>
+              <Text style={styles.contactTitle}>{t('chat')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -130,8 +132,8 @@ export default function HelpSupportScreen({ navigation }: any) {
               <Bot size={24} color="#FFF" />
             </View>
             <View style={styles.aiTextContainer}>
-              <Text style={styles.aiTitle}>Clothiq AI Chatbot</Text>
-              <Text style={styles.aiSub}>Get instant answers about your orders</Text>
+              <Text style={styles.aiTitle}>{t('Clothiq AI Chatbot', 'Clothiq AI Chatbot')}</Text>
+              <Text style={styles.aiSub}>{t('Get instant answers about your orders', 'Get instant answers about your orders')}</Text>
             </View>
             <ChevronRight size={20} color="#2945FF" />
           </TouchableOpacity>
@@ -139,7 +141,7 @@ export default function HelpSupportScreen({ navigation }: any) {
 
         {/* FAQ Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Frequently Asked Questions</Text>
+          <Text style={styles.sectionTitle}>{t('faqTitle')}</Text>
           
           <View style={styles.faqList}>
             {FAQS.map((faq, index) => {
@@ -151,7 +153,7 @@ export default function HelpSupportScreen({ navigation }: any) {
                     onPress={() => toggleExpand(index)}
                     activeOpacity={0.7}
                   >
-                    <Text style={styles.questionText}>{faq.question}</Text>
+                    <Text style={styles.questionText}>{t(faq.question, faq.question)}</Text>
                     {isExpanded ? (
                       <ChevronUp size={20} color="#2945FF" />
                     ) : (
@@ -161,7 +163,7 @@ export default function HelpSupportScreen({ navigation }: any) {
                   
                   {isExpanded && (
                     <View style={styles.faqAnswerBox}>
-                      <Text style={styles.answerText}>{faq.answer}</Text>
+                      <Text style={styles.answerText}>{t(faq.answer, faq.answer)}</Text>
                     </View>
                   )}
                 </View>
@@ -182,17 +184,17 @@ export default function HelpSupportScreen({ navigation }: any) {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Contact Support</Text>
+              <Text style={styles.modalTitle}>{t('contactSupport')}</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeBtn}>
                 <X size={24} color="#64748B" />
               </TouchableOpacity>
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Subject</Text>
+              <Text style={styles.label}>{t('subject')}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="e.g. Issue with order #1234"
+                placeholder={t('Enter a brief subject', 'Enter a brief subject')}
                 placeholderTextColor="#9CA3AF"
                 value={ticketSubject}
                 onChangeText={setTicketSubject}
@@ -200,10 +202,10 @@ export default function HelpSupportScreen({ navigation }: any) {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Message</Text>
+              <Text style={styles.label}>{t('Message', 'Message')}</Text>
               <TextInput
                 style={[styles.input, styles.textArea]}
-                placeholder="Please describe your issue..."
+                placeholder={t('Describe your issue in detail...', 'Describe your issue in detail...')}
                 placeholderTextColor="#9CA3AF"
                 multiline
                 numberOfLines={4}
@@ -223,7 +225,7 @@ export default function HelpSupportScreen({ navigation }: any) {
               ) : (
                 <>
                   <Send size={20} color="#FFF" />
-                  <Text style={styles.submitBtnText}>Send to Admin</Text>
+                  <Text style={styles.submitBtnText}>{t('Submit Ticket', 'Send to Admin')}</Text>
                 </>
               )}
             </TouchableOpacity>

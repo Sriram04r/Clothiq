@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, TextInput, ActivityIndicator, Alert } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, TextInput, ActivityIndicator, Alert, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, ChevronDown, User } from 'lucide-react-native';
+import { ChevronLeft, ChevronDown, User, Plus, Camera } from 'lucide-react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { getAuth } from '@react-native-firebase/auth';
 import { getFirestore, doc, getDoc, setDoc } from '@react-native-firebase/firestore';
+import { useTranslation } from 'react-i18next';
 
 export default function EditProfileScreen({ navigation }: any) {
+  const { t } = useTranslation();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [dob, setDob] = useState('');
   const [gender, setGender] = useState('Male');
+  const [profilePic, setProfilePic] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showGenderDropdown, setShowGenderDropdown] = useState(false);
@@ -33,6 +37,7 @@ export default function EditProfileScreen({ navigation }: any) {
             setPhone(data?.phone || user.phoneNumber || '');
             setDob(data?.dob || '');
             setGender(data?.gender || 'Male');
+            setProfilePic(data?.profilePic || null);
           }
         } catch (error) {
           console.error('Error fetching user doc:', error);
@@ -42,6 +47,54 @@ export default function EditProfileScreen({ navigation }: any) {
     };
     fetchUserData();
   }, []);
+
+  const pickImage = async () => {
+    Alert.alert(
+      "Update Profile Picture",
+      "Choose an option",
+      [
+        {
+          text: "Camera",
+          onPress: async () => {
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Sorry, we need camera permissions to make this work!');
+              return;
+            }
+            let result = await ImagePicker.launchCameraAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 0.1,
+              base64: true,
+            });
+            if (!result.canceled && result.assets[0].base64) {
+              setProfilePic(`data:image/jpeg;base64,${result.assets[0].base64}`);
+            }
+          }
+        },
+        {
+          text: "Gallery",
+          onPress: async () => {
+            let result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 0.1,
+              base64: true,
+            });
+            if (!result.canceled && result.assets[0].base64) {
+              setProfilePic(`data:image/jpeg;base64,${result.assets[0].base64}`);
+            }
+          }
+        },
+        {
+          text: "Cancel",
+          style: "cancel"
+        }
+      ]
+    );
+  };
 
   const handleSave = async () => {
     const auth = getAuth();
@@ -56,7 +109,8 @@ export default function EditProfileScreen({ navigation }: any) {
         email,
         phone,
         dob,
-        gender
+        gender,
+        profilePic
       }, { merge: true });
       
       Alert.alert('Success', 'Profile updated successfully!', [
@@ -77,7 +131,7 @@ export default function EditProfileScreen({ navigation }: any) {
           <ChevronLeft size={24} color="#111" />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Edit Profile</Text>
+          <Text style={styles.headerTitle}>{t('editProfile')}</Text>
         </View>
       </View>
 
@@ -85,16 +139,23 @@ export default function EditProfileScreen({ navigation }: any) {
         
         {/* Avatar */}
         <View style={styles.avatarContainer}>
-          <View style={styles.avatarCircle}>
-            <User size={40} color="#1C158A" strokeWidth={2.5} />
-          </View>
+          <TouchableOpacity style={styles.avatarCircle} onPress={pickImage}>
+            {profilePic ? (
+              <Image source={{ uri: profilePic }} style={{ width: 80, height: 80, borderRadius: 40 }} />
+            ) : (
+              <User size={40} color="#1C158A" strokeWidth={2.5} />
+            )}
+            <View style={styles.plusIconBadge}>
+              <Plus size={16} color="#FFF" strokeWidth={3} />
+            </View>
+          </TouchableOpacity>
         </View>
 
         {/* Form Fields */}
         <View style={styles.formContainer}>
           
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Full Name</Text>
+            <Text style={styles.label}>{t('name')}</Text>
             <TextInput placeholderTextColor="#9ca3af"
               style={styles.input}
               value={fullName}
@@ -103,7 +164,7 @@ export default function EditProfileScreen({ navigation }: any) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email Address</Text>
+            <Text style={styles.label}>{t('email')}</Text>
             <TextInput placeholderTextColor="#9ca3af"
               style={styles.input}
               value={email}
@@ -114,7 +175,7 @@ export default function EditProfileScreen({ navigation }: any) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Phone Number</Text>
+            <Text style={styles.label}>{t('phone')}</Text>
             <TextInput placeholderTextColor="#9ca3af"
               style={styles.input}
               value={phone}
@@ -124,7 +185,7 @@ export default function EditProfileScreen({ navigation }: any) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Date of Birth</Text>
+            <Text style={styles.label}>{t('Date of Birth', 'Date of Birth')}</Text>
             <TextInput placeholderTextColor="#9ca3af"
               style={styles.input}
               value={dob}
@@ -133,13 +194,13 @@ export default function EditProfileScreen({ navigation }: any) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Gender</Text>
+            <Text style={styles.label}>{t('Gender', 'Gender')}</Text>
             <TouchableOpacity 
               style={styles.dropdownInput} 
               activeOpacity={0.7}
               onPress={() => setShowGenderDropdown(!showGenderDropdown)}
             >
-              <Text style={styles.dropdownText}>{gender}</Text>
+              <Text style={styles.dropdownText}>{t(gender, gender)}</Text>
               <ChevronDown size={20} color="#6B7280" />
             </TouchableOpacity>
             
@@ -155,7 +216,7 @@ export default function EditProfileScreen({ navigation }: any) {
                     }}
                   >
                     <Text style={[styles.dropdownItemText, gender === item && styles.dropdownItemTextSelected]}>
-                      {item}
+                      {t(item, item)}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -177,7 +238,7 @@ export default function EditProfileScreen({ navigation }: any) {
           {saving ? (
             <ActivityIndicator color="#FFF" />
           ) : (
-            <Text style={styles.saveBtnText}>Save Changes</Text>
+            <Text style={styles.saveBtnText}>{t('save')}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -228,6 +289,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#EEF2FF', // Light purple
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  plusIconBadge: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    backgroundColor: '#1C158A',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#FFF',
   },
   formContainer: {
     gap: 24,

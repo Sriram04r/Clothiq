@@ -7,6 +7,7 @@ import { getFirestore, doc, onSnapshot } from '@react-native-firebase/firestore'
 import { getAuth } from '@react-native-firebase/auth';
 import * as Location from 'expo-location';
 import ChatBotFAB from '../components/ChatBotFAB';
+import { useTranslation } from 'react-i18next';
 
 const INITIAL_TIMELINE = [
   { id: '1', title: 'Order Placed', time: '', status: 'pending', key: 'placed' },
@@ -18,6 +19,7 @@ const INITIAL_TIMELINE = [
 ];
 
 export default function TrackOrderScreen({ route, navigation }: any) {
+  const { t } = useTranslation();
   const { orderId } = route.params || {};
   const [mapActive, setMapActive] = useState(false);
   const [customerLocation, setCustomerLocation] = useState<any>(null);
@@ -119,8 +121,8 @@ export default function TrackOrderScreen({ route, navigation }: any) {
           <ChevronLeft size={24} color="#111" />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Track your Order</Text>
-          <Text style={styles.headerSubtitle}>Order ID: {orderId ? `FW${orderId.substring(0,6).toUpperCase()}` : 'FW123456'}</Text>
+          <Text style={styles.headerTitle}>{t('trackOrder', 'Track your Order')}</Text>
+          <Text style={styles.headerSubtitle}>{t('orderId', 'Order ID')}: {orderId ? `FW${orderId.substring(0,6).toUpperCase()}` : 'FW123456'}</Text>
         </View>
       </View>
 
@@ -132,7 +134,7 @@ export default function TrackOrderScreen({ route, navigation }: any) {
         <View style={styles.mapContainer}>
           <View style={[styles.map, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#F3F4F6' }]}>
             <MapPin size={32} color="#9CA3AF" />
-            <Text style={{ marginTop: 8, color: '#6B7280', fontSize: 14, fontWeight: '500' }}>Live map is temporarily disabled</Text>
+            <Text style={{ marginTop: 8, color: '#6B7280', fontSize: 14, fontWeight: '500' }}>{t('liveMapDisabled', 'Live map is temporarily disabled')}</Text>
           </View>
         </View>
 
@@ -169,7 +171,7 @@ export default function TrackOrderScreen({ route, navigation }: any) {
                     styles.stepTitle, 
                     isActive && styles.stepTitleActive,
                     step.status === 'pending' && styles.stepTitlePending
-                  ]}>{step.title}</Text>
+                  ]}>{t(step.title, step.title)}</Text>
                   {step.time ? <Text style={styles.stepTime}>{step.time}</Text> : null}
                 </View>
               </View>
@@ -180,29 +182,6 @@ export default function TrackOrderScreen({ route, navigation }: any) {
 
       <ChatBotFAB />
 
-      {/* Bottom Nav */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
-          <Home size={24} color="#8e8e93" />
-          <Text style={styles.navText}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <ClipboardList size={24} color="#1C158A" />
-          <Text style={[styles.navText, styles.navTextActive]}>Orders</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Bell size={24} color="#8e8e93" />
-          <Text style={styles.navText}>Notifications</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Services')}>
-          <LayoutGrid size={24} color="#8e8e93" />
-          <Text style={styles.navText}>Services</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Profile')}>
-          <User size={24} color="#8e8e93" />
-          <Text style={styles.navText}>Profile</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 }

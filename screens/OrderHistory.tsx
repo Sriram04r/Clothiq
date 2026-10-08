@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Gift, Shirt, XCircle, Truck, Package, Home, ClipboardList, Bell, LayoutGrid, User } from 'lucide-react-native';
+import { ChevronLeft, Gift, Shirt, XCircle, Truck, Package, Home, ClipboardList, Bell, LayoutGrid, User, Settings } from 'lucide-react-native';
 import { getAuth } from '@react-native-firebase/auth';
 import { getFirestore, collection, query, orderBy, onSnapshot } from '@react-native-firebase/firestore';
+import { useTranslation } from 'react-i18next';
 
 export default function OrderHistoryScreen({ navigation }: any) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('All');
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,14 +58,14 @@ export default function OrderHistoryScreen({ navigation }: any) {
 
   const getStatusDisplay = (status: string) => {
     switch (status) {
-      case 'pending_payment': return 'Pending Payment';
-      case 'paid': return 'Paid (Pending Pickup)';
-      case 'placed_cod': return 'Placed (COD)';
-      case 'washing': return 'Washing';
-      case 'out_for_delivery': return 'Out for Delivery';
-      case 'delivered': return 'Delivered';
-      case 'cancelled': return 'Cancelled';
-      default: return 'In Progress';
+      case 'pending_payment': return t('Pending Payment', 'Pending Payment');
+      case 'paid': return t('Paid (Pending Pickup)', 'Paid (Pending Pickup)');
+      case 'placed_cod': return t('Placed (COD)', 'Placed (COD)');
+      case 'washing': return t('Washing', 'Washing');
+      case 'out_for_delivery': return t('outForDelivery', 'Out for Delivery');
+      case 'delivered': return t('delivered', 'Delivered');
+      case 'cancelled': return t('Cancelled', 'Cancelled');
+      default: return t('In Progress', 'In Progress');
     }
   };
 
@@ -102,7 +104,7 @@ export default function OrderHistoryScreen({ navigation }: any) {
   };
 
   const formatDate = (timestamp: any) => {
-    if (!timestamp) return 'Unknown Date';
+    if (!timestamp) return t('Unknown Date', 'Unknown Date');
     // Firestore timestamp extraction
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) + ' - ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -115,20 +117,20 @@ export default function OrderHistoryScreen({ navigation }: any) {
           <ChevronLeft size={24} color="#111" />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Order History</Text>
+          <Text style={styles.headerTitle}>{t('myOrders')}</Text>
         </View>
       </View>
 
       {/* Tabs */}
       <View style={styles.tabsContainer}>
         <View style={styles.tabsRow}>
-          {['All', 'In Progress', 'Completed', 'Cancelled'].map((tab) => (
+          {[{ key: 'All', label: t('all') }, { key: 'In Progress', label: t('inProgress') }, { key: 'Completed', label: t('completed') }, { key: 'Cancelled', label: t('cancelled') }].map((tab) => (
             <TouchableOpacity
-              key={tab}
-              style={[styles.tab, activeTab === tab && styles.activeTab]}
-              onPress={() => setActiveTab(tab)}
+              key={tab.key}
+              style={[styles.tab, activeTab === tab.key && styles.activeTab]}
+              onPress={() => setActiveTab(tab.key)}
             >
-              <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]} numberOfLines={1}>{tab}</Text>
+              <Text style={[styles.tabText, activeTab === tab.key && styles.activeTabText]} numberOfLines={1}>{tab.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -142,7 +144,7 @@ export default function OrderHistoryScreen({ navigation }: any) {
           {filteredOrders.length === 0 ? (
             <View style={{ alignItems: 'center', marginTop: 60 }}>
               <Package size={48} color="#D1D5DB" />
-              <Text style={{ marginTop: 16, fontSize: 16, color: '#6B7280', fontWeight: '500' }}>No orders found.</Text>
+              <Text style={{ marginTop: 16, fontSize: 16, color: '#6B7280', fontWeight: '500' }}>{t('noOrders')}</Text>
             </View>
           ) : (
             filteredOrders.map((order) => (
@@ -155,7 +157,7 @@ export default function OrderHistoryScreen({ navigation }: any) {
                   {renderIcon(order.status)}
 
                   <View style={styles.orderDetails}>
-                    <Text style={styles.orderId}>Order #FW{order.id.substring(0, 6).toUpperCase()}</Text>
+                    <Text style={styles.orderId}>{t('orderId')} #FW{order.id.substring(0, 6).toUpperCase()}</Text>
                     <Text style={styles.orderDate}>{formatDate(order.createdAt)}</Text>
                     <Text style={[styles.orderStatus, { color: getStatusColor(order.status) }]}>{getStatusDisplay(order.status)}</Text>
                   </View>
@@ -168,7 +170,7 @@ export default function OrderHistoryScreen({ navigation }: any) {
                     style={styles.reviewButton}
                     onPress={() => navigation.navigate('RateReview', { orderId: order.id })}
                   >
-                    <Text style={styles.reviewButtonText}>Leave a Review</Text>
+                    <Text style={styles.reviewButtonText}>{t('leaveReview')}</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -182,23 +184,23 @@ export default function OrderHistoryScreen({ navigation }: any) {
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
           <Home size={24} color="#8e8e93" />
-          <Text style={styles.navText}>Home</Text>
+          <Text style={styles.navText}>{t('home')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem}>
           <ClipboardList size={24} color="#1C158A" />
-          <Text style={[styles.navText, styles.navTextActive]}>Orders</Text>
+          <Text style={[styles.navText, styles.navTextActive]}>{t('orders')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Notifications')}>
           <Bell size={24} color="#8e8e93" />
-          <Text style={styles.navText}>Notifications</Text>
+          <Text style={styles.navText}>{t('notifications')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Services')}>
           <LayoutGrid size={24} color="#8e8e93" />
-          <Text style={styles.navText}>Services</Text>
+          <Text style={styles.navText}>{t('services')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Profile')}>
-          <User size={24} color="#8e8e93" />
-          <Text style={styles.navText}>Profile</Text>
+          <Settings size={24} color="#8e8e93" />
+          <Text style={styles.navText}>{t('settings')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

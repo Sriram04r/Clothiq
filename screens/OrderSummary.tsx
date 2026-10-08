@@ -6,8 +6,10 @@ import { getAuth } from '@react-native-firebase/auth';
 import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp } from '@react-native-firebase/firestore';
 import { useCart } from '../context/CartContext';
 import { useSettings } from '../context/SettingsContext';
+import { useTranslation } from 'react-i18next';
 
 export default function OrderSummaryScreen({ route, navigation }: any) {
+  const { t } = useTranslation();
   const { selectedAddressId, pickupDate, pickupTime, deliveryOption, specialInstructions } = route.params || {};
 
   const [address, setAddress] = useState<any>(null);
@@ -110,8 +112,8 @@ export default function OrderSummaryScreen({ route, navigation }: any) {
           <ChevronLeft size={24} color="#111" />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Order Summary</Text>
-          <Text style={styles.headerSubtitle}>Review your order details</Text>
+          <Text style={styles.headerTitle}>{t('orderSummary')}</Text>
+          <Text style={styles.headerSubtitle}>{t('reviewOrder')}</Text>
         </View>
       </View>
 
@@ -123,15 +125,15 @@ export default function OrderSummaryScreen({ route, navigation }: any) {
           {/* Billing Details Box */}
           <View style={styles.billingBox}>
             <View style={styles.billingRow}>
-              <Text style={styles.billingLabel}>Cart Subtotal</Text>
+              <Text style={styles.billingLabel}>{t('subTotal')}</Text>
               <Text style={styles.billingValue}>₹ {subTotal}</Text>
             </View>
             <View style={styles.billingRow}>
-              <Text style={styles.billingLabel}>Pickup & Delivery {deliveryOption === 'express' && '(Express)'}</Text>
+              <Text style={styles.billingLabel}>{t('pickupDelivery')} {deliveryOption === 'express' && `(${t('express')})`}</Text>
               <Text style={styles.billingValue}>{totalDeliveryFee === 0 ? 'FREE' : `₹ ${totalDeliveryFee}`}</Text>
             </View>
             <View style={styles.billingRow}>
-              <Text style={styles.billingLabel}>Coupon Discount <Text style={styles.couponText}>(FRESH20)</Text></Text>
+              <Text style={styles.billingLabel}>{t('couponDiscount')} <Text style={styles.couponText}>(FRESH20)</Text></Text>
               <Text style={styles.discountValue}>- ₹ {couponDiscount}</Text>
             </View>
             <View style={styles.billingRow}>
@@ -142,12 +144,12 @@ export default function OrderSummaryScreen({ route, navigation }: any) {
             <View style={styles.divider} />
             
             <View style={styles.billingRow}>
-              <Text style={styles.totalLabel}>Total Amount</Text>
+              <Text style={styles.totalLabel}>{t('total')}</Text>
               <Text style={styles.totalValue}>₹ {finalTotal}</Text>
             </View>
           </View>
 
-          <Text style={styles.sectionTitle}>Your Order</Text>
+          <Text style={styles.sectionTitle}>{t('yourOrder')}</Text>
 
           {/* Order Details Box */}
           <View style={styles.orderBox}>
@@ -157,8 +159,10 @@ export default function OrderSummaryScreen({ route, navigation }: any) {
                 <Shirt size={20} color="#111" />
               </View>
               <View style={styles.orderTextContainer}>
-                <Text style={styles.orderTitle}>{totalItems} Items</Text>
-                <Text style={styles.orderSubtitle}>Wash & Fold</Text>
+                <Text style={styles.orderTitle}>{totalItems} {t('items')}</Text>
+                <Text style={styles.orderSubtitle}>
+                  {Array.from(new Set(items.map((i: any) => i.serviceType))).filter(Boolean).join(', ') || 'Laundry'}
+                </Text>
               </View>
             </View>
 
@@ -168,7 +172,7 @@ export default function OrderSummaryScreen({ route, navigation }: any) {
                   <Text style={{ fontSize: 18 }}>⚠️</Text>
                 </View>
                 <View style={styles.orderTextContainer}>
-                  <Text style={[styles.orderTitle, { color: '#A16207' }]}>Special Care Added</Text>
+                  <Text style={[styles.orderTitle, { color: '#A16207' }]}>{t('specialCareAdded')}</Text>
                   <Text style={styles.orderSubtitle}>{specialInstructions}</Text>
                 </View>
               </View>
@@ -179,7 +183,7 @@ export default function OrderSummaryScreen({ route, navigation }: any) {
                 <Truck size={20} color="#111" />
               </View>
               <View style={styles.orderTextContainer}>
-                <Text style={styles.orderTitle}>Pickup</Text>
+                <Text style={styles.orderTitle}>{t('pickup')}</Text>
                 <Text style={styles.orderSubtitle}>{displayDate}, {pickupTime}</Text>
               </View>
             </View>
@@ -189,8 +193,8 @@ export default function OrderSummaryScreen({ route, navigation }: any) {
                 <FastForward size={20} color="#111" />
               </View>
               <View style={styles.orderTextContainer}>
-                <Text style={styles.orderTitle}>Delivery</Text>
-                <Text style={styles.orderSubtitle}>{deliveryOption === 'express' ? 'Express (24 Hours)' : 'Standard (2 Days)'}</Text>
+                <Text style={styles.orderTitle}>{t('delivery')}</Text>
+                <Text style={styles.orderSubtitle}>{deliveryOption === 'express' ? `${t('express')} (24 Hours)` : `${t('standard')} (2 Days)`}</Text>
               </View>
             </View>
             
@@ -199,9 +203,9 @@ export default function OrderSummaryScreen({ route, navigation }: any) {
                 <MapPin size={20} color="#111" />
               </View>
               <View style={styles.orderTextContainer}>
-                <Text style={styles.orderTitle}>Shipping To</Text>
+                <Text style={styles.orderTitle}>{t('shippingTo', 'Shipping To')}</Text>
                 <Text style={styles.orderSubtitle}>
-                  {address ? `${address.type}: ${address.houseNo}, ${address.area}` : 'Address not found'}
+                  {address ? `${address.type}: ${address.houseNo}, ${address.area}` : t('addressNotFound', 'Address not found')}
                 </Text>
               </View>
             </View>
@@ -219,7 +223,7 @@ export default function OrderSummaryScreen({ route, navigation }: any) {
           {savingOrder ? (
             <ActivityIndicator color="#FFF" />
           ) : (
-            <Text style={styles.proceedText}>Place Order (₹ {finalTotal})</Text>
+            <Text style={styles.proceedText}>{t('placeOrder', 'Place Order')} (₹ {finalTotal})</Text>
           )}
         </TouchableOpacity>
       </View>

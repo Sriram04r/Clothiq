@@ -8,6 +8,7 @@ import { ChevronLeft, Send, Bot } from 'lucide-react-native';
 import { sendMessageToGroq } from '../utils/groqApi';
 import { getFirestore, collection, query, getDocs } from '@react-native-firebase/firestore';
 import { getAuth } from '@react-native-firebase/auth';
+import { useTranslation } from 'react-i18next';
 
 interface Message {
   id: string;
@@ -17,12 +18,13 @@ interface Message {
 }
 
 export default function SupportChatScreen({ navigation }: any) {
+  const { t, i18n } = useTranslation();
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome-msg',
-      text: 'Hi there! 👋 I am the Clothiq Support AI. How can I help you with your laundry today?',
+      text: t('Hi there! 👋 I am the Clothiq Support AI. How can I help you with your laundry today?', 'Hi there! 👋 I am the Clothiq Support AI. How can I help you with your laundry today?'),
       isUser: false,
       timestamp: new Date()
     }
@@ -75,7 +77,7 @@ export default function SupportChatScreen({ navigation }: any) {
     setIsTyping(true);
 
     // Call Groq API
-    const botResponseText = await sendMessageToGroq(userMsg.text, messages.slice(1), userContext);
+    const botResponseText = await sendMessageToGroq(userMsg.text, messages.slice(1), userContext, i18n.language);
 
     const botMsg: Message = {
       id: generateId(),
@@ -90,6 +92,9 @@ export default function SupportChatScreen({ navigation }: any) {
 
   const renderMessage = ({ item }: { item: Message }) => {
     const isUser = item.isUser;
+    const displayText = item.id === 'welcome-msg' 
+      ? t('Hi there! 👋 I am the Clothiq Support AI. How can I help you with your laundry today?', 'Hi there! 👋 I am the Clothiq Support AI. How can I help you with your laundry today?')
+      : item.text;
 
     return (
       <View style={[styles.messageWrapper, isUser ? styles.messageWrapperUser : styles.messageWrapperBot]}>
@@ -100,7 +105,7 @@ export default function SupportChatScreen({ navigation }: any) {
         )}
         <View style={[styles.messageBubble, isUser ? styles.messageBubbleUser : styles.messageBubbleBot]}>
           <Text style={[styles.messageText, isUser ? styles.messageTextUser : styles.messageTextBot]}>
-            {item.text}
+            {displayText}
           </Text>
           <Text style={[styles.timeText, isUser ? styles.timeTextUser : styles.timeTextBot]}>
             {item.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -117,13 +122,13 @@ export default function SupportChatScreen({ navigation }: any) {
           <ChevronLeft size={24} color="#111" />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Clothiq Support</Text>
+          <Text style={styles.headerTitle}>{t('chatWithAI')}</Text>
           <Text style={styles.headerSubtitle}></Text>
         </View>
       </View>
 
-      <KeyboardAvoidingView 
-        style={styles.keyboardView} 
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 25}
       >
@@ -142,14 +147,14 @@ export default function SupportChatScreen({ navigation }: any) {
             <View style={styles.botAvatarSmall}>
               <Bot size={12} color="#FFF" />
             </View>
-            <Text style={styles.typingText}>Clothiq AI is typing...</Text>
+            <Text style={styles.typingText}>{t('Clothiq AI is typing...', 'Clothiq AI is typing...')}</Text>
           </View>
         )}
 
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.textInput}
-            placeholder="Type your question..."
+            placeholder={t('typeMessage')}
             placeholderTextColor="#999"
             value={inputText}
             onChangeText={setInputText}

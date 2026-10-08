@@ -5,8 +5,10 @@ import { Truck, Package, Banknote } from 'lucide-react-native';
 import LottieView from 'lottie-react-native';
 import { getAuth } from '@react-native-firebase/auth';
 import { getFirestore, doc, getDoc } from '@react-native-firebase/firestore';
+import { useTranslation } from 'react-i18next';
 
 export default function OrderConfirmationScreen({ route, navigation }: any) {
+  const { t } = useTranslation();
   const { orderId } = route.params || {};
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -79,12 +81,12 @@ export default function OrderConfirmationScreen({ route, navigation }: any) {
           />
         </View>
 
-        <Text style={styles.title}>Order Confirmed!</Text>
-        <Text style={styles.subtitle}>Thank you for your order</Text>
+        <Text style={styles.title}>{t('orderConfirmedTitle', 'Order Confirmed!')}</Text>
+        <Text style={styles.subtitle}>{t('orderConfirmedSub', 'Thank you for your order')}</Text>
 
         {/* Order ID Box */}
         <View style={styles.orderIdBox}>
-          <Text style={styles.orderIdLabel}>Order ID</Text>
+          <Text style={styles.orderIdLabel}>{t('orderId', 'Order ID')}</Text>
           <Text style={styles.orderIdValue}>{displayOrderId}</Text>
         </View>
 
@@ -99,7 +101,7 @@ export default function OrderConfirmationScreen({ route, navigation }: any) {
               <View style={styles.timelineLine} />
             </View>
             <View style={styles.timelineContent}>
-              <Text style={styles.timelineTitle}>Pickup</Text>
+              <Text style={styles.timelineTitle}>{t('pickup', 'Pickup')}</Text>
               <Text style={styles.timelineSub}>{pickupDateStr}, {pickupTimeStr}</Text>
             </View>
           </View>
@@ -113,7 +115,7 @@ export default function OrderConfirmationScreen({ route, navigation }: any) {
               <View style={styles.timelineLine} />
             </View>
             <View style={styles.timelineContent}>
-              <Text style={styles.timelineTitle}>Delivery</Text>
+              <Text style={styles.timelineTitle}>{t('delivery', 'Delivery')}</Text>
               <Text style={styles.timelineSub}>{deliveryDateStr}</Text>
             </View>
           </View>
@@ -126,13 +128,13 @@ export default function OrderConfirmationScreen({ route, navigation }: any) {
               </View>
             </View>
             <View style={[styles.timelineContent, { paddingBottom: 0 }]}>
-              <Text style={styles.timelineTitle}>Payment</Text>
-              <Text style={styles.timelineSub}>{order?.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Paid Online'}</Text>
+              <Text style={styles.timelineTitle}>{t('payment', 'Payment')}</Text>
+              <Text style={styles.timelineSub}>{order?.paymentMethod === 'cod' ? t('cashOnDelivery', 'Cash on Delivery') : t('paidOnline', 'Paid Online')}</Text>
             </View>
           </View>
         </View>
 
-        <Text style={styles.smsText}>We have sent the details to your mobile</Text>
+        <Text style={styles.smsText}>{t('smsDetailsSent', 'We have sent the details to your mobile')}</Text>
         <Text style={styles.phoneText}>{phoneNumber}</Text>
 
       </ScrollView>
@@ -142,13 +144,13 @@ export default function OrderConfirmationScreen({ route, navigation }: any) {
           style={styles.trackBtn}
           onPress={() => navigation.navigate('TrackOrder', { orderId })}
         >
-          <Text style={styles.trackText}>Track Order</Text>
+          <Text style={styles.trackText}>{t('trackOrder', 'Track Order')}</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.homeBtn}
           onPress={() => navigation.navigate('Home')}
         >
-          <Text style={styles.homeText}>Back to Home</Text>
+          <Text style={styles.homeText}>{t('backToHome', 'Back to Home')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

@@ -251,7 +251,7 @@ export default function Orders() {
                         <span>₹{order.pricing?.deliveryFee || 0}</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px', color: 'var(--text-muted)' }}>
-                        <span>GST (5%)</span>
+                        <span>GST</span>
                         <span>₹{order.pricing?.gst || 0}</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '8px', marginTop: '8px', borderTop: '1px solid var(--border-light)', fontSize: '15px', fontWeight: '700' }}>

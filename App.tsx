@@ -10,6 +10,7 @@ import { useFonts } from 'expo-font';
 import { Chewy_400Regular } from '@expo-google-fonts/chewy';
 import { Kalam_400Regular, Kalam_700Bold } from '@expo-google-fonts/kalam';
 import { Caveat_700Bold } from '@expo-google-fonts/caveat';
+import './i18n';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -50,6 +51,7 @@ import ServiceDetailsScreen from './screens/ServiceDetails';
 import OrderHistoryScreen from './screens/OrderHistory';
 import OrderDetailsScreen from './screens/OrderDetails';
 import EditProfileScreen from './screens/EditProfile';
+import ViewProfileScreen from './screens/ViewProfile';
 import SavedAddressesScreen from './screens/SavedAddresses';
 import AddNewAddressScreen from './screens/AddNewAddress';
 import NotificationsScreen from './screens/Notifications';
@@ -82,7 +84,7 @@ function RootNavigator() {
           if (finalStatus === 'granted') {
             try {
               const token = (await Notifications.getExpoPushTokenAsync({
-                projectId: 'clothiq-id',
+                projectId: '7113382e-7de8-4757-8fbc-a1587dd09d54',
               })).data;
               const db = getFirestore();
               await setDoc(doc(db, 'users', user.uid), { 
@@ -128,6 +130,7 @@ function RootNavigator() {
           <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />
           <Stack.Screen name="OrderDetails" component={OrderDetailsScreen} />
           <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+          <Stack.Screen name="ViewProfile" component={ViewProfileScreen} />
           <Stack.Screen name="SavedAddresses" component={SavedAddressesScreen} />
           <Stack.Screen name="AddNewAddress" component={AddNewAddressScreen} />
           <Stack.Screen name="Notifications" component={NotificationsScreen} />
@@ -145,7 +148,6 @@ function RootNavigator() {
           <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
           <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
           <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
-          <Stack.Screen name="AdminDashboard" component={AdminDashboardWebView} />
         </>
       )}
     </Stack.Navigator>

@@ -74,34 +74,6 @@ export default function LoginScreen({ navigation }: any) {
               <Text style={styles.title}>Welcome Back!</Text>
               <Text style={styles.subtitle}>Login to continue</Text>
             </View>
-            <View style={{ zIndex: 50 }}>
-              <TouchableOpacity onPress={() => setMenuVisible(!menuVisible)} style={styles.menuIcon}>
-                <MoreVertical size={24} color="#111111" />
-              </TouchableOpacity>
-
-              {menuVisible && (
-                <View style={styles.dropdownMenu}>
-                  <TouchableOpacity
-                    style={styles.dropdownItem}
-                    onPress={() => { setMenuVisible(false); }}
-                  >
-                    <User size={16} color="#4b5563" />
-                    <Text style={styles.dropdownText}>Customer</Text>
-                  </TouchableOpacity>
-                  <View style={styles.dropdownDivider} />
-                  <TouchableOpacity
-                    style={styles.dropdownItem}
-                    onPress={() => { 
-                      setMenuVisible(false); 
-                      navigation.navigate('AdminDashboard');
-                    }}
-                  >
-                    <Shield size={16} color="#4b5563" />
-                    <Text style={styles.dropdownText}>Clothiq Admin</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
           </View>
 
           <View style={styles.formContainer}>

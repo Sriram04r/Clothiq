@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Banknote, QrCode, BookOpen, CheckCircle2 } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 const PAYMENT_PREFERENCES = [
   { 
@@ -31,14 +32,42 @@ const PAYMENT_PREFERENCES = [
 ];
 
 export default function PaymentMethodsScreen({ navigation }: any) {
+  const { t } = useTranslation();
   const [defaultId, setDefaultId] = useState('khata');
+
+  const PAYMENT_PREFERENCES_MAPPED = [
+    { 
+      id: 'khata', 
+      title: t('monthlyKhata'), 
+      sub: t('monthlyKhataSub'), 
+      icon: <BookOpen size={24} color="#8B5CF6" />, 
+      bgColor: '#F5F3FF', 
+      borderColor: '#8B5CF6' 
+    },
+    { 
+      id: 'cod', 
+      title: t('cashOnDelivery'), 
+      sub: t('codSub'), 
+      icon: <Banknote size={24} color="#10B981" />, 
+      bgColor: '#ECFDF5', 
+      borderColor: '#10B981' 
+    },
+    { 
+      id: 'upi_qr', 
+      title: t('upiQR'), 
+      sub: t('upiQRSub'), 
+      icon: <QrCode size={24} color="#3B82F6" />, 
+      bgColor: '#EFF6FF', 
+      borderColor: '#3B82F6' 
+    },
+  ];
 
   const handleSetDefault = (id: string) => {
     setDefaultId(id);
   };
 
   const handleSave = () => {
-    Alert.alert('Saved!', 'Your default payment preference has been updated.');
+    Alert.alert(t('Saved!', 'Saved!'), t('Your default payment preference has been updated.', 'Your default payment preference has been updated.'));
     navigation.goBack();
   };
 
@@ -49,7 +78,7 @@ export default function PaymentMethodsScreen({ navigation }: any) {
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <ChevronLeft size={24} color="#111" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Payment Preferences</Text>
+        <Text style={styles.headerTitle}>{t('paymentPreferences')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -57,14 +86,14 @@ export default function PaymentMethodsScreen({ navigation }: any) {
         
         <View style={styles.infoBox}>
           <Text style={styles.infoText}>
-            We don't require credit cards! Select how you usually prefer to pay for your laundry. This will be selected by default at checkout.
+            {t('paymentInfo')}
           </Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Available Methods</Text>
+          <Text style={styles.sectionTitle}>{t('availableMethods')}</Text>
           
-          {PAYMENT_PREFERENCES.map((method) => {
+          {PAYMENT_PREFERENCES_MAPPED.map((method) => {
             const isSelected = defaultId === method.id;
             return (
               <TouchableOpacity 
@@ -102,7 +131,7 @@ export default function PaymentMethodsScreen({ navigation }: any) {
       {/* Save Button */}
       <View style={styles.bottomContainer}>
         <TouchableOpacity style={styles.saveBtn} activeOpacity={0.8} onPress={handleSave}>
-          <Text style={styles.saveBtnText}>Save Preference</Text>
+          <Text style={styles.saveBtnText}>{t('Save Preference', 'Save Preference')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

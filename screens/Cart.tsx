@@ -1,48 +1,49 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, ActivityIndicator, Image } from 'react-native';
+import React from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Trash2, Camera, AlertCircle } from 'lucide-react-native';
+import { ChevronLeft, Trash2 } from 'lucide-react-native';
 import { useCart } from '../context/CartContext';
-import * as ImagePicker from 'expo-image-picker';
-import { analyzeClothingTag } from '../utils/groqApi';
+import { useTranslation } from 'react-i18next';
+
+const getItemImage = (name: string) => {
+  const n = name.toLowerCase();
+  
+  // Custom generated high-quality assets
+  if (n.includes('lehanga') || n.includes('lehenga')) return require('../assets/items/lehenga.png');
+  if (n.includes('chudidhar') || n.includes('chudidar')) return require('../assets/items/chudidhar.png');
+  if (n.includes('frock') || n.includes('ladies frock')) return require('../assets/items/frock.png');
+  if (n.includes('blanket')) return require('../assets/items/blanket.png');
+  if (n.includes('pair') || (n.includes('white') && (n.includes('pant') || n.includes('shirt')))) return require('../assets/items/white_shirt_pant.png');
+
+  // Fallbacks to generic icons
+  if (n.includes('skirt')) return { uri: 'https://img.icons8.com/color/96/skirt.png' };
+  if (n.includes('kurta')) return { uri: 'https://img.icons8.com/color/96/clothes.png' };
+  if (n.includes('saree') || n.includes('sari')) return { uri: 'https://img.icons8.com/color/96/saree.png' };
+  if (n.includes('dress')) return { uri: 'https://img.icons8.com/color/96/clothes.png' };
+  
+  if (n.includes('jubba') || n.includes('kid') || n.includes('baby')) return { uri: 'https://img.icons8.com/color/96/onesie.png' };
+  if (n.includes('toy')) return { uri: 'https://img.icons8.com/color/96/teddy-bear.png' };
+
+  if (n.includes('jean')) return { uri: 'https://img.icons8.com/color/96/jeans.png' };
+  if (n.includes('pant') || n.includes('trouser')) return { uri: 'https://img.icons8.com/color/96/trousers.png' };
+  if (n.includes('t-shirt') || n.includes('shirt') || n.includes('top')) return { uri: 'https://img.icons8.com/color/96/shirt.png' };
+  if (n.includes('suit') || n.includes('tie') || n.includes('blazer')) return { uri: 'https://img.icons8.com/color/96/tie.png' };
+  
+  if (n.includes('towel')) return { uri: 'https://img.icons8.com/color/96/towel.png' };
+  if (n.includes('pillow')) return { uri: 'https://img.icons8.com/color/96/pillow.png' };
+  if (n.includes('bed') || n.includes('cover')) return { uri: 'https://img.icons8.com/color/96/bed.png' };
+  if (n.includes('shoe') || n.includes('sneaker')) return { uri: 'https://img.icons8.com/color/96/shoes.png' };
+  if (n.includes('jacket') || n.includes('coat') || n.includes('hoodie')) return { uri: 'https://img.icons8.com/color/96/jacket.png' };
+  if (n.includes('sock')) return { uri: 'https://img.icons8.com/color/96/socks.png' };
+  
+  return { uri: 'https://img.icons8.com/color/96/clothes.png' };
+};
 
 export default function CartScreen({ navigation }: any) {
+  const { t } = useTranslation();
   const { items, subTotal, total, removeItem } = useCart();
   const pickupDelivery = items.length > 0 ? 40 : 0;
   
-  const [scanning, setScanning] = useState(false);
-  const [specialCare, setSpecialCare] = useState<string | null>(null);
-
-  const handleScanTag = async () => {
-    try {
-      const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-      if (!permissionResult.granted) {
-        alert("Camera permission is required to scan tags.");
-        return;
-      }
-      
-      const result = await ImagePicker.launchCameraAsync({
-        base64: true,
-        allowsEditing: true,
-        quality: 0.5,
-      });
-
-      if (!result.canceled && result.assets && result.assets[0].base64) {
-        setScanning(true);
-        const analysis = await analyzeClothingTag(result.assets[0].base64);
-        if (analysis) {
-          setSpecialCare(analysis);
-        } else {
-          alert("Could not analyze the tag. Please try again.");
-        }
-      }
-    } catch (e) {
-      console.log("Error scanning tag:", e);
-    } finally {
-      setScanning(false);
-    }
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -50,55 +51,29 @@ export default function CartScreen({ navigation }: any) {
           <ChevronLeft size={24} color="#111" />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Your Cart</Text>
-          <Text style={styles.headerSubtitle}>Review your items</Text>
+          <Text style={styles.headerTitle}>{t('cart')}</Text>
+          <Text style={styles.headerSubtitle}>{t('reviewItems')}</Text>
         </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {items.length === 0 ? (
           <View style={{ alignItems: 'center', marginTop: 40 }}>
-            <Text style={{ fontSize: 16, color: '#666' }}>Your cart is empty.</Text>
+            <Text style={{ fontSize: 16, color: '#666' }}>{t('emptyCart')}</Text>
           </View>
         ) : (
           <>
-            {/* AI Scanner Banner */}
-            <TouchableOpacity 
-              style={styles.scanBanner}
-              onPress={handleScanTag}
-              activeOpacity={0.8}
-            >
-              <View style={styles.scanIconBox}>
-                <Camera size={24} color="#FFF" />
-              </View>
-              <View style={styles.scanDetails}>
-                <Text style={styles.scanTitle}>AI Fabric Scanner</Text>
-                <Text style={styles.scanSub}>Scan your clothing tag for special care</Text>
-              </View>
-              {scanning && <ActivityIndicator color="#1C158A" />}
-            </TouchableOpacity>
-
-            {specialCare && (
-              <View style={styles.specialCareBox}>
-                <AlertCircle size={20} color="#EAB308" style={{ marginTop: 2 }} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.specialCareTitle}>AI Care Instructions Added:</Text>
-                  <Text style={styles.specialCareText}>{specialCare}</Text>
-                </View>
-              </View>
-            )}
-
             {items.map((item) => (
-            <View key={item.id} style={styles.itemCard}>
-              <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
-                <Text style={styles.emojiIcon}>{item.icon}</Text>
+            <View key={`${item.id}-${item.serviceType}`} style={styles.itemCard}>
+              <View style={[styles.iconContainer, { backgroundColor: item.color || '#F0F9FF', padding: 8 }]}>
+                <Image source={getItemImage(item.name)} style={{ width: 40, height: 40 }} resizeMode="contain" />
               </View>
               
               <View style={styles.itemDetails}>
                 <Text style={styles.itemName}>{item.name}</Text>
-                <Text style={styles.itemSubDetail}>Service: {item.serviceType}</Text>
+                <Text style={styles.itemSubDetail}>{t('service')}: {item.serviceType}</Text>
                 <Text style={styles.itemSubDetail}>
-                  ₹ {item.price}   <Text style={styles.qtyText}>Qty:{item.qty}</Text>
+                  ₹ {item.price}   <Text style={styles.qtyText}>{t('qty')}:{item.qty}</Text>
                 </Text>
               </View>
 
@@ -116,24 +91,24 @@ export default function CartScreen({ navigation }: any) {
 
       <View style={styles.summaryContainer}>
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Sub Total</Text>
+          <Text style={styles.summaryLabel}>{t('subTotal')}</Text>
           <Text style={styles.summaryValue}>₹ {subTotal}</Text>
         </View>
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Pickup & Delivery</Text>
+          <Text style={styles.summaryLabel}>{t('pickupDelivery')}</Text>
           <Text style={styles.summaryValue}>₹ {pickupDelivery}</Text>
         </View>
         <View style={[styles.summaryRow, styles.totalRow]}>
-          <Text style={styles.totalLabel}>Total</Text>
+          <Text style={styles.totalLabel}>{t('total')}</Text>
           <Text style={styles.totalValue}>₹ {total}</Text>
         </View>
 
         <TouchableOpacity 
           style={[styles.proceedBtn, items.length === 0 && { opacity: 0.5 }]}
-          onPress={() => items.length > 0 && navigation.navigate('SelectAddress', { specialInstructions: specialCare })}
+          onPress={() => items.length > 0 && navigation.navigate('SelectAddress')}
           disabled={items.length === 0}
         >
-          <Text style={styles.proceedText}>Proceed</Text>
+          <Text style={styles.proceedText}>{t('proceed')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

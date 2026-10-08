@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const db = getFirestore();
         const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists()) {
+        if (userDoc && typeof userDoc.exists === 'function' ? userDoc.exists() : userDoc?.exists) {
           const data = userDoc.data();
           if (data?.role === 'admin') {
             setUserRole('admin');

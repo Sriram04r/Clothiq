@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Home, ClipboardList, Bell, LayoutGrid, User, Clock, CheckCircle2, Gift, Percent, Megaphone } from 'lucide-react-native';
+import { ChevronLeft, Home, ClipboardList, Bell, LayoutGrid, User, Clock, CheckCircle2, Gift, Percent, Megaphone, Settings } from 'lucide-react-native';
 import ChatBotFAB from '../components/ChatBotFAB';
+import { useTranslation } from 'react-i18next';
 
 const notifications = [
   {
@@ -79,6 +80,7 @@ const notifications = [
 ];
 
 export default function NotificationsScreen({ navigation }: any) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('All');
 
   const renderIcon = (type: string) => {
@@ -141,19 +143,19 @@ export default function NotificationsScreen({ navigation }: any) {
           <ChevronLeft size={24} color="#111" />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Notifications</Text>
+          <Text style={styles.headerTitle}>{t('notifications')}</Text>
         </View>
       </View>
 
       {/* Filter Tabs */}
       <View style={styles.tabsContainer}>
-        {['All', 'Orders', 'Offers'].map((tab) => (
+        {[{ key: 'All', label: t('all') }, { key: 'Orders', label: t('orders') }, { key: 'Offers', label: t('offers') }].map((tab) => (
           <TouchableOpacity 
-            key={tab} 
-            style={[styles.tab, activeTab === tab && styles.activeTab]}
-            onPress={() => setActiveTab(tab)}
+            key={tab.key} 
+            style={[styles.tab, activeTab === tab.key && styles.activeTab]}
+            onPress={() => setActiveTab(tab.key)}
           >
-            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text>
+            <Text style={[styles.tabText, activeTab === tab.key && styles.activeTabText]}>{tab.label}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -162,7 +164,11 @@ export default function NotificationsScreen({ navigation }: any) {
         
         {notifications.map((group, gIndex) => (
           <View key={gIndex} style={styles.groupContainer}>
-            <Text style={styles.groupHeader}>{group.group}</Text>
+            <Text style={styles.groupHeader}>
+              {group.group === 'Today' ? t('today', 'Today') : 
+               group.group === 'Yesterday' ? t('yesterday', 'Yesterday') : 
+               group.group === 'This week' ? t('thisWeek', 'This week') : group.group}
+            </Text>
             
             <View style={styles.groupList}>
               {group.data.map((item, iIndex) => (
@@ -171,13 +177,13 @@ export default function NotificationsScreen({ navigation }: any) {
                   
                   <View style={styles.notificationContent}>
                     <View style={styles.titleRow}>
-                      <Text style={styles.notificationTitle}>{item.title}</Text>
+                      <Text style={styles.notificationTitle}>{t(item.title, item.title)}</Text>
                       <View style={styles.timeRow}>
-                        <Text style={styles.timeText}>{item.time}</Text>
+                        <Text style={styles.timeText}>{t(item.time, item.time)}</Text>
                         {item.isNew && <View style={styles.unreadDot} />}
                       </View>
                     </View>
-                    <Text style={styles.notificationDesc}>{item.desc}</Text>
+                    <Text style={styles.notificationDesc}>{t(item.desc, item.desc)}</Text>
                   </View>
                 </View>
               ))}
@@ -193,27 +199,27 @@ export default function NotificationsScreen({ navigation }: any) {
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
           <Home size={24} color="#8e8e93" />
-          <Text style={styles.navText}>Home</Text>
+          <Text style={styles.navText}>{t('home')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('OrderHistory')}>
           <ClipboardList size={24} color="#8e8e93" />
-          <Text style={styles.navText}>Orders</Text>
+          <Text style={styles.navText}>{t('orders')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.navItem}>
           <Bell size={24} color="#1C158A" />
-          <Text style={[styles.navText, styles.navTextActive]}>Notifications</Text>
+          <Text style={[styles.navText, styles.navTextActive]}>{t('notifications')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Services')}>
           <LayoutGrid size={24} color="#8e8e93" />
-          <Text style={styles.navText}>Services</Text>
+          <Text style={styles.navText}>{t('services')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Profile')}>
-          <User size={24} color="#8e8e93" />
-          <Text style={styles.navText}>Profile</Text>
+          <Settings size={24} color="#8e8e93" />
+          <Text style={styles.navText}>{t('settings')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

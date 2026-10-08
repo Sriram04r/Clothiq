@@ -3,8 +3,9 @@ import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, Image, 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Circle } from 'lucide-react-native';
 import { getAuth } from '@react-native-firebase/auth';
-import { getFirestore, doc, updateDoc } from '@react-native-firebase/firestore';
+import { getFirestore, doc, updateDoc, collection, query, where, getDocs } from '@react-native-firebase/firestore';
 import { useCart } from '../context/CartContext';
+import { useTranslation } from 'react-i18next';
 
 const paymentMethods = [
   { id: 'phonepe', title: 'PhonePe', sub: 'Pay using PhonePe', localImage: require('../assets/Phonepay.png') },
@@ -15,6 +16,7 @@ const paymentMethods = [
 ];
 
 export default function PaymentScreen({ route, navigation }: any) {
+  const { t } = useTranslation();
   const { orderId, amount } = route.params || {};
   const [selectedMethod, setSelectedMethod] = useState('phonepe');
   const [processing, setProcessing] = useState(false);
@@ -76,8 +78,74 @@ export default function PaymentScreen({ route, navigation }: any) {
       });
 
       clearCart();
+
+      // Notify Admins
+      try {
+        const q = query(collection(db, 'users'), where('role', '==', 'admin'));
+        const querySnapshot = await getDocs(q);
+        const tokens: string[] = [];
+        querySnapshot.forEach((d) => {
+          if (d.data().pushToken) {
+            tokens.push(d.data().pushToken);
+          }
+        });
+
+        if (tokens.length > 0) {
+          await fetch('https://exp.host/--/api/v2/push/send', {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Accept-encoding': 'gzip, deflate',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(tokens.map(t => ({
+              to: t,
+              sound: 'default',
+              title: '🚨 New Order Received!',
+              body: `An order for ₹${amount || 0} has been placed.`,
+              data: { orderId: orderId },
+            }))),
+          });
+        }
+      } catch (e) {
+        console.log("Failed to notify admin:", e);
+      }
+
       navigation.navigate('OrderConfirmation', { orderId });
       
+      const displayOrderId = `FW${orderId.substring(0, 6).toUpperCase()}`;
+      
+      // WhatsApp Notification Trigger
+      try {
+        const message = `Hi Clothiq Admin! I just placed a new laundry order!\n\nOrder ID: #${displayOrderId}\nTotal Amount: ₹${amount || 0}\n\nPlease process my pickup as soon as possible!`;
+        const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(message)}&phone=+919666394628`;
+        Linking.openURL(whatsappUrl).catch(e => console.log("WhatsApp not installed"));
+      } catch (e) {
+        console.log("Failed to open WhatsApp:", e);
+      }
+
+      // EmailJS Silent Background Email
+      try {
+        const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            service_id: 'service_ej24ril',
+            template_id: 'template_74gpi5q',
+            user_id: 'Apdqkx0-ma2xXUS5S',
+            template_params: {
+              order_id: displayOrderId,
+              amount: amount || 0,
+            }
+          })
+        });
+        const responseText = await response.text();
+        console.log("EmailJS Response:", response.status, responseText);
+      } catch (e) {
+        console.log("Silent Email failed:", e);
+      }
     } catch (error) {
       console.error("Error updating order payment:", error);
       Alert.alert("Payment Error", "Something went wrong processing your payment.");
@@ -93,8 +161,7 @@ export default function PaymentScreen({ route, navigation }: any) {
           <ChevronLeft size={24} color="#111" />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Payment</Text>
-          <Text style={styles.headerSubtitle}>Choose a payment method</Text>
+          <Text style={styles.headerTitle}>{t('payment')}</Text>
         </View>
       </View>
 
@@ -119,8 +186,8 @@ export default function PaymentScreen({ route, navigation }: any) {
               </View>
               
               <View style={styles.details}>
-                <Text style={styles.title}>{method.title}</Text>
-                <Text style={styles.subtitle}>{method.sub}</Text>
+                <Text style={styles.title}>{t(method.title, method.title)}</Text>
+                <Text style={styles.subtitle}>{t(method.sub, method.sub)}</Text>
               </View>
 
               <View style={styles.radioContainer}>
@@ -139,7 +206,7 @@ export default function PaymentScreen({ route, navigation }: any) {
 
       <View style={styles.bottomContainer}>
         <View style={styles.totalBox}>
-          <Text style={styles.totalLabel}>Total Payable</Text>
+          <Text style={styles.totalLabel}>{t('totalPayable', 'Total Payable')}</Text>
           <Text style={styles.totalValue}>₹ {amount || 688}</Text>
         </View>
         <TouchableOpacity 
@@ -150,7 +217,7 @@ export default function PaymentScreen({ route, navigation }: any) {
           {processing ? (
             <ActivityIndicator color="#FFF" />
           ) : (
-            <Text style={styles.payText}>Pay Now</Text>
+            <Text style={styles.payText}>{t('payNow')}</Text>
           )}
         </TouchableOpacity>
       </View>
